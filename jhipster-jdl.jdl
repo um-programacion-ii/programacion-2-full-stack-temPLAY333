@@ -3,7 +3,7 @@ entity Alumno {
   id Long required unique
   username String required maxlength(100)
   password String required maxlength(100)
-  firtsName String required maxlength(100)
+  firstName String required maxlength(100)
   lastName String required maxlength(100)
   email String required unique maxlength(500)
   nombreAlumno String required maxlength(200)
