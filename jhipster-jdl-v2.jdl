@@ -1,11 +1,4 @@
-
-entity Alumno {
-  id Long required unique
-  username String required maxlength(100)
-  password String required maxlength(100)
-  firtsName String required maxlength(100)
-  lastName String required maxlength(100)
-  email String required unique maxlength(500)
+entity AlumnoProfile {
   nombreAlumno String required maxlength(200)
   descripcionProyecto TextBlob required
 }
@@ -57,11 +50,12 @@ enum Estado {
 
 relationship OneToOne {
   Evento{eventoTipo(nombre) required} to EventoTipo
+  AlumnoProfile{user(login) required} to User with builtInEntity
 }
 
 relationship ManyToOne {
   Asiento{venta required} to Venta
-  Venta{usuario required} to Alumno
+  Venta{usuario(login) required} to User with builtInEntity
   Venta{evento required} to Evento
 }
 
@@ -72,3 +66,4 @@ relationship ManyToMany {
 dto * with mapstruct
 service * with serviceImpl
 paginate Evento, Venta with pagination
+
