@@ -1,0 +1,177 @@
+name: Automate Pull Request Management
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  automate-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      repository-projects: write
+
+    steps:
+    - name: Extract issue number from branch name
+      id: extract-issue
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const branchName = context.payload.pull_request.head.ref;
+          const branchPattern = /issue-(\d+)/;
+          const branchMatch = branchName.match(branchPattern);
+
+          let issueNumber = null;
+          if (branchMatch) {
+            issueNumber = parseInt(branchMatch[1]);
+            console.log(`Número de issue extraído de la rama: #${issueNumber}`);
+            return { issueNumber };
+          } else {
+            console.log("No se encontró número de issue en el nombre de la rama");
+            return { issueNumber: null };
+          }
+
+    - name: Link issue in PR body
+      if: ${{ fromJSON(steps.extract-issue.outputs.result).issueNumber != null }}
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const extractIssueResult = ${{ toJSON(steps.extract-issue.outputs.result) }};
+          const issueNumber = JSON.parse(extractIssueResult).issueNumber;
+    
+          let updatedBody = context.payload.pull_request.body || '';
+          if (!updatedBody.includes(`#${issueNumber}`)) {
+            updatedBody += `\n\nCloses #${issueNumber}`;
+            await github.rest.pulls.update({
+              pull_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: updatedBody
+            });
+            console.log(`PR body actualizado con referencia a issue #${issueNumber}`);
+          }
+
+    - name: Copy properties from issue
+      if: ${{ fromJSON(steps.extract-issue.outputs.result).issueNumber != null }}
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const extractIssueResult = ${{ toJSON(steps.extract-issue.outputs.result) }};
+          const issueNumber = JSON.parse(extractIssueResult).issueNumber;
+
+          try {
+            const linkedIssue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+
+            // 1. Copiar milestone
+            if (linkedIssue.data.milestone) {
+              await github.rest.issues.update({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                milestone: linkedIssue.data.milestone.number
+              });
+              console.log(`Milestone asignado desde issue #${issueNumber}: ${linkedIssue.data.milestone.title}`);
+            }
+
+            // 2. Copiar etiquetas
+            if (linkedIssue.data.labels && linkedIssue.data.labels.length > 0) {
+              const labels = linkedIssue.data.labels.map(label => label.name);
+              await github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: labels
+              });
+              console.log(`Etiquetas asignadas desde issue #${issueNumber}: ${labels.join(', ')}`);
+            }
+
+            // 3. Copiar asignados
+            if (linkedIssue.data.assignees && linkedIssue.data.assignees.length > 0) {
+              const assignees = linkedIssue.data.assignees.map(user => user.login);
+              await github.rest.issues.addAssignees({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                assignees: assignees
+              });
+              console.log(`Asignados copiados desde issue #${issueNumber}: ${assignees.join(', ')}`);
+            }
+          } catch (error) {
+            console.log(`Error al procesar el issue #${issueNumber}: ${error.message}`);
+          }
+
+    - name: Add to project
+      if: ${{ fromJSON(steps.extract-issue.outputs.result).issueNumber != null }}
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          try {
+            const extractIssueResult = ${{ toJSON(steps.extract-issue.outputs.result) }};
+            const issueNumber = JSON.parse(extractIssueResult).issueNumber;
+            
+            // Obtener el ID interno del proyecto a partir del número
+            const organizationName = context.repo.owner;
+            const projectNumber = 137;
+            
+            // Primero consultar el ID del proyecto usando el número
+            const findProjectQuery = `
+              query {
+                organization(login: "${organizationName}") {
+                  projectV2(number: ${projectNumber}) {
+                    id
+                  }
+                }
+              }
+            `;
+            
+            const projectResult = await github.graphql(findProjectQuery);
+            const projectId = projectResult.organization.projectV2.id;
+            
+            console.log(`ID del proyecto obtenido: ${projectId}`);
+            
+            // Añadir el PR al proyecto usando el ID obtenido
+            const addToProjectMutation = `
+              mutation {
+                addProjectV2ItemById(input: {
+                  projectId: "${projectId}",
+                  contentId: "${context.payload.pull_request.node_id}"
+                }) {
+                  item {
+                    id
+                  }
+                }
+              }
+            `;
+    
+            const result = await github.graphql(addToProjectMutation);
+            console.log('PR añadido al proyecto con éxito: ' + JSON.stringify(result));
+          } catch (error) {
+            console.log('Error al añadir al proyecto V2: ' + error.message);
+          }
+
+    - name: Add default comment
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          try {
+            await github.rest.issues.createComment({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `**Checklist:**\n  - [ ] La funcionalidad está implementada correctamente\n  - [ ] Se probó la funcionalidad en \`Main\` o test correspondiente\n  - [ ] Se creó una rama específica para este Pull Request\n  - [ ] Este Pull Request menciona el Issue relacionado.`
+            });
+            console.log('Comment added successfully');
+          } catch (error) {
+            console.log('Error al añadir comentario: ' + error.message);
+          }
