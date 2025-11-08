@@ -83,6 +83,14 @@ public class CacheConfiguration {
             createCache(cm, com.example.demo.domain.User.class.getName(), jcacheConfiguration);
             createCache(cm, com.example.demo.domain.Authority.class.getName(), jcacheConfiguration);
             createCache(cm, com.example.demo.domain.User.class.getName() + ".authorities", jcacheConfiguration);
+            createCache(cm, com.example.demo.domain.Evento.class.getName(), jcacheConfiguration);
+            createCache(cm, com.example.demo.domain.Evento.class.getName() + ".integrantes", jcacheConfiguration);
+            createCache(cm, com.example.demo.domain.EventoTipo.class.getName(), jcacheConfiguration);
+            createCache(cm, com.example.demo.domain.Integrante.class.getName(), jcacheConfiguration);
+            createCache(cm, com.example.demo.domain.Integrante.class.getName() + ".eventos", jcacheConfiguration);
+            createCache(cm, com.example.demo.domain.Venta.class.getName(), jcacheConfiguration);
+            createCache(cm, com.example.demo.domain.Asiento.class.getName(), jcacheConfiguration);
+            createCache(cm, com.example.demo.domain.AlumnoProfile.class.getName(), jcacheConfiguration);
             // jhipster-needle-redis-add-entry
         };
     }

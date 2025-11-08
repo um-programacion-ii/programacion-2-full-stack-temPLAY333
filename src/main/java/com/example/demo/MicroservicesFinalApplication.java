@@ -1,13 +1,10 @@
 package com.example.demo;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
+// Clase mantenida solo como referencia histórica. Se desactiva la anotación para evitar conflicto con MicroservicesFinalApp.
+// @SpringBootApplication
 public class MicroservicesFinalApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(MicroservicesFinalApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        // Delegar al main oficial de JHipster
+        MicroservicesFinalApp.main(args);
+    }
 }
