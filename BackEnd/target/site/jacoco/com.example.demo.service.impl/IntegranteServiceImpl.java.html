@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntegranteServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.impl</a> &gt; <span class="el_source">IntegranteServiceImpl.java</span></div><h1>IntegranteServiceImpl.java</h1><pre class="source lang-java linenums">package com.example.demo.service.impl;
+
+import com.example.demo.domain.Integrante;
+import com.example.demo.repository.IntegranteRepository;
+import com.example.demo.service.IntegranteService;
+import com.example.demo.service.dto.IntegranteDTO;
+import com.example.demo.service.mapper.IntegranteMapper;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Service Implementation for managing {@link com.example.demo.domain.Integrante}.
+ */
+@Service
+@Transactional
+public class IntegranteServiceImpl implements IntegranteService {
+
+<span class="nc" id="L24">    private static final Logger LOG = LoggerFactory.getLogger(IntegranteServiceImpl.class);</span>
+
+    private final IntegranteRepository integranteRepository;
+
+    private final IntegranteMapper integranteMapper;
+
+<span class="nc" id="L30">    public IntegranteServiceImpl(IntegranteRepository integranteRepository, IntegranteMapper integranteMapper) {</span>
+<span class="nc" id="L31">        this.integranteRepository = integranteRepository;</span>
+<span class="nc" id="L32">        this.integranteMapper = integranteMapper;</span>
+<span class="nc" id="L33">    }</span>
+
+    @Override
+    public IntegranteDTO save(IntegranteDTO integranteDTO) {
+<span class="nc" id="L37">        LOG.debug(&quot;Request to save Integrante : {}&quot;, integranteDTO);</span>
+<span class="nc" id="L38">        Integrante integrante = integranteMapper.toEntity(integranteDTO);</span>
+<span class="nc" id="L39">        integrante = integranteRepository.save(integrante);</span>
+<span class="nc" id="L40">        return integranteMapper.toDto(integrante);</span>
+    }
+
+    @Override
+    public IntegranteDTO update(IntegranteDTO integranteDTO) {
+<span class="nc" id="L45">        LOG.debug(&quot;Request to update Integrante : {}&quot;, integranteDTO);</span>
+<span class="nc" id="L46">        Integrante integrante = integranteMapper.toEntity(integranteDTO);</span>
+<span class="nc" id="L47">        integrante = integranteRepository.save(integrante);</span>
+<span class="nc" id="L48">        return integranteMapper.toDto(integrante);</span>
+    }
+
+    @Override
+    public Optional&lt;IntegranteDTO&gt; partialUpdate(IntegranteDTO integranteDTO) {
+<span class="nc" id="L53">        LOG.debug(&quot;Request to partially update Integrante : {}&quot;, integranteDTO);</span>
+
+<span class="nc" id="L55">        return integranteRepository</span>
+<span class="nc" id="L56">            .findById(integranteDTO.getId())</span>
+<span class="nc" id="L57">            .map(existingIntegrante -&gt; {</span>
+<span class="nc" id="L58">                integranteMapper.partialUpdate(existingIntegrante, integranteDTO);</span>
+
+<span class="nc" id="L60">                return existingIntegrante;</span>
+            })
+<span class="nc" id="L62">            .map(integranteRepository::save)</span>
+<span class="nc" id="L63">            .map(integranteMapper::toDto);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;IntegranteDTO&gt; findAll() {
+<span class="nc" id="L69">        LOG.debug(&quot;Request to get all Integrantes&quot;);</span>
+<span class="nc" id="L70">        return integranteRepository.findAll().stream().map(integranteMapper::toDto).collect(Collectors.toCollection(LinkedList::new));</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional&lt;IntegranteDTO&gt; findOne(Long id) {
+<span class="nc" id="L76">        LOG.debug(&quot;Request to get Integrante : {}&quot;, id);</span>
+<span class="nc" id="L77">        return integranteRepository.findById(id).map(integranteMapper::toDto);</span>
+    }
+
+    @Override
+    public void delete(Long id) {
+<span class="nc" id="L82">        LOG.debug(&quot;Request to delete Integrante : {}&quot;, id);</span>
+<span class="nc" id="L83">        integranteRepository.deleteById(id);</span>
+<span class="nc" id="L84">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

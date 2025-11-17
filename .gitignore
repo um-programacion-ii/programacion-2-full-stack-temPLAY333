@@ -117,6 +117,7 @@ Desktop.ini
 ######################
 /bin/
 /deploy/
+/scripts/
 
 ######################
 # Logs
@@ -130,6 +131,16 @@ Desktop.ini
 *.*~
 *~
 .merge_file*
+
+######################
+# Environment & Secrets
+######################
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*-token.txt
 
 ######################
 # Gradle Wrapper

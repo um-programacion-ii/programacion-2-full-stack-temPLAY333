@@ -1,0 +1,38 @@
+Catedra: http://192.168.194.250:8080
+Kafka: http://192.168.194.250:6379
+Redis: http://192.168.194.250:9092
+
+POST: Login de usuario.
+URL: http://192.168.194.250:8080/api/authenticate.
+Entrada: LoginRequestDTO
+Salida: LoginResponseDTO
+
+GET: Listado completo de eventos (datos resumidos).
+URL: http://192.168.194.250:PUERTO/api/endpoints/v1/eventos-resumidos.
+Salida: List<EventoResumidoDTO>
+
+GET: Listado completo de eventos (con todos los datos).
+URL: http://192.168.194.250:PUERTO/api/endpoints/v1/eventos.
+Salida: List<EventoDTO>
+
+GET: Datos completos de un evento
+URL: http://192.168.194.250:PUERTO/api/endpoints/v1/evento/{id}
+Salida: EventoDTO
+
+POST: Bloqueo de asiento por evento.
+URL: http://192.168.194.250:PUERTO/api/endpoints/v1/bloquear-asientos
+Entrada: BloqueoAsientoRequestDTO
+Salida: BloqueoAsientoResponseDTO
+
+POST: Venta de asientos por un evento
+URL: http://192.168.194.250:PUERTO/api/endpoints/v1/realizar-venta
+Entrada: RealizarVentaRequestDTO
+Salida: RealizarVentaResponseDTO
+
+GET: Listado completo de ventas por cada alumno (datos resumidos).
+URL: http://192.168.194.250:PUERTO/api/endpoints/v1/listar-ventas
+Salida: List<VentaResumidoDTO>
+
+GET: Ver datos de una venta particular.
+URL: http://192.168.194.250:PUERTO/api/endpoints/v1/listar-venta/{id}. Ver payload 9.
+Salida: VentaDTO

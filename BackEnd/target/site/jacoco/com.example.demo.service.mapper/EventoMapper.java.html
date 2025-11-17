@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventoMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.mapper</a> &gt; <span class="el_source">EventoMapper.java</span></div><h1>EventoMapper.java</h1><pre class="source lang-java linenums">package com.example.demo.service.mapper;
+
+import com.example.demo.domain.Evento;
+import com.example.demo.domain.EventoTipo;
+import com.example.demo.domain.Integrante;
+import com.example.demo.service.dto.EventoDTO;
+import com.example.demo.service.dto.EventoTipoDTO;
+import com.example.demo.service.dto.IntegranteDTO;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.mapstruct.*;
+
+/**
+ * Mapper for the entity {@link Evento} and its DTO {@link EventoDTO}.
+ */
+@Mapper(componentModel = &quot;spring&quot;)
+public interface EventoMapper extends EntityMapper&lt;EventoDTO, Evento&gt; {
+    @Mapping(target = &quot;eventoTipo&quot;, source = &quot;eventoTipo&quot;, qualifiedByName = &quot;eventoTipoNombre&quot;)
+    @Mapping(target = &quot;integrantes&quot;, source = &quot;integrantes&quot;, qualifiedByName = &quot;integranteNombreSet&quot;)
+    EventoDTO toDto(Evento s);
+
+    @Mapping(target = &quot;removeIntegrantes&quot;, ignore = true)
+    Evento toEntity(EventoDTO eventoDTO);
+
+    @Named(&quot;eventoTipoNombre&quot;)
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = &quot;id&quot;, source = &quot;id&quot;)
+    @Mapping(target = &quot;nombre&quot;, source = &quot;nombre&quot;)
+    EventoTipoDTO toDtoEventoTipoNombre(EventoTipo eventoTipo);
+
+    @Named(&quot;integranteNombre&quot;)
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = &quot;id&quot;, source = &quot;id&quot;)
+    @Mapping(target = &quot;nombre&quot;, source = &quot;nombre&quot;)
+    IntegranteDTO toDtoIntegranteNombre(Integrante integrante);
+
+    @Named(&quot;integranteNombreSet&quot;)
+    default Set&lt;IntegranteDTO&gt; toDtoIntegranteNombreSet(Set&lt;Integrante&gt; integrante) {
+<span class="fc" id="L39">        return integrante.stream().map(this::toDtoIntegranteNombre).collect(Collectors.toSet());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

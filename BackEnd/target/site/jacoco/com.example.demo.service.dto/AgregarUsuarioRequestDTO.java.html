@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AgregarUsuarioRequestDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.dto</a> &gt; <span class="el_source">AgregarUsuarioRequestDTO.java</span></div><h1>AgregarUsuarioRequestDTO.java</h1><pre class="source lang-java linenums">package com.example.demo.service.dto;
+
+import jakarta.persistence.Lob;
+import jakarta.validation.constraints.*;
+import java.io.Serializable;
+import java.util.Objects;
+
+/**
+ * DTO de solicitud para el endpoint POST /api/v1/agregar_usuario.
+ *
+ * JSON de entrada esperado:
+ * {
+ *   &quot;username&quot;: &quot;juan&quot;,
+ *   &quot;password&quot;: &quot;juan123&quot;,
+ *   &quot;firstName&quot;: &quot;Juan&quot;,
+ *   &quot;lastName&quot;: &quot;Perez&quot;,
+ *   &quot;email&quot;: &quot;juan@perez.com.ar&quot;,
+ *   &quot;nombreAlumno&quot;: &quot;Juan Perez&quot;,
+ *   &quot;descripcionProyecto&quot;: &quot;Proyecto de Juan Perez&quot;
+ * }
+ */
+@SuppressWarnings(&quot;common-java:DuplicatedBlocks&quot;)
+<span class="nc" id="L23">public class AgregarUsuarioRequestDTO implements Serializable {</span>
+
+    @NotBlank
+    @Size(min = 3, max = 50)
+    private String username;
+
+    @NotBlank
+    @Size(min = 4, max = 100)
+    private String password;
+
+    @NotBlank
+    @Size(max = 50)
+    private String firstName;
+
+    @NotBlank
+    @Size(max = 50)
+    private String lastName;
+
+    @NotBlank
+    @Email
+    @Size(min = 5, max = 254)
+    private String email;
+
+    @NotBlank
+    @Size(max = 200)
+    private String nombreAlumno;
+
+    @Lob
+    @NotBlank // agregado para reflejar que la columna es not null
+    private String descripcionProyecto;
+
+    public String getUsername() {
+<span class="nc" id="L55">        return username;</span>
+    }
+
+    public void setUsername(String username) {
+<span class="nc" id="L59">        this.username = username;</span>
+<span class="nc" id="L60">    }</span>
+
+    public String getPassword() {
+<span class="nc" id="L63">        return password;</span>
+    }
+
+    public void setPassword(String password) {
+<span class="nc" id="L67">        this.password = password;</span>
+<span class="nc" id="L68">    }</span>
+
+    public String getFirstName() {
+<span class="nc" id="L71">        return firstName;</span>
+    }
+
+    public void setFirstName(String firstName) {
+<span class="nc" id="L75">        this.firstName = firstName;</span>
+<span class="nc" id="L76">    }</span>
+
+    public String getLastName() {
+<span class="nc" id="L79">        return lastName;</span>
+    }
+
+    public void setLastName(String lastName) {
+<span class="nc" id="L83">        this.lastName = lastName;</span>
+<span class="nc" id="L84">    }</span>
+
+    public String getEmail() {
+<span class="nc" id="L87">        return email;</span>
+    }
+
+    public void setEmail(String email) {
+<span class="nc" id="L91">        this.email = email;</span>
+<span class="nc" id="L92">    }</span>
+
+    public String getNombreAlumno() {
+<span class="nc" id="L95">        return nombreAlumno;</span>
+    }
+
+    public void setNombreAlumno(String nombreAlumno) {
+<span class="nc" id="L99">        this.nombreAlumno = nombreAlumno;</span>
+<span class="nc" id="L100">    }</span>
+
+    public String getDescripcionProyecto() {
+<span class="nc" id="L103">        return descripcionProyecto;</span>
+    }
+
+    public void setDescripcionProyecto(String descripcionProyecto) {
+<span class="nc" id="L107">        this.descripcionProyecto = descripcionProyecto;</span>
+<span class="nc" id="L108">    }</span>
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (this == o) {</span>
+<span class="nc" id="L113">            return true;</span>
+        }
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (!(o instanceof AgregarUsuarioRequestDTO)) {</span>
+<span class="nc" id="L116">            return false;</span>
+        }
+<span class="nc" id="L118">        AgregarUsuarioRequestDTO that = (AgregarUsuarioRequestDTO) o;</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        return Objects.equals(username, that.username)</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">            &amp;&amp; Objects.equals(email, that.email)</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            &amp;&amp; Objects.equals(firstName, that.firstName)</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">            &amp;&amp; Objects.equals(lastName, that.lastName)</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">            &amp;&amp; Objects.equals(nombreAlumno, that.nombreAlumno)</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            &amp;&amp; Objects.equals(descripcionProyecto, that.descripcionProyecto);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L129">        return Objects.hash(username, email, firstName, lastName, nombreAlumno, descripcionProyecto);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L134">        return &quot;AgregarUsuarioRequestDTO{&quot; +</span>
+            &quot;username='&quot; + username + '\'' +
+            &quot;, firstName='&quot; + firstName + '\'' +
+            &quot;, lastName='&quot; + lastName + '\'' +
+            &quot;, email='&quot; + email + '\'' +
+            &quot;, nombreAlumno='&quot; + nombreAlumno + '\'' +
+            &quot;, descripcionProyecto='&quot; + descripcionProyecto + '\'' +
+            '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
