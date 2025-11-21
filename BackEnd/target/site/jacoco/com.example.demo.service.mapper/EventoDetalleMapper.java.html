@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventoDetalleMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.mapper</a> &gt; <span class="el_source">EventoDetalleMapper.java</span></div><h1>EventoDetalleMapper.java</h1><pre class="source lang-java linenums">package com.example.demo.service.mapper;
+
+import com.example.demo.domain.Evento;
+import com.example.demo.domain.EventoTipo;
+import com.example.demo.domain.Integrante;
+import com.example.demo.service.dto.*;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.mapstruct.*;
+
+/**
+ * Mapper para convertir Evento -&gt; EventoDetalleDTO según el contrato del endpoint /api/endpoints/v1/evento/{id}.
+ */
+@Mapper(componentModel = &quot;spring&quot;)
+public interface EventoDetalleMapper {
+
+    @Mapping(target = &quot;id&quot;, source = &quot;id&quot;)
+    @Mapping(target = &quot;titulo&quot;, source = &quot;titulo&quot;)
+    @Mapping(target = &quot;resumen&quot;, source = &quot;resumen&quot;)
+    @Mapping(target = &quot;descripcion&quot;, source = &quot;descripcion&quot;)
+    @Mapping(target = &quot;fecha&quot;, source = &quot;fecha&quot;)
+    @Mapping(target = &quot;direccion&quot;, source = &quot;direccion&quot;)
+    @Mapping(target = &quot;imagen&quot;, source = &quot;imagen&quot;)
+    @Mapping(target = &quot;filaAsientos&quot;, source = &quot;filaAsientos&quot;)
+    @Mapping(target = &quot;columnAsientos&quot;, source = &quot;columnAsientos&quot;)
+    @Mapping(target = &quot;precioEntrada&quot;, source = &quot;precioEntrada&quot;)
+    @Mapping(target = &quot;eventoTipo&quot;, source = &quot;eventoTipo&quot;, qualifiedByName = &quot;eventoTipoBasic&quot;)
+    @Mapping(target = &quot;integrantes&quot;, source = &quot;integrantes&quot;, qualifiedByName = &quot;integranteBasicList&quot;)
+    EventoDetalleDTO toDto(Evento evento);
+
+    @Named(&quot;eventoTipoBasic&quot;)
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = &quot;nombre&quot;, source = &quot;nombre&quot;)
+    @Mapping(target = &quot;descripcion&quot;, source = &quot;descripcion&quot;)
+    EventoTipoBasicDTO toDtoEventoTipoBasic(EventoTipo eventoTipo);
+
+    @Named(&quot;integranteBasic&quot;)
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = &quot;nombre&quot;, source = &quot;nombre&quot;)
+    @Mapping(target = &quot;apellido&quot;, source = &quot;apellido&quot;)
+    @Mapping(target = &quot;identificacion&quot;, source = &quot;identificacion&quot;)
+    IntegranteBasicDTO toDtoIntegranteBasic(Integrante integrante);
+
+    @Named(&quot;integranteBasicList&quot;)
+    default List&lt;IntegranteBasicDTO&gt; toDtoIntegranteBasicList(java.util.Set&lt;Integrante&gt; integrantes) {
+<span class="fc" id="L46">        return integrantes.stream().map(this::toDtoIntegranteBasic).collect(Collectors.toList());</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

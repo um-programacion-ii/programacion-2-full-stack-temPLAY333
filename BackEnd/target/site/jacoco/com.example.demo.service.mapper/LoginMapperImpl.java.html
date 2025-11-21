@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoginMapperImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.mapper</a> &gt; <span class="el_source">LoginMapperImpl.java</span></div><h1>LoginMapperImpl.java</h1><pre class="source lang-java linenums">package com.example.demo.service.mapper;
+
+import com.example.demo.service.dto.LoginRequestDTO;
+import com.example.demo.web.rest.vm.LoginVM;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
+
+@Generated(
+    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+    date = &quot;2025-11-08T19:05:53-0300&quot;,
+    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 21.0.7 (OpenLogic)&quot;
+)
+@Component
+<span class="nc" id="L14">public class LoginMapperImpl implements LoginMapper {</span>
+
+    @Override
+    public LoginVM toLoginVM(LoginRequestDTO dto) {
+<span class="nc bnc" id="L18" title="All 2 branches missed.">        if ( dto == null ) {</span>
+<span class="nc" id="L19">            return null;</span>
+        }
+
+<span class="nc" id="L22">        LoginVM loginVM = new LoginVM();</span>
+
+<span class="nc" id="L24">        loginVM.setUsername( dto.getUsername() );</span>
+<span class="nc" id="L25">        loginVM.setPassword( dto.getPassword() );</span>
+<span class="nc" id="L26">        loginVM.setRememberMe( dto.isRememberMe() );</span>
+
+<span class="nc" id="L28">        return loginVM;</span>
+    }
+
+    @Override
+    public LoginRequestDTO toLoginRequestDTO(LoginVM vm) {
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        if ( vm == null ) {</span>
+<span class="nc" id="L34">            return null;</span>
+        }
+
+<span class="nc" id="L37">        LoginRequestDTO loginRequestDTO = new LoginRequestDTO();</span>
+
+<span class="nc" id="L39">        loginRequestDTO.setUsername( vm.getUsername() );</span>
+<span class="nc" id="L40">        loginRequestDTO.setPassword( vm.getPassword() );</span>
+<span class="nc" id="L41">        loginRequestDTO.setRememberMe( vm.isRememberMe() );</span>
+
+<span class="nc" id="L43">        return loginRequestDTO;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

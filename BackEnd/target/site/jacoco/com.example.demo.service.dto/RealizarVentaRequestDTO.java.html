@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RealizarVentaRequestDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.dto</a> &gt; <span class="el_source">RealizarVentaRequestDTO.java</span></div><h1>RealizarVentaRequestDTO.java</h1><pre class="source lang-java linenums">package com.example.demo.service.dto;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * DTO de solicitud para el endpoint POST /api/endpoints/v1/realizar-venta.
+ * JSON ejemplo:
+ * {
+ *   &quot;eventoId&quot;: 1,
+ *   &quot;fecha&quot;: &quot;2025-08-17T20:00:00.000Z&quot;,
+ *   &quot;precioVenta&quot;: 1400.10,
+ *   &quot;asientos&quot;: [ { &quot;fila&quot;: 2, &quot;columna&quot;: 3, &quot;persona&quot;: &quot;Fernando Galvez&quot; }, ... ]
+ * }
+ */
+@SuppressWarnings(&quot;common-java:DuplicatedBlocks&quot;)
+<span class="nc" id="L22">public class RealizarVentaRequestDTO implements Serializable {</span>
+
+    @NotNull
+    private Long eventoId;
+
+    @NotNull
+    private Instant fecha;
+
+    @NotNull
+    private BigDecimal precioVenta;
+
+    @NotNull
+    @Size(min = 1)
+    private List&lt;AsientoVentaDTO&gt; asientos;
+
+<span class="nc" id="L37">    public Long getEventoId() { return eventoId; }</span>
+<span class="nc" id="L38">    public void setEventoId(Long eventoId) { this.eventoId = eventoId; }</span>
+<span class="nc" id="L39">    public Instant getFecha() { return fecha; }</span>
+<span class="nc" id="L40">    public void setFecha(Instant fecha) { this.fecha = fecha; }</span>
+<span class="nc" id="L41">    public BigDecimal getPrecioVenta() { return precioVenta; }</span>
+<span class="nc" id="L42">    public void setPrecioVenta(BigDecimal precioVenta) { this.precioVenta = precioVenta; }</span>
+<span class="nc" id="L43">    public List&lt;AsientoVentaDTO&gt; getAsientos() { return asientos; }</span>
+<span class="nc" id="L44">    public void setAsientos(List&lt;AsientoVentaDTO&gt; asientos) { this.asientos = asientos; }</span>
+
+    @Override
+<span class="nc bnc" id="L47" title="All 12 branches missed.">    public boolean equals(Object o) { if (this == o) return true; if (!(o instanceof RealizarVentaRequestDTO)) return false; RealizarVentaRequestDTO that = (RealizarVentaRequestDTO) o; return Objects.equals(eventoId, that.eventoId) &amp;&amp; Objects.equals(fecha, that.fecha) &amp;&amp; Objects.equals(precioVenta, that.precioVenta) &amp;&amp; Objects.equals(asientos, that.asientos); }</span>
+    @Override
+<span class="nc" id="L49">    public int hashCode() { return Objects.hash(eventoId, fecha, precioVenta, asientos); }</span>
+    @Override
+<span class="nc" id="L51">    public String toString() { return &quot;RealizarVentaRequestDTO{&quot; + &quot;eventoId=&quot; + eventoId + &quot;, fecha=&quot; + fecha + &quot;, precioVenta=&quot; + precioVenta + '}'; }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RealizarVentaMapperImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.mapper</a> &gt; <span class="el_source">RealizarVentaMapperImpl.java</span></div><h1>RealizarVentaMapperImpl.java</h1><pre class="source lang-java linenums">package com.example.demo.service.mapper;
+
+import com.example.demo.domain.Asiento;
+import com.example.demo.domain.Evento;
+import com.example.demo.domain.Venta;
+import com.example.demo.service.dto.AsientoVentaEstadoDTO;
+import com.example.demo.service.dto.RealizarVentaResponseDTO;
+import java.util.Set;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
+
+@Generated(
+    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+    date = &quot;2025-11-08T19:05:53-0300&quot;,
+    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 21.0.7 (OpenLogic)&quot;
+)
+@Component
+<span class="fc" id="L18">public class RealizarVentaMapperImpl implements RealizarVentaMapper {</span>
+
+    @Override
+    public RealizarVentaResponseDTO toDto(Venta venta, Set&lt;Asiento&gt; asientos) {
+<span class="pc bpc" id="L22" title="3 of 4 branches missed.">        if ( venta == null &amp;&amp; asientos == null ) {</span>
+<span class="nc" id="L23">            return null;</span>
+        }
+
+<span class="fc" id="L26">        RealizarVentaResponseDTO realizarVentaResponseDTO = new RealizarVentaResponseDTO();</span>
+
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">        if ( venta != null ) {</span>
+<span class="fc" id="L29">            realizarVentaResponseDTO.setEventoId( ventaEventoId( venta ) );</span>
+<span class="fc" id="L30">            realizarVentaResponseDTO.setVentaId( venta.getVentaId() );</span>
+<span class="fc" id="L31">            realizarVentaResponseDTO.setFechaVenta( venta.getFechaVenta() );</span>
+<span class="fc" id="L32">            realizarVentaResponseDTO.setResultado( venta.getResultado() );</span>
+<span class="fc" id="L33">            realizarVentaResponseDTO.setDescripcion( venta.getDescripcion() );</span>
+<span class="fc" id="L34">            realizarVentaResponseDTO.setPrecioVenta( venta.getPrecioVenta() );</span>
+        }
+<span class="fc" id="L36">        realizarVentaResponseDTO.setAsientos( toDtoAsientoVentaEstadoList( asientos ) );</span>
+
+<span class="fc" id="L38">        return realizarVentaResponseDTO;</span>
+    }
+
+    @Override
+    public AsientoVentaEstadoDTO toDtoAsientoVentaEstado(Asiento asiento) {
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        if ( asiento == null ) {</span>
+<span class="nc" id="L44">            return null;</span>
+        }
+
+<span class="fc" id="L47">        AsientoVentaEstadoDTO asientoVentaEstadoDTO = new AsientoVentaEstadoDTO();</span>
+
+<span class="fc" id="L49">        asientoVentaEstadoDTO.setFila( asiento.getFila() );</span>
+<span class="fc" id="L50">        asientoVentaEstadoDTO.setColumna( asiento.getColumna() );</span>
+<span class="fc" id="L51">        asientoVentaEstadoDTO.setPersona( asiento.getPersona() );</span>
+<span class="fc" id="L52">        asientoVentaEstadoDTO.setEstado( mapEstadoVenta( asiento.getEstado() ) );</span>
+
+<span class="fc" id="L54">        return asientoVentaEstadoDTO;</span>
+    }
+
+    private Long ventaEventoId(Venta venta) {
+<span class="fc" id="L58">        Evento evento = venta.getEvento();</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        if ( evento == null ) {</span>
+<span class="nc" id="L60">            return null;</span>
+        }
+<span class="fc" id="L62">        return evento.getId();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
