@@ -6,14 +6,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import um.prog2.dto.evento.consulta.EventoResumenDTO;
 import um.prog2.dto.evento.consulta.EventoDTO;
 import um.prog2.dto.evento.consulta.EventoDetalleDTO;
-import um.prog2.dto.evento.asientos.AsientoBloqueoEstadoDTO;
+import um.prog2.dto.evento.bloqueo.AsientoEstadoDTO;
 import um.prog2.dto.evento.bloqueo.BloquearAsientosRequestDTO;
 import um.prog2.dto.evento.bloqueo.BloquearAsientosResponseDTO;
 import um.prog2.service.AsientoRedisService;
@@ -31,18 +30,15 @@ public class EventoProxyController {
 
     private final WebClient webClient;
     private final AsientoRedisService asientoRedisService;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private um.prog2.service.NotificadorBackendService notificadorBackendService;
 
     @Value("${app.catedra.base-url}")
     private String catedraBaseUrl;
 
-    @Value("${app.kafka.producer.topic}")
-    private String producerTopic;
-
-    public EventoProxyController(WebClient webClient, AsientoRedisService asientoRedisService, KafkaTemplate<String, String> kafkaTemplate) {
+    public EventoProxyController(WebClient webClient, AsientoRedisService asientoRedisService) {
         this.webClient = webClient;
         this.asientoRedisService = asientoRedisService;
-        this.kafkaTemplate = kafkaTemplate;
     }
 
     /**
@@ -99,6 +95,7 @@ public class EventoProxyController {
     /**
      * POST: Bloqueo de asiento por evento.
      * URL externa: http://192.168.194.250:8080/api/endpoints/v1/bloquear-asientos
+     * Nota: El resultado asíncrono llegará vía Kafka y se notificará al BackEnd vía webhook.
      */
     @PostMapping("/bloquear-asientos")
     public Mono<ResponseEntity<BloquearAsientosResponseDTO>> bloquearAsientos(
@@ -113,12 +110,13 @@ public class EventoProxyController {
             .map(ResponseEntity::ok)
             .doOnSuccess(resp -> {
                 log.debug("Bloqueo de asientos resultado: {}", resp.getBody() != null ? resp.getBody().getResultado() : null);
-                // Publicar a Kafka para auditoría/seguimiento (POST => Kafka)
+                // Notificar al BackEnd con la respuesta síncrona de Cátedra
                 try {
-                    String mensaje = "bloquear-asientos:evento=" + request.getEventoId();
-                    kafkaTemplate.send(producerTopic, mensaje);
+                    if (notificadorBackendService != null && resp.getBody() != null) {
+                        notificadorBackendService.notificarCambioDesdeHttp("http:bloquear-asientos", resp.getBody());
+                    }
                 } catch (Exception ex) {
-                    log.warn("No se pudo publicar mensaje de auditoría en Kafka: {}", ex.getMessage());
+                    log.warn("No se pudo notificar al backend el resultado de bloqueo: {}", ex.getMessage());
                 }
             })
             .doOnError(err -> log.error("Error bloqueando asientos: {}", err.getMessage()));
@@ -129,7 +127,7 @@ public class EventoProxyController {
      * Si existe hash 'evento:{id}:asientos' se usa; si no, keys 'evento:{id}:asiento:*'.
      */
     @GetMapping("/{id}/asientos-estado")
-    public Mono<ResponseEntity<List<AsientoBloqueoEstadoDTO>>> obtenerEstadoAsientos(@PathVariable Long id) {
+    public Mono<ResponseEntity<List<AsientoEstadoDTO>>> obtenerEstadoAsientos(@PathVariable Long id) {
         return Mono.defer(() -> Mono.just(asientoRedisService.obtenerEstadoAsientos(id)))
             .map(ResponseEntity::ok)
             .onErrorResume(err -> {

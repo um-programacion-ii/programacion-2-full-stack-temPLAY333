@@ -1,13 +1,16 @@
 package um.prog2.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.stereotype.Service;
-import um.prog2.dto.evento.asientos.AsientoBloqueoEstadoDTO;
+import um.prog2.dto.evento.bloqueo.AsientoEstadoDTO;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class AsientoRedisService {
@@ -15,57 +18,46 @@ public class AsientoRedisService {
     private static final Logger log = LoggerFactory.getLogger(AsientoRedisService.class);
 
     private final StringRedisTemplate redis;
+    private final ObjectMapper objectMapper;
 
-    public AsientoRedisService(StringRedisTemplate redis) {
+    public AsientoRedisService(StringRedisTemplate redis, ObjectMapper objectMapper) {
         this.redis = redis;
+        this.objectMapper = objectMapper;
     }
 
-    public List<AsientoBloqueoEstadoDTO> obtenerEstadoAsientos(Long eventoId) {
-        List<AsientoBloqueoEstadoDTO> result = new ArrayList<>();
-        String hashKey = "evento:" + eventoId + ":asientos";
+    /**
+     * Lee Redis de la cátedra según el formato documentado:
+     *  key: "evento_" + eventoId
+     *  value: JSON con estructura {"eventoId":1,"asientos":[{"fila":1,"columna":3,"estado":"Bloqueado",...}, ...]}
+     * Solo se guardan asientos BLOQUEADOS o VENDIDOS, el resto se considera disponible.
+     */
+    public List<AsientoEstadoDTO> obtenerEstadoAsientos(Long eventoId) {
+        String key = "evento_" + eventoId;
+        List<AsientoEstadoDTO> result = new ArrayList<>();
 
         try {
-            HashOperations<String, String, String> hashOps = redis.opsForHash();
-            Map<String, String> hash = hashOps.entries(hashKey);
-            if (!hash.isEmpty()) {
-                // Esperamos keys como "fila:columna" y valor como estado
-                for (Map.Entry<String, String> e : hash.entrySet()) {
-                    String[] parts = e.getKey().split(":");
-                    if (parts.length == 2) {
-                        AsientoBloqueoEstadoDTO dto = new AsientoBloqueoEstadoDTO();
-                        dto.setFila(Integer.parseInt(parts[0]));
-                        dto.setColumna(Integer.parseInt(parts[1]));
-                        dto.setEstado(e.getValue());
-                        result.add(dto);
-                    }
-                }
-                result.sort(Comparator.comparing(AsientoBloqueoEstadoDTO::getFila).thenComparing(AsientoBloqueoEstadoDTO::getColumna));
-                return result;
+            String json = redis.opsForValue().get(key);
+            if (json == null || json.isBlank()) {
+                log.debug("No hay datos en Redis para la key {} (ningún asiento bloqueado/vendido)", key);
+                return result; // Lista vacía => todos disponibles
             }
-        } catch (Exception ex) {
-            log.warn("No se pudo leer hash {}: {}", hashKey, ex.getMessage());
-        }
 
-        // Fallback: buscar claves individuales tipo evento:{id}:asiento:{fila}:{columna}
-        String pattern = "evento:" + eventoId + ":asiento:*";
-        try {
-            Set<String> keys = redis.keys(pattern);
-            for (String key : keys) {
-                String[] parts = key.split(":");
-                if (parts.length >= 5) {
-                    Integer fila = Integer.parseInt(parts[3]);
-                    Integer col = Integer.parseInt(parts[4]);
-                    String estado = redis.opsForValue().get(key);
-                    AsientoBloqueoEstadoDTO dto = new AsientoBloqueoEstadoDTO();
-                    dto.setFila(fila);
-                    dto.setColumna(col);
-                    dto.setEstado(estado);
+            JsonNode root = objectMapper.readTree(json);
+            JsonNode asientosNode = root.get("asientos");
+            if (asientosNode != null && asientosNode.isArray()) {
+                for (JsonNode asientoNode : asientosNode) {
+                    AsientoEstadoDTO dto = new AsientoEstadoDTO();
+                    dto.setFila(asientoNode.path("fila").asInt());
+                    dto.setColumna(asientoNode.path("columna").asInt());
+                    dto.setEstado(asientoNode.path("estado").asText(null));
+                    // el campo expira puede existir o no; aquí no lo mapeamos porque tu DTO no lo tiene
                     result.add(dto);
                 }
+                result.sort(Comparator.comparing(AsientoEstadoDTO::getFila)
+                                       .thenComparing(AsientoEstadoDTO::getColumna));
             }
-            result.sort(Comparator.comparing(AsientoBloqueoEstadoDTO::getFila).thenComparing(AsientoBloqueoEstadoDTO::getColumna));
         } catch (Exception ex) {
-            log.error("Error consultando Redis con patrón {}: {}", pattern, ex.getMessage());
+            log.error("Error leyendo Redis para evento {} y key {}: {}", eventoId, key, ex.getMessage());
         }
 
         return result;

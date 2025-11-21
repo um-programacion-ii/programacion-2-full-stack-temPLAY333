@@ -1,16 +1,16 @@
 package um.prog2.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import um.prog2.dto.evento.asientos.AsientoBloqueoEstadoDTO;
+import um.prog2.dto.evento.bloqueo.AsientoEstadoDTO;
 
-import java.util.*;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -23,129 +23,76 @@ class AsientoRedisServiceTest {
     private StringRedisTemplate redisTemplate;
 
     @Mock
-    @SuppressWarnings("unchecked")
-    private HashOperations<String, Object, Object> hashOperations;
-
-    @Mock
     private ValueOperations<String, String> valueOperations;
 
     private AsientoRedisService asientoRedisService;
 
     @BeforeEach
     void setUp() {
-        asientoRedisService = new AsientoRedisService(redisTemplate);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules();
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        asientoRedisService = new AsientoRedisService(redisTemplate, objectMapper);
     }
 
     @Test
-    void obtenerEstadoAsientosDesdeHashDeberiaRetornarListaOrdenada() {
+    void obtenerEstadoAsientosDeberiaParsearJsonDeRedis() {
         // Arrange
         Long eventoId = 1L;
-        String hashKey = "evento:1:asientos";
+        String key = "evento_" + eventoId;
+        String json = "{\"eventoId\":1,\"asientos\":[{" +
+                "\"fila\":1,\"columna\":3,\"estado\":\"Bloqueado\"},{" +
+                "\"fila\":2,\"columna\":4,\"estado\":\"Vendido\"}]}";
 
-        Map<Object, Object> hash = new HashMap<>();
-        hash.put("1:5", "DISPONIBLE");
-        hash.put("2:10", "BLOQUEADO");
-        hash.put("1:3", "DISPONIBLE");
-
-        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
-        when(hashOperations.entries(hashKey)).thenReturn(hash);
+        when(valueOperations.get(key)).thenReturn(json);
 
         // Act
-        List<AsientoBloqueoEstadoDTO> result = asientoRedisService.obtenerEstadoAsientos(eventoId);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(3, result.size());
-
-        // Verificar orden: primero fila 1, luego fila 2
-        assertEquals(1, result.get(0).getFila());
-        assertEquals(3, result.get(0).getColumna());
-        assertEquals("DISPONIBLE", result.get(0).getEstado());
-
-        assertEquals(1, result.get(1).getFila());
-        assertEquals(5, result.get(1).getColumna());
-        assertEquals("DISPONIBLE", result.get(1).getEstado());
-
-        assertEquals(2, result.get(2).getFila());
-        assertEquals(10, result.get(2).getColumna());
-        assertEquals("BLOQUEADO", result.get(2).getEstado());
-
-        verify(hashOperations, times(1)).entries(hashKey);
-    }
-
-    @Test
-    void obtenerEstadoAsientosDesdeKeysIndividualesComoFallback() {
-        // Arrange
-        Long eventoId = 2L;
-        String hashKey = "evento:2:asientos";
-        String pattern = "evento:2:asiento:*";
-
-        // Hash vacío, activará fallback
-        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
-        when(hashOperations.entries(hashKey)).thenReturn(new HashMap<>());
-
-        Set<String> keys = new HashSet<>(Arrays.asList(
-                "evento:2:asiento:1:5",
-                "evento:2:asiento:3:2"
-        ));
-
-        when(redisTemplate.keys(pattern)).thenReturn(keys);
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get("evento:2:asiento:1:5")).thenReturn("DISPONIBLE");
-        when(valueOperations.get("evento:2:asiento:3:2")).thenReturn("VENDIDO");
-
-        // Act
-        List<AsientoBloqueoEstadoDTO> result = asientoRedisService.obtenerEstadoAsientos(eventoId);
+        List<AsientoEstadoDTO> result = asientoRedisService.obtenerEstadoAsientos(eventoId);
 
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
+        assertEquals(1, result.get(0).getFila());
+        assertEquals(3, result.get(0).getColumna());
+        assertEquals("Bloqueado", result.get(0).getEstado());
+        assertEquals(2, result.get(1).getFila());
+        assertEquals(4, result.get(1).getColumna());
+        assertEquals("Vendido", result.get(1).getEstado());
 
-        verify(redisTemplate, times(1)).keys(pattern);
-        verify(valueOperations, times(2)).get(anyString());
+        verify(valueOperations, times(1)).get(key);
     }
 
     @Test
-    void obtenerEstadoAsientosDeberiaRetornarListaVaciaCuandoNoHayDatos() {
+    void obtenerEstadoAsientosDeberiaRetornarListaVaciaCuandoNoHayKey() {
         // Arrange
         Long eventoId = 99L;
-        String hashKey = "evento:99:asientos";
-        String pattern = "evento:99:asiento:*";
+        String key = "evento_" + eventoId;
 
-        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
-        when(hashOperations.entries(hashKey)).thenReturn(new HashMap<>());
-        when(redisTemplate.keys(pattern)).thenReturn(new HashSet<>());
+        when(valueOperations.get(key)).thenReturn(null);
 
         // Act
-        List<AsientoBloqueoEstadoDTO> result = asientoRedisService.obtenerEstadoAsientos(eventoId);
+        List<AsientoEstadoDTO> result = asientoRedisService.obtenerEstadoAsientos(eventoId);
 
         // Assert
         assertNotNull(result);
         assertTrue(result.isEmpty());
+        verify(valueOperations, times(1)).get(key);
     }
 
     @Test
-    void obtenerEstadoAsientosDeberiaManejarExcepcionYUsarFallback() {
+    void obtenerEstadoAsientosDeberiaManejarJsonInvalido() {
         // Arrange
-        Long eventoId = 3L;
-        String hashKey = "evento:3:asientos";
-        String pattern = "evento:3:asiento:*";
+        Long eventoId = 2L;
+        String key = "evento_" + eventoId;
 
-        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
-        when(hashOperations.entries(hashKey)).thenThrow(new RuntimeException("Redis connection error"));
-
-        Set<String> keys = new HashSet<>(Arrays.asList("evento:3:asiento:1:1"));
-        when(redisTemplate.keys(pattern)).thenReturn(keys);
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get("evento:3:asiento:1:1")).thenReturn("DISPONIBLE");
+        when(valueOperations.get(key)).thenReturn("no-es-json");
 
         // Act
-        List<AsientoBloqueoEstadoDTO> result = asientoRedisService.obtenerEstadoAsientos(eventoId);
+        List<AsientoEstadoDTO> result = asientoRedisService.obtenerEstadoAsientos(eventoId);
 
         // Assert
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getFila());
-        assertEquals(1, result.get(0).getColumna());
+        assertTrue(result.isEmpty());
+        verify(valueOperations, times(1)).get(key);
     }
 }

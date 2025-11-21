@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -22,22 +21,24 @@ public class UserProxyController {
     private static final Logger log = LoggerFactory.getLogger(UserProxyController.class);
 
     private final WebClient webClient;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private um.prog2.service.NotificadorBackendService notificadorBackendService;
 
     @Value("${app.catedra.base-url}")
     private String catedraBaseUrl;
 
-    @Value("${app.kafka.producer.topic}")
-    private String producerTopic;
-
-    public UserProxyController(WebClient webClient, KafkaTemplate<String, String> kafkaTemplate) {
+    public UserProxyController(WebClient webClient) {
         this.webClient = webClient;
-        this.kafkaTemplate = kafkaTemplate;
     }
 
     /**
      * POST: Login de usuario.
      * URL externa: http://192.168.194.250:8080/api/authenticate
+     */
+    /**
+     * POST: Login de usuario.
+     * URL externa: http://192.168.194.250:8080/api/authenticate
+     * Nota: El resultado asíncrono llegará vía Kafka y se notificará al BackEnd vía webhook.
      */
     @PostMapping("/login")
     public Mono<ResponseEntity<LoginResponseDTO>> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
@@ -51,21 +52,17 @@ public class UserProxyController {
             .map(ResponseEntity::ok)
             .doOnSuccess(resp -> {
                 log.debug("Login exitoso para: {}", loginRequest.getUsername());
+                // Notificar al BackEnd con la respuesta síncrona de Cátedra
                 try {
-                    String msg = "login:username=" + loginRequest.getUsername() + ":ok";
-                    kafkaTemplate.send(producerTopic, msg);
+                    if (notificadorBackendService != null && resp.getBody() != null) {
+                        notificadorBackendService.notificarCambioDesdeHttp("http:login", resp.getBody());
+                    }
                 } catch (Exception ex) {
-                    log.warn("No se pudo publicar evento de login en Kafka: {}", ex.getMessage());
+                    log.warn("No se pudo notificar al backend el resultado del login: {}", ex.getMessage());
                 }
             })
             .onErrorResume(err -> {
                 log.error("Error en login para {}: {}", loginRequest.getUsername(), err.getMessage());
-                try {
-                    String msg = "login:username=" + loginRequest.getUsername() + ":error";
-                    kafkaTemplate.send(producerTopic, msg);
-                } catch (Exception ex) {
-                    log.warn("No se pudo publicar evento de login (error) en Kafka: {}", ex.getMessage());
-                }
                 return Mono.just(ResponseEntity.status(500).build());
             });
     }

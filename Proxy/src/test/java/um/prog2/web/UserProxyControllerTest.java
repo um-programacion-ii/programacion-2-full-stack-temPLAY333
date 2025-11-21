@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -37,8 +36,6 @@ class UserProxyControllerTest {
     @MockBean
     private WebClient.Builder webClientBuilder;
 
-    @MockBean
-    private KafkaTemplate<String, String> kafkaTemplate;
 
     @Test
     void loginDeberiaRetornarTokenCuandoCredencialesSonValidas() throws Exception {

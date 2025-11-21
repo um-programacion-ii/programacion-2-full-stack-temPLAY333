@@ -1,7 +1,5 @@
 package um.prog2.dto.evento.bloqueo;
 
-import um.prog2.dto.evento.asientos.AsientoBloqueoEstadoDTO;
-
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
@@ -31,7 +29,7 @@ public class BloquearAsientosResponseDTO implements Serializable {
 
     @NotNull
     @Size(min = 1)
-    private List<AsientoBloqueoEstadoDTO> asientos;
+    private List<AsientoEstadoDTO> asientos;
 
     public Boolean getResultado() { return resultado; }
     public void setResultado(Boolean resultado) { this.resultado = resultado; }
@@ -39,8 +37,8 @@ public class BloquearAsientosResponseDTO implements Serializable {
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
     public Long getEventoId() { return eventoId; }
     public void setEventoId(Long eventoId) { this.eventoId = eventoId; }
-    public List<AsientoBloqueoEstadoDTO> getAsientos() { return asientos; }
-    public void setAsientos(List<AsientoBloqueoEstadoDTO> asientos) { this.asientos = asientos; }
+    public List<AsientoEstadoDTO> getAsientos() { return asientos; }
+    public void setAsientos(List<AsientoEstadoDTO> asientos) { this.asientos = asientos; }
 
     @Override
     public boolean equals(Object o) {

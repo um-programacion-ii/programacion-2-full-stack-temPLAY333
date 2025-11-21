@@ -35,7 +35,7 @@ import java.util.Objects;
  * }
  */
 @SuppressWarnings("common-java:DuplicatedBlocks")
-public class VentaDetalleDTO implements Serializable {
+public class VentaDTO implements Serializable {
 
     @NotNull
     private Long eventoId;
@@ -75,7 +75,7 @@ public class VentaDetalleDTO implements Serializable {
     public void setPrecioVenta(BigDecimal precioVenta) { this.precioVenta = precioVenta; }
 
     @Override
-    public boolean equals(Object o) { if (this == o) return true; if (!(o instanceof VentaDetalleDTO)) return false; VentaDetalleDTO that = (VentaDetalleDTO) o; return Objects.equals(ventaId, that.ventaId); }
+    public boolean equals(Object o) { if (this == o) return true; if (!(o instanceof VentaDTO)) return false; VentaDTO that = (VentaDTO) o; return Objects.equals(ventaId, that.ventaId); }
     @Override
     public int hashCode() { return Objects.hash(ventaId); }
     @Override

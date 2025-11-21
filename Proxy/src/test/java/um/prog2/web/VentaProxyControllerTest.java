@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -15,7 +14,7 @@ import um.prog2.dto.venta.RealizarVentaRequestDTO;
 import um.prog2.dto.venta.RealizarVentaResponseDTO;
 import um.prog2.dto.venta.AsientoVentaDTO;
 import um.prog2.dto.consultaventas.VentaResumenDTO;
-import um.prog2.dto.consultaventas.VentaDetalleDTO;
+import um.prog2.dto.consultaventas.VentaDTO;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -23,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,8 +43,6 @@ class VentaProxyControllerTest {
     @MockBean
     private WebClient.Builder webClientBuilder;
 
-    @MockBean
-    private KafkaTemplate<String, String> kafkaTemplate;
 
     @Test
     void realizarVentaDeberiaMockearLlamadaYPublicarKafka() throws Exception {
@@ -94,9 +90,6 @@ class VentaProxyControllerTest {
                 .andExpect(jsonPath("$.resultado").value(true))
                 .andExpect(jsonPath("$.eventoId").value(5))
                 .andExpect(jsonPath("$.ventaId").value(100));
-
-        // Verificar que se intentó publicar en Kafka
-        verify(kafkaTemplate, atLeastOnce()).send(anyString(), anyString());
     }
 
     @Test
@@ -143,7 +136,7 @@ class VentaProxyControllerTest {
     void obtenerVentaDeberiaMockearLlamadaExterna() throws Exception {
         // Arrange
         Long ventaId = 50L;
-        VentaDetalleDTO venta = new VentaDetalleDTO();
+        VentaDTO venta = new VentaDTO();
         venta.setVentaId(ventaId);
         venta.setResultado(true);
         venta.setEventoId(20L);
@@ -157,7 +150,7 @@ class VentaProxyControllerTest {
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString(), any(Object.class))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(VentaDetalleDTO.class)).thenReturn(Mono.just(venta));
+        when(responseSpec.bodyToMono(VentaDTO.class)).thenReturn(Mono.just(venta));
 
         // Act (async)
         MvcResult result = mockMvc.perform(get("/proxy/ventas/{id}", ventaId))

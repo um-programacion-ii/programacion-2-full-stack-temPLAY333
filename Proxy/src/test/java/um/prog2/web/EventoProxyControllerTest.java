@@ -6,13 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import um.prog2.dto.evento.consulta.EventoDetalleDTO;
-import um.prog2.dto.evento.asientos.AsientoBloqueoEstadoDTO;
+import um.prog2.dto.evento.bloqueo.AsientoEstadoDTO;
 import um.prog2.dto.evento.bloqueo.AsientoPosicionDTO;
 import um.prog2.dto.evento.bloqueo.BloquearAsientosRequestDTO;
 import um.prog2.dto.evento.bloqueo.BloquearAsientosResponseDTO;
@@ -47,24 +46,22 @@ class EventoProxyControllerTest {
     @MockBean
     private AsientoRedisService asientoRedisService;
 
-    @MockBean
-    private KafkaTemplate<String, String> kafkaTemplate;
 
     @Test
     void obtenerEstadoAsientosDeberiaRetornarListaDesdeRedis() throws Exception {
         // Arrange
         Long eventoId = 1L;
-        AsientoBloqueoEstadoDTO asiento1 = new AsientoBloqueoEstadoDTO();
+        AsientoEstadoDTO asiento1 = new AsientoEstadoDTO();
         asiento1.setFila(1);
         asiento1.setColumna(5);
         asiento1.setEstado("DISPONIBLE");
 
-        AsientoBloqueoEstadoDTO asiento2 = new AsientoBloqueoEstadoDTO();
+        AsientoEstadoDTO asiento2 = new AsientoEstadoDTO();
         asiento2.setFila(2);
         asiento2.setColumna(10);
         asiento2.setEstado("BLOQUEADO");
 
-        List<AsientoBloqueoEstadoDTO> asientos = Arrays.asList(asiento1, asiento2);
+        List<AsientoEstadoDTO> asientos = Arrays.asList(asiento1, asiento2);
 
         when(asientoRedisService.obtenerEstadoAsientos(eventoId)).thenReturn(asientos);
 
@@ -124,8 +121,6 @@ class EventoProxyControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultado").value(true))
                 .andExpect(jsonPath("$.eventoId").value(1));
-
-        verify(kafkaTemplate, atLeastOnce()).send(anyString(), anyString());
     }
 
     @Test

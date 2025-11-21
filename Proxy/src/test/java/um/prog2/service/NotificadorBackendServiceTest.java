@@ -6,14 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import um.prog2.dto.notificacion.BackendNotificacionDTO;
-
-import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -22,7 +18,6 @@ import static org.mockito.Mockito.*;
 class NotificadorBackendServiceTest {
 
     private WebClient webClient;
-    private KafkaTemplate<String, String> kafkaTemplate;
     private ObjectMapper objectMapper;
 
     private WebClient.RequestBodyUriSpec requestBodyUriSpec;
@@ -35,20 +30,18 @@ class NotificadorBackendServiceTest {
     @BeforeEach
     void setUp() {
         webClient = mock(WebClient.class);
-        kafkaTemplate = mock(KafkaTemplate.class);
         objectMapper = mock(ObjectMapper.class);
         requestBodyUriSpec = mock(WebClient.RequestBodyUriSpec.class);
         requestBodySpec = mock(WebClient.RequestBodySpec.class);
         requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
         responseSpec = mock(WebClient.ResponseSpec.class);
 
-        notificadorService = new NotificadorBackendService(webClient, kafkaTemplate, objectMapper);
+        notificadorService = new NotificadorBackendService(webClient, objectMapper);
 
         // Configurar valores de properties usando reflection
         ReflectionTestUtils.setField(notificadorService, "backendBaseUrl", "http://localhost:8081");
         ReflectionTestUtils.setField(notificadorService, "webhookPath", "/api/webhooks/evento-cambio");
         ReflectionTestUtils.setField(notificadorService, "backendToken", "test-token-123");
-        ReflectionTestUtils.setField(notificadorService, "backendTopic", "backend-eventos");
     }
 
     @Test
@@ -68,16 +61,12 @@ class NotificadorBackendServiceTest {
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(Void.class)).thenReturn(Mono.empty());
 
-        when(objectMapper.writeValueAsString(any())).thenReturn("{json}");
-        when(kafkaTemplate.send(anyString(), anyString()))
-                .thenReturn(CompletableFuture.completedFuture(mock(SendResult.class)));
-
         // Act
         notificadorService.notificarCambio(dto);
 
-        // Assert
+        // Assert: Verificar que se envió el webhook HTTP con token
         verify(webClient, times(1)).post();
         verify(requestBodySpec, times(1)).header(eq(HttpHeaders.AUTHORIZATION), anyString());
-        verify(kafkaTemplate, times(1)).send(eq("backend-eventos"), anyString());
+        verify(requestBodySpec, times(1)).bodyValue(dto);
     }
 }
