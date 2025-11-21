@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CRLFLogConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.config</a> &gt; <span class="el_source">CRLFLogConverter.java</span></div><h1>CRLFLogConverter.java</h1><pre class="source lang-java linenums">package com.example.demo.config;
+
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.pattern.CompositeConverter;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
+import org.springframework.boot.ansi.AnsiColor;
+import org.springframework.boot.ansi.AnsiElement;
+import org.springframework.boot.ansi.AnsiOutput;
+import org.springframework.boot.ansi.AnsiStyle;
+
+/**
+ * Log filter to prevent attackers from forging log entries by submitting input containing CRLF characters.
+ * CRLF characters are replaced with a red colored _ character.
+ *
+ * @see &lt;a href=&quot;https://owasp.org/www-community/attacks/Log_Injection&quot;&gt;Log Forging Description&lt;/a&gt;
+ * @see &lt;a href=&quot;https://github.com/jhipster/generator-jhipster/issues/14949&quot;&gt;JHipster issue&lt;/a&gt;
+ */
+<span class="fc" id="L23">public class CRLFLogConverter extends CompositeConverter&lt;ILoggingEvent&gt; {</span>
+
+<span class="fc" id="L25">    public static final Marker CRLF_SAFE_MARKER = MarkerFactory.getMarker(&quot;CRLF_SAFE&quot;);</span>
+
+<span class="fc" id="L27">    private static final String[] SAFE_LOGS = {</span>
+        &quot;org.hibernate&quot;,
+        &quot;org.springframework.boot.autoconfigure&quot;,
+        &quot;org.springframework.boot.diagnostics&quot;,
+    };
+    private static final Map&lt;String, AnsiElement&gt; ELEMENTS;
+
+    static {
+<span class="fc" id="L35">        Map&lt;String, AnsiElement&gt; ansiElements = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L36">        ansiElements.put(&quot;faint&quot;, AnsiStyle.FAINT);</span>
+<span class="fc" id="L37">        ansiElements.put(&quot;red&quot;, AnsiColor.RED);</span>
+<span class="fc" id="L38">        ansiElements.put(&quot;green&quot;, AnsiColor.GREEN);</span>
+<span class="fc" id="L39">        ansiElements.put(&quot;yellow&quot;, AnsiColor.YELLOW);</span>
+<span class="fc" id="L40">        ansiElements.put(&quot;blue&quot;, AnsiColor.BLUE);</span>
+<span class="fc" id="L41">        ansiElements.put(&quot;magenta&quot;, AnsiColor.MAGENTA);</span>
+<span class="fc" id="L42">        ansiElements.put(&quot;cyan&quot;, AnsiColor.CYAN);</span>
+<span class="fc" id="L43">        ELEMENTS = Collections.unmodifiableMap(ansiElements);</span>
+<span class="fc" id="L44">    }</span>
+
+    @Override
+    protected String transform(ILoggingEvent event, String in) {
+<span class="fc" id="L48">        AnsiElement element = ELEMENTS.get(getFirstOption());</span>
+<span class="fc" id="L49">        List&lt;Marker&gt; markers = event.getMarkerList();</span>
+<span class="fc bfc" id="L50" title="All 8 branches covered.">        if ((markers != null &amp;&amp; !markers.isEmpty() &amp;&amp; markers.get(0).contains(CRLF_SAFE_MARKER)) || isLoggerSafe(event)) {</span>
+<span class="fc" id="L51">            return in;</span>
+        }
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        String replacement = element == null ? &quot;_&quot; : toAnsiString(&quot;_&quot;, element);</span>
+<span class="fc" id="L54">        return in.replaceAll(&quot;[\n\r\t]&quot;, replacement);</span>
+    }
+
+    protected boolean isLoggerSafe(ILoggingEvent event) {
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        for (String safeLogger : SAFE_LOGS) {</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">            if (event.getLoggerName().startsWith(safeLogger)) {</span>
+<span class="fc" id="L60">                return true;</span>
+            }
+        }
+<span class="fc" id="L63">        return false;</span>
+    }
+
+    protected String toAnsiString(String in, AnsiElement element) {
+<span class="fc" id="L67">        return AnsiOutput.toString(element, in);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

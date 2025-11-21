@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Evento.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.domain</a> &gt; <span class="el_source">Evento.java</span></div><h1>Evento.java</h1><pre class="source lang-java linenums">package com.example.demo.domain;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+/**
+ * A Evento.
+ */
+@Entity
+@Table(name = &quot;evento&quot;)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SuppressWarnings(&quot;common-java:DuplicatedBlocks&quot;)
+<span class="fc" id="L21">public class Evento implements Serializable {</span>
+
+    private static final long serialVersionUID = 1L;
+
+    @NotNull
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;id&quot;, nullable = false, unique = true)
+    private Long id;
+
+    @NotNull
+    @Size(max = 200)
+    @Column(name = &quot;titulo&quot;, length = 200, nullable = false)
+    private String titulo;
+
+    @NotNull
+    @Size(max = 500)
+    @Column(name = &quot;resumen&quot;, length = 500, nullable = false)
+    private String resumen;
+
+    @Lob
+    @Column(name = &quot;descripcion&quot;, nullable = false)
+    private String descripcion;
+
+    @NotNull
+    @Column(name = &quot;fecha&quot;, nullable = false)
+    private Instant fecha;
+
+    @NotNull
+    @Size(max = 300)
+    @Column(name = &quot;direccion&quot;, length = 300, nullable = false)
+    private String direccion;
+
+    @Size(max = 1000)
+    @Column(name = &quot;imagen&quot;, length = 1000)
+    private String imagen;
+
+    @NotNull
+    @Min(value = 1)
+    @Column(name = &quot;fila_asientos&quot;, nullable = false)
+    private Integer filaAsientos;
+
+    @NotNull
+    @Min(value = 1)
+    @Column(name = &quot;column_asientos&quot;, nullable = false)
+    private Integer columnAsientos;
+
+    @NotNull
+    @DecimalMin(value = &quot;0&quot;)
+    @Column(name = &quot;precio_entrada&quot;, precision = 21, scale = 2, nullable = false)
+    private BigDecimal precioEntrada;
+
+    @JsonIgnoreProperties(value = { &quot;evento&quot; }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @NotNull
+    @JoinColumn(unique = true)
+    private EventoTipo eventoTipo;
+
+<span class="fc" id="L79">    @ManyToMany(fetch = FetchType.LAZY)</span>
+    @JoinTable(
+        name = &quot;rel_evento__integrantes&quot;,
+        joinColumns = @JoinColumn(name = &quot;evento_id&quot;),
+        inverseJoinColumns = @JoinColumn(name = &quot;integrantes_id&quot;)
+    )
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { &quot;eventos&quot; }, allowSetters = true)
+    private Set&lt;Integrante&gt; integrantes = new HashSet&lt;&gt;();
+
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
+    public Long getId() {
+<span class="fc" id="L92">        return this.id;</span>
+    }
+
+    public Evento id(Long id) {
+<span class="fc" id="L96">        this.setId(id);</span>
+<span class="fc" id="L97">        return this;</span>
+    }
+
+    public void setId(Long id) {
+<span class="fc" id="L101">        this.id = id;</span>
+<span class="fc" id="L102">    }</span>
+
+    public String getTitulo() {
+<span class="fc" id="L105">        return this.titulo;</span>
+    }
+
+    public Evento titulo(String titulo) {
+<span class="fc" id="L109">        this.setTitulo(titulo);</span>
+<span class="fc" id="L110">        return this;</span>
+    }
+
+    public void setTitulo(String titulo) {
+<span class="fc" id="L114">        this.titulo = titulo;</span>
+<span class="fc" id="L115">    }</span>
+
+    public String getResumen() {
+<span class="fc" id="L118">        return this.resumen;</span>
+    }
+
+    public Evento resumen(String resumen) {
+<span class="fc" id="L122">        this.setResumen(resumen);</span>
+<span class="fc" id="L123">        return this;</span>
+    }
+
+    public void setResumen(String resumen) {
+<span class="fc" id="L127">        this.resumen = resumen;</span>
+<span class="fc" id="L128">    }</span>
+
+    public String getDescripcion() {
+<span class="fc" id="L131">        return this.descripcion;</span>
+    }
+
+    public Evento descripcion(String descripcion) {
+<span class="fc" id="L135">        this.setDescripcion(descripcion);</span>
+<span class="fc" id="L136">        return this;</span>
+    }
+
+    public void setDescripcion(String descripcion) {
+<span class="fc" id="L140">        this.descripcion = descripcion;</span>
+<span class="fc" id="L141">    }</span>
+
+    public Instant getFecha() {
+<span class="fc" id="L144">        return this.fecha;</span>
+    }
+
+    public Evento fecha(Instant fecha) {
+<span class="fc" id="L148">        this.setFecha(fecha);</span>
+<span class="fc" id="L149">        return this;</span>
+    }
+
+    public void setFecha(Instant fecha) {
+<span class="fc" id="L153">        this.fecha = fecha;</span>
+<span class="fc" id="L154">    }</span>
+
+    public String getDireccion() {
+<span class="fc" id="L157">        return this.direccion;</span>
+    }
+
+    public Evento direccion(String direccion) {
+<span class="fc" id="L161">        this.setDireccion(direccion);</span>
+<span class="fc" id="L162">        return this;</span>
+    }
+
+    public void setDireccion(String direccion) {
+<span class="fc" id="L166">        this.direccion = direccion;</span>
+<span class="fc" id="L167">    }</span>
+
+    public String getImagen() {
+<span class="fc" id="L170">        return this.imagen;</span>
+    }
+
+    public Evento imagen(String imagen) {
+<span class="fc" id="L174">        this.setImagen(imagen);</span>
+<span class="fc" id="L175">        return this;</span>
+    }
+
+    public void setImagen(String imagen) {
+<span class="fc" id="L179">        this.imagen = imagen;</span>
+<span class="fc" id="L180">    }</span>
+
+    public Integer getFilaAsientos() {
+<span class="fc" id="L183">        return this.filaAsientos;</span>
+    }
+
+    public Evento filaAsientos(Integer filaAsientos) {
+<span class="fc" id="L187">        this.setFilaAsientos(filaAsientos);</span>
+<span class="fc" id="L188">        return this;</span>
+    }
+
+    public void setFilaAsientos(Integer filaAsientos) {
+<span class="fc" id="L192">        this.filaAsientos = filaAsientos;</span>
+<span class="fc" id="L193">    }</span>
+
+    public Integer getColumnAsientos() {
+<span class="fc" id="L196">        return this.columnAsientos;</span>
+    }
+
+    public Evento columnAsientos(Integer columnAsientos) {
+<span class="fc" id="L200">        this.setColumnAsientos(columnAsientos);</span>
+<span class="fc" id="L201">        return this;</span>
+    }
+
+    public void setColumnAsientos(Integer columnAsientos) {
+<span class="fc" id="L205">        this.columnAsientos = columnAsientos;</span>
+<span class="fc" id="L206">    }</span>
+
+    public BigDecimal getPrecioEntrada() {
+<span class="fc" id="L209">        return this.precioEntrada;</span>
+    }
+
+    public Evento precioEntrada(BigDecimal precioEntrada) {
+<span class="fc" id="L213">        this.setPrecioEntrada(precioEntrada);</span>
+<span class="fc" id="L214">        return this;</span>
+    }
+
+    public void setPrecioEntrada(BigDecimal precioEntrada) {
+<span class="fc" id="L218">        this.precioEntrada = precioEntrada;</span>
+<span class="fc" id="L219">    }</span>
+
+    public EventoTipo getEventoTipo() {
+<span class="fc" id="L222">        return this.eventoTipo;</span>
+    }
+
+    public void setEventoTipo(EventoTipo eventoTipo) {
+<span class="fc" id="L226">        this.eventoTipo = eventoTipo;</span>
+<span class="fc" id="L227">    }</span>
+
+    public Evento eventoTipo(EventoTipo eventoTipo) {
+<span class="fc" id="L230">        this.setEventoTipo(eventoTipo);</span>
+<span class="fc" id="L231">        return this;</span>
+    }
+
+    public Set&lt;Integrante&gt; getIntegrantes() {
+<span class="fc" id="L235">        return this.integrantes;</span>
+    }
+
+    public void setIntegrantes(Set&lt;Integrante&gt; integrantes) {
+<span class="fc" id="L239">        this.integrantes = integrantes;</span>
+<span class="fc" id="L240">    }</span>
+
+    public Evento integrantes(Set&lt;Integrante&gt; integrantes) {
+<span class="fc" id="L243">        this.setIntegrantes(integrantes);</span>
+<span class="fc" id="L244">        return this;</span>
+    }
+
+    public Evento addIntegrantes(Integrante integrante) {
+<span class="fc" id="L248">        this.integrantes.add(integrante);</span>
+<span class="fc" id="L249">        return this;</span>
+    }
+
+    public Evento removeIntegrantes(Integrante integrante) {
+<span class="fc" id="L253">        this.integrantes.remove(integrante);</span>
+<span class="fc" id="L254">        return this;</span>
+    }
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+
+    @Override
+    public boolean equals(Object o) {
+<span class="fc bfc" id="L261" title="All 2 branches covered.">        if (this == o) {</span>
+<span class="fc" id="L262">            return true;</span>
+        }
+<span class="fc bfc" id="L264" title="All 2 branches covered.">        if (!(o instanceof Evento)) {</span>
+<span class="fc" id="L265">            return false;</span>
+        }
+<span class="fc bfc" id="L267" title="All 4 branches covered.">        return getId() != null &amp;&amp; getId().equals(((Evento) o).getId());</span>
+    }
+
+    @Override
+    public int hashCode() {
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+<span class="fc" id="L273">        return getClass().hashCode();</span>
+    }
+
+    // prettier-ignore
+    @Override
+    public String toString() {
+<span class="fc" id="L279">        return &quot;Evento{&quot; +</span>
+<span class="fc" id="L280">            &quot;id=&quot; + getId() +</span>
+<span class="fc" id="L281">            &quot;, titulo='&quot; + getTitulo() + &quot;'&quot; +</span>
+<span class="fc" id="L282">            &quot;, resumen='&quot; + getResumen() + &quot;'&quot; +</span>
+<span class="fc" id="L283">            &quot;, descripcion='&quot; + getDescripcion() + &quot;'&quot; +</span>
+<span class="fc" id="L284">            &quot;, fecha='&quot; + getFecha() + &quot;'&quot; +</span>
+<span class="fc" id="L285">            &quot;, direccion='&quot; + getDireccion() + &quot;'&quot; +</span>
+<span class="fc" id="L286">            &quot;, imagen='&quot; + getImagen() + &quot;'&quot; +</span>
+<span class="fc" id="L287">            &quot;, filaAsientos=&quot; + getFilaAsientos() +</span>
+<span class="fc" id="L288">            &quot;, columnAsientos=&quot; + getColumnAsientos() +</span>
+<span class="fc" id="L289">            &quot;, precioEntrada=&quot; + getPrecioEntrada() +</span>
+            &quot;}&quot;;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

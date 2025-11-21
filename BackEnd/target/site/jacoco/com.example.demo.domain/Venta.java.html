@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Venta.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.domain</a> &gt; <span class="el_source">Venta.java</span></div><h1>Venta.java</h1><pre class="source lang-java linenums">package com.example.demo.domain;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+/**
+ * A Venta.
+ */
+@Entity
+@Table(name = &quot;venta&quot;)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SuppressWarnings(&quot;common-java:DuplicatedBlocks&quot;)
+<span class="fc" id="L19">public class Venta implements Serializable {</span>
+
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;id&quot;)
+    private Long id;
+
+    @NotNull
+    @Column(name = &quot;venta_id&quot;, nullable = false, unique = true)
+    private Long ventaId;
+
+    @NotNull
+    @Column(name = &quot;fecha_venta&quot;, nullable = false)
+    private Instant fechaVenta;
+
+    @NotNull
+    @Column(name = &quot;resultado&quot;, nullable = false)
+    private Boolean resultado;
+
+    @NotNull
+    @Column(name = &quot;descripcion&quot;, nullable = false)
+    private String descripcion;
+
+    @NotNull
+    @Column(name = &quot;precio_venta&quot;, precision = 21, scale = 2, nullable = false)
+    private BigDecimal precioVenta;
+
+    @ManyToOne(optional = false)
+    @NotNull
+    private User usuario;
+
+    @ManyToOne(optional = false)
+    @NotNull
+    @JsonIgnoreProperties(value = { &quot;eventoTipo&quot;, &quot;integrantes&quot; }, allowSetters = true)
+    private Evento evento;
+
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
+    public Long getId() {
+<span class="fc" id="L60">        return this.id;</span>
+    }
+
+    public Venta id(Long id) {
+<span class="fc" id="L64">        this.setId(id);</span>
+<span class="fc" id="L65">        return this;</span>
+    }
+
+    public void setId(Long id) {
+<span class="fc" id="L69">        this.id = id;</span>
+<span class="fc" id="L70">    }</span>
+
+    public Long getVentaId() {
+<span class="fc" id="L73">        return this.ventaId;</span>
+    }
+
+    public Venta ventaId(Long ventaId) {
+<span class="fc" id="L77">        this.setVentaId(ventaId);</span>
+<span class="fc" id="L78">        return this;</span>
+    }
+
+    public void setVentaId(Long ventaId) {
+<span class="fc" id="L82">        this.ventaId = ventaId;</span>
+<span class="fc" id="L83">    }</span>
+
+    public Instant getFechaVenta() {
+<span class="fc" id="L86">        return this.fechaVenta;</span>
+    }
+
+    public Venta fechaVenta(Instant fechaVenta) {
+<span class="fc" id="L90">        this.setFechaVenta(fechaVenta);</span>
+<span class="fc" id="L91">        return this;</span>
+    }
+
+    public void setFechaVenta(Instant fechaVenta) {
+<span class="fc" id="L95">        this.fechaVenta = fechaVenta;</span>
+<span class="fc" id="L96">    }</span>
+
+    public Boolean getResultado() {
+<span class="fc" id="L99">        return this.resultado;</span>
+    }
+
+    public Venta resultado(Boolean resultado) {
+<span class="fc" id="L103">        this.setResultado(resultado);</span>
+<span class="fc" id="L104">        return this;</span>
+    }
+
+    public void setResultado(Boolean resultado) {
+<span class="fc" id="L108">        this.resultado = resultado;</span>
+<span class="fc" id="L109">    }</span>
+
+    public String getDescripcion() {
+<span class="fc" id="L112">        return this.descripcion;</span>
+    }
+
+    public Venta descripcion(String descripcion) {
+<span class="fc" id="L116">        this.setDescripcion(descripcion);</span>
+<span class="fc" id="L117">        return this;</span>
+    }
+
+    public void setDescripcion(String descripcion) {
+<span class="fc" id="L121">        this.descripcion = descripcion;</span>
+<span class="fc" id="L122">    }</span>
+
+    public BigDecimal getPrecioVenta() {
+<span class="fc" id="L125">        return this.precioVenta;</span>
+    }
+
+    public Venta precioVenta(BigDecimal precioVenta) {
+<span class="fc" id="L129">        this.setPrecioVenta(precioVenta);</span>
+<span class="fc" id="L130">        return this;</span>
+    }
+
+    public void setPrecioVenta(BigDecimal precioVenta) {
+<span class="fc" id="L134">        this.precioVenta = precioVenta;</span>
+<span class="fc" id="L135">    }</span>
+
+    public User getUsuario() {
+<span class="fc" id="L138">        return this.usuario;</span>
+    }
+
+    public void setUsuario(User user) {
+<span class="fc" id="L142">        this.usuario = user;</span>
+<span class="fc" id="L143">    }</span>
+
+    public Venta usuario(User user) {
+<span class="fc" id="L146">        this.setUsuario(user);</span>
+<span class="fc" id="L147">        return this;</span>
+    }
+
+    public Evento getEvento() {
+<span class="fc" id="L151">        return this.evento;</span>
+    }
+
+    public void setEvento(Evento evento) {
+<span class="fc" id="L155">        this.evento = evento;</span>
+<span class="fc" id="L156">    }</span>
+
+    public Venta evento(Evento evento) {
+<span class="fc" id="L159">        this.setEvento(evento);</span>
+<span class="fc" id="L160">        return this;</span>
+    }
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+
+    @Override
+    public boolean equals(Object o) {
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        if (this == o) {</span>
+<span class="fc" id="L168">            return true;</span>
+        }
+<span class="fc bfc" id="L170" title="All 2 branches covered.">        if (!(o instanceof Venta)) {</span>
+<span class="fc" id="L171">            return false;</span>
+        }
+<span class="fc bfc" id="L173" title="All 4 branches covered.">        return getId() != null &amp;&amp; getId().equals(((Venta) o).getId());</span>
+    }
+
+    @Override
+    public int hashCode() {
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+<span class="fc" id="L179">        return getClass().hashCode();</span>
+    }
+
+    // prettier-ignore
+    @Override
+    public String toString() {
+<span class="fc" id="L185">        return &quot;Venta{&quot; +</span>
+<span class="fc" id="L186">            &quot;id=&quot; + getId() +</span>
+<span class="fc" id="L187">            &quot;, ventaId=&quot; + getVentaId() +</span>
+<span class="fc" id="L188">            &quot;, fechaVenta='&quot; + getFechaVenta() + &quot;'&quot; +</span>
+<span class="fc" id="L189">            &quot;, resultado='&quot; + getResultado() + &quot;'&quot; +</span>
+<span class="fc" id="L190">            &quot;, descripcion='&quot; + getDescripcion() + &quot;'&quot; +</span>
+<span class="fc" id="L191">            &quot;, precioVenta=&quot; + getPrecioVenta() +</span>
+            &quot;}&quot;;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

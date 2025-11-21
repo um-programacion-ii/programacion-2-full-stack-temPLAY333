@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventoTipoMapperImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.mapper</a> &gt; <span class="el_source">EventoTipoMapperImpl.java</span></div><h1>EventoTipoMapperImpl.java</h1><pre class="source lang-java linenums">package com.example.demo.service.mapper;
+
+import com.example.demo.domain.EventoTipo;
+import com.example.demo.service.dto.EventoTipoDTO;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
+
+@Generated(
+    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+    date = &quot;2025-11-08T19:05:53-0300&quot;,
+    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 21.0.7 (OpenLogic)&quot;
+)
+@Component
+<span class="fc" id="L16">public class EventoTipoMapperImpl implements EventoTipoMapper {</span>
+
+    @Override
+    public EventoTipo toEntity(EventoTipoDTO dto) {
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">        if ( dto == null ) {</span>
+<span class="nc" id="L21">            return null;</span>
+        }
+
+<span class="fc" id="L24">        EventoTipo eventoTipo = new EventoTipo();</span>
+
+<span class="fc" id="L26">        eventoTipo.setId( dto.getId() );</span>
+<span class="fc" id="L27">        eventoTipo.setNombre( dto.getNombre() );</span>
+<span class="fc" id="L28">        eventoTipo.setDescripcion( dto.getDescripcion() );</span>
+
+<span class="fc" id="L30">        return eventoTipo;</span>
+    }
+
+    @Override
+    public EventoTipoDTO toDto(EventoTipo entity) {
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">        if ( entity == null ) {</span>
+<span class="nc" id="L36">            return null;</span>
+        }
+
+<span class="fc" id="L39">        EventoTipoDTO eventoTipoDTO = new EventoTipoDTO();</span>
+
+<span class="fc" id="L41">        eventoTipoDTO.setId( entity.getId() );</span>
+<span class="fc" id="L42">        eventoTipoDTO.setNombre( entity.getNombre() );</span>
+<span class="fc" id="L43">        eventoTipoDTO.setDescripcion( entity.getDescripcion() );</span>
+
+<span class="fc" id="L45">        return eventoTipoDTO;</span>
+    }
+
+    @Override
+    public List&lt;EventoTipo&gt; toEntity(List&lt;EventoTipoDTO&gt; dtoList) {
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        if ( dtoList == null ) {</span>
+<span class="nc" id="L51">            return null;</span>
+        }
+
+<span class="nc" id="L54">        List&lt;EventoTipo&gt; list = new ArrayList&lt;EventoTipo&gt;( dtoList.size() );</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        for ( EventoTipoDTO eventoTipoDTO : dtoList ) {</span>
+<span class="nc" id="L56">            list.add( toEntity( eventoTipoDTO ) );</span>
+<span class="nc" id="L57">        }</span>
+
+<span class="nc" id="L59">        return list;</span>
+    }
+
+    @Override
+    public List&lt;EventoTipoDTO&gt; toDto(List&lt;EventoTipo&gt; entityList) {
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if ( entityList == null ) {</span>
+<span class="nc" id="L65">            return null;</span>
+        }
+
+<span class="nc" id="L68">        List&lt;EventoTipoDTO&gt; list = new ArrayList&lt;EventoTipoDTO&gt;( entityList.size() );</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        for ( EventoTipo eventoTipo : entityList ) {</span>
+<span class="nc" id="L70">            list.add( toDto( eventoTipo ) );</span>
+<span class="nc" id="L71">        }</span>
+
+<span class="nc" id="L73">        return list;</span>
+    }
+
+    @Override
+    public void partialUpdate(EventoTipo entity, EventoTipoDTO dto) {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if ( dto == null ) {</span>
+<span class="nc" id="L79">            return;</span>
+        }
+
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if ( dto.getId() != null ) {</span>
+<span class="nc" id="L83">            entity.setId( dto.getId() );</span>
+        }
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if ( dto.getNombre() != null ) {</span>
+<span class="nc" id="L86">            entity.setNombre( dto.getNombre() );</span>
+        }
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if ( dto.getDescripcion() != null ) {</span>
+<span class="nc" id="L89">            entity.setDescripcion( dto.getDescripcion() );</span>
+        }
+<span class="nc" id="L91">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

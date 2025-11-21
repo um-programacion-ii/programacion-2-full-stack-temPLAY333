@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VentaResumenDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.dto</a> &gt; <span class="el_source">VentaResumenDTO.java</span></div><h1>VentaResumenDTO.java</h1><pre class="source lang-java linenums">package com.example.demo.service.dto;
+
+import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Objects;
+
+/**
+ * DTO de salida para listado de ventas (exitosas y fallidas) del alumno.
+ * Campos según contrato del endpoint /api/endpoints/v1/listar-ventas.
+ */
+@SuppressWarnings(&quot;common-java:DuplicatedBlocks&quot;)
+<span class="fc" id="L14">public class VentaResumenDTO implements Serializable {</span>
+
+    @NotNull
+    private Long eventoId;
+
+    @NotNull
+    private Long ventaId;
+
+    @NotNull
+    private Instant fechaVenta;
+
+    @NotNull
+    private Boolean resultado;
+
+    @NotNull
+    private String descripcion;
+
+    @NotNull
+    private BigDecimal precioVenta;
+
+    @NotNull
+    private Integer cantidadAsientos;
+
+<span class="fc" id="L37">    public Long getEventoId() { return eventoId; }</span>
+<span class="fc" id="L38">    public void setEventoId(Long eventoId) { this.eventoId = eventoId; }</span>
+<span class="fc" id="L39">    public Long getVentaId() { return ventaId; }</span>
+<span class="fc" id="L40">    public void setVentaId(Long ventaId) { this.ventaId = ventaId; }</span>
+<span class="fc" id="L41">    public Instant getFechaVenta() { return fechaVenta; }</span>
+<span class="fc" id="L42">    public void setFechaVenta(Instant fechaVenta) { this.fechaVenta = fechaVenta; }</span>
+<span class="fc" id="L43">    public Boolean getResultado() { return resultado; }</span>
+<span class="fc" id="L44">    public void setResultado(Boolean resultado) { this.resultado = resultado; }</span>
+<span class="fc" id="L45">    public String getDescripcion() { return descripcion; }</span>
+<span class="fc" id="L46">    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }</span>
+<span class="fc" id="L47">    public BigDecimal getPrecioVenta() { return precioVenta; }</span>
+<span class="fc" id="L48">    public void setPrecioVenta(BigDecimal precioVenta) { this.precioVenta = precioVenta; }</span>
+<span class="fc" id="L49">    public Integer getCantidadAsientos() { return cantidadAsientos; }</span>
+<span class="fc" id="L50">    public void setCantidadAsientos(Integer cantidadAsientos) { this.cantidadAsientos = cantidadAsientos; }</span>
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (!(o instanceof VentaResumenDTO)) return false;</span>
+<span class="nc" id="L56">        VentaResumenDTO that = (VentaResumenDTO) o;</span>
+<span class="nc" id="L57">        return Objects.equals(ventaId, that.ventaId);</span>
+    }
+
+    @Override
+<span class="nc" id="L61">    public int hashCode() { return Objects.hash(ventaId); }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L65">        return &quot;VentaResumenDTO{&quot; +</span>
+            &quot;eventoId=&quot; + eventoId +
+            &quot;, ventaId=&quot; + ventaId +
+            &quot;, fechaVenta=&quot; + fechaVenta +
+            &quot;, resultado=&quot; + resultado +
+            &quot;, precioVenta=&quot; + precioVenta +
+            &quot;, cantidadAsientos=&quot; + cantidadAsientos +
+            '}';
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

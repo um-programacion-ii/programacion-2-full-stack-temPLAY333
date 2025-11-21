@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntegranteMapperImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.mapper</a> &gt; <span class="el_source">IntegranteMapperImpl.java</span></div><h1>IntegranteMapperImpl.java</h1><pre class="source lang-java linenums">package com.example.demo.service.mapper;
+
+import com.example.demo.domain.Evento;
+import com.example.demo.domain.EventoTipo;
+import com.example.demo.domain.Integrante;
+import com.example.demo.service.dto.EventoDTO;
+import com.example.demo.service.dto.EventoTipoDTO;
+import com.example.demo.service.dto.IntegranteDTO;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
+
+@Generated(
+    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+    date = &quot;2025-11-08T19:05:53-0300&quot;,
+    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 21.0.7 (OpenLogic)&quot;
+)
+@Component
+<span class="fc" id="L22">public class IntegranteMapperImpl implements IntegranteMapper {</span>
+
+    @Override
+    public List&lt;Integrante&gt; toEntity(List&lt;IntegranteDTO&gt; dtoList) {
+<span class="nc bnc" id="L26" title="All 2 branches missed.">        if ( dtoList == null ) {</span>
+<span class="nc" id="L27">            return null;</span>
+        }
+
+<span class="nc" id="L30">        List&lt;Integrante&gt; list = new ArrayList&lt;Integrante&gt;( dtoList.size() );</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        for ( IntegranteDTO integranteDTO : dtoList ) {</span>
+<span class="nc" id="L32">            list.add( toEntity( integranteDTO ) );</span>
+<span class="nc" id="L33">        }</span>
+
+<span class="nc" id="L35">        return list;</span>
+    }
+
+    @Override
+    public List&lt;IntegranteDTO&gt; toDto(List&lt;Integrante&gt; entityList) {
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if ( entityList == null ) {</span>
+<span class="nc" id="L41">            return null;</span>
+        }
+
+<span class="nc" id="L44">        List&lt;IntegranteDTO&gt; list = new ArrayList&lt;IntegranteDTO&gt;( entityList.size() );</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        for ( Integrante integrante : entityList ) {</span>
+<span class="nc" id="L46">            list.add( toDto( integrante ) );</span>
+<span class="nc" id="L47">        }</span>
+
+<span class="nc" id="L49">        return list;</span>
+    }
+
+    @Override
+    public void partialUpdate(Integrante entity, IntegranteDTO dto) {
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if ( dto == null ) {</span>
+<span class="nc" id="L55">            return;</span>
+        }
+
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if ( dto.getId() != null ) {</span>
+<span class="nc" id="L59">            entity.setId( dto.getId() );</span>
+        }
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        if ( dto.getNombre() != null ) {</span>
+<span class="nc" id="L62">            entity.setNombre( dto.getNombre() );</span>
+        }
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if ( dto.getApellido() != null ) {</span>
+<span class="nc" id="L65">            entity.setApellido( dto.getApellido() );</span>
+        }
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if ( dto.getIdentificacion() != null ) {</span>
+<span class="nc" id="L68">            entity.setIdentificacion( dto.getIdentificacion() );</span>
+        }
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if ( entity.getEventos() != null ) {</span>
+<span class="nc" id="L71">            Set&lt;Evento&gt; set = eventoDTOSetToEventoSet( dto.getEventos() );</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            if ( set != null ) {</span>
+<span class="nc" id="L73">                entity.getEventos().clear();</span>
+<span class="nc" id="L74">                entity.getEventos().addAll( set );</span>
+            }
+<span class="nc" id="L76">        }</span>
+        else {
+<span class="nc" id="L78">            Set&lt;Evento&gt; set = eventoDTOSetToEventoSet( dto.getEventos() );</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">            if ( set != null ) {</span>
+<span class="nc" id="L80">                entity.eventos( set );</span>
+            }
+        }
+<span class="nc" id="L83">    }</span>
+
+    @Override
+    public IntegranteDTO toDto(Integrante s) {
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        if ( s == null ) {</span>
+<span class="nc" id="L88">            return null;</span>
+        }
+
+<span class="fc" id="L91">        IntegranteDTO integranteDTO = new IntegranteDTO();</span>
+
+<span class="fc" id="L93">        integranteDTO.setEventos( toDtoEventoIdSet( s.getEventos() ) );</span>
+<span class="fc" id="L94">        integranteDTO.setId( s.getId() );</span>
+<span class="fc" id="L95">        integranteDTO.setNombre( s.getNombre() );</span>
+<span class="fc" id="L96">        integranteDTO.setApellido( s.getApellido() );</span>
+<span class="fc" id="L97">        integranteDTO.setIdentificacion( s.getIdentificacion() );</span>
+
+<span class="fc" id="L99">        return integranteDTO;</span>
+    }
+
+    @Override
+    public Integrante toEntity(IntegranteDTO integranteDTO) {
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">        if ( integranteDTO == null ) {</span>
+<span class="nc" id="L105">            return null;</span>
+        }
+
+<span class="fc" id="L108">        Integrante integrante = new Integrante();</span>
+
+<span class="fc" id="L110">        integrante.setId( integranteDTO.getId() );</span>
+<span class="fc" id="L111">        integrante.setNombre( integranteDTO.getNombre() );</span>
+<span class="fc" id="L112">        integrante.setApellido( integranteDTO.getApellido() );</span>
+<span class="fc" id="L113">        integrante.setIdentificacion( integranteDTO.getIdentificacion() );</span>
+
+<span class="fc" id="L115">        return integrante;</span>
+    }
+
+    @Override
+    public EventoDTO toDtoEventoId(Evento evento) {
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if ( evento == null ) {</span>
+<span class="nc" id="L121">            return null;</span>
+        }
+
+<span class="nc" id="L124">        EventoDTO eventoDTO = new EventoDTO();</span>
+
+<span class="nc" id="L126">        eventoDTO.setId( evento.getId() );</span>
+
+<span class="nc" id="L128">        return eventoDTO;</span>
+    }
+
+    protected EventoTipo eventoTipoDTOToEventoTipo(EventoTipoDTO eventoTipoDTO) {
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        if ( eventoTipoDTO == null ) {</span>
+<span class="nc" id="L133">            return null;</span>
+        }
+
+<span class="nc" id="L136">        EventoTipo eventoTipo = new EventoTipo();</span>
+
+<span class="nc" id="L138">        eventoTipo.setId( eventoTipoDTO.getId() );</span>
+<span class="nc" id="L139">        eventoTipo.setNombre( eventoTipoDTO.getNombre() );</span>
+<span class="nc" id="L140">        eventoTipo.setDescripcion( eventoTipoDTO.getDescripcion() );</span>
+
+<span class="nc" id="L142">        return eventoTipo;</span>
+    }
+
+    protected Set&lt;Integrante&gt; integranteDTOSetToIntegranteSet(Set&lt;IntegranteDTO&gt; set) {
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if ( set == null ) {</span>
+<span class="nc" id="L147">            return null;</span>
+        }
+
+<span class="nc" id="L150">        Set&lt;Integrante&gt; set1 = new LinkedHashSet&lt;Integrante&gt;( Math.max( (int) ( set.size() / .75f ) + 1, 16 ) );</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">        for ( IntegranteDTO integranteDTO : set ) {</span>
+<span class="nc" id="L152">            set1.add( toEntity( integranteDTO ) );</span>
+<span class="nc" id="L153">        }</span>
+
+<span class="nc" id="L155">        return set1;</span>
+    }
+
+    protected Evento eventoDTOToEvento(EventoDTO eventoDTO) {
+<span class="nc bnc" id="L159" title="All 2 branches missed.">        if ( eventoDTO == null ) {</span>
+<span class="nc" id="L160">            return null;</span>
+        }
+
+<span class="nc" id="L163">        Evento evento = new Evento();</span>
+
+<span class="nc" id="L165">        evento.setId( eventoDTO.getId() );</span>
+<span class="nc" id="L166">        evento.setTitulo( eventoDTO.getTitulo() );</span>
+<span class="nc" id="L167">        evento.setResumen( eventoDTO.getResumen() );</span>
+<span class="nc" id="L168">        evento.setDescripcion( eventoDTO.getDescripcion() );</span>
+<span class="nc" id="L169">        evento.setFecha( eventoDTO.getFecha() );</span>
+<span class="nc" id="L170">        evento.setDireccion( eventoDTO.getDireccion() );</span>
+<span class="nc" id="L171">        evento.setImagen( eventoDTO.getImagen() );</span>
+<span class="nc" id="L172">        evento.setFilaAsientos( eventoDTO.getFilaAsientos() );</span>
+<span class="nc" id="L173">        evento.setColumnAsientos( eventoDTO.getColumnAsientos() );</span>
+<span class="nc" id="L174">        evento.setPrecioEntrada( eventoDTO.getPrecioEntrada() );</span>
+<span class="nc" id="L175">        evento.eventoTipo( eventoTipoDTOToEventoTipo( eventoDTO.getEventoTipo() ) );</span>
+<span class="nc" id="L176">        evento.integrantes( integranteDTOSetToIntegranteSet( eventoDTO.getIntegrantes() ) );</span>
+
+<span class="nc" id="L178">        return evento;</span>
+    }
+
+    protected Set&lt;Evento&gt; eventoDTOSetToEventoSet(Set&lt;EventoDTO&gt; set) {
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        if ( set == null ) {</span>
+<span class="nc" id="L183">            return null;</span>
+        }
+
+<span class="nc" id="L186">        Set&lt;Evento&gt; set1 = new LinkedHashSet&lt;Evento&gt;( Math.max( (int) ( set.size() / .75f ) + 1, 16 ) );</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">        for ( EventoDTO eventoDTO : set ) {</span>
+<span class="nc" id="L188">            set1.add( eventoDTOToEvento( eventoDTO ) );</span>
+<span class="nc" id="L189">        }</span>
+
+<span class="nc" id="L191">        return set1;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
