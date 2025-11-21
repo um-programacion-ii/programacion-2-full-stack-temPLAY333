@@ -15,13 +15,13 @@ $url = "$server/api/v1/agregar_usuario"
 
 # Body de ejemplo provisto
 $body = @{
-    username = "juan"
-    password = "juan123"
-    firstName = "Juan"
-    lastName = "Perez"
-    email = "juan@perez.com.ar"
-    nombreAlumno = "Juan Perez"
-    descripcionProyecto = "Proyecto de Juan Perez"
+    username = "temPLAY333"
+    password = "B0lud0t0t4l"
+    firstName = "Tomas"
+    lastName = "Bourguet"
+    email = "t.bourguet@alumno.um.edu.ar"
+    nombreAlumno = "Tomás Bourguet"
+    descripcionProyecto = "Proyecto Final de Microservicios para prog2"
 } | ConvertTo-Json
 
 $headers = @{ "Content-Type" = "application/json" }
