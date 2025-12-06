@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventoProxyController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.proxy</a> &gt; <span class="el_source">EventoProxyController.java</span></div><h1>EventoProxyController.java</h1><pre class="source lang-java linenums">package com.example.demo.proxy;
+
+import com.example.demo.service.dto.AsientoEstadoDTO;
+import com.example.demo.service.dto.BloquearAsientosRequestDTO;
+import com.example.demo.service.dto.BloquearAsientosResponseDTO;
+import com.example.demo.service.dto.EventoDTO;
+import com.example.demo.service.dto.EventoDetalleDTO;
+import com.example.demo.service.dto.EventoResumenDTO;
+import java.util.Arrays;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+/**
+ * Proxy REST para eventos contra la Cátedra.
+ */
+@RestController
+@RequestMapping(&quot;/proxy/eventos&quot;)
+public class EventoProxyController {
+
+<span class="nc" id="L30">    private static final Logger log = LoggerFactory.getLogger(EventoProxyController.class);</span>
+
+    private final RestTemplate restTemplate;
+    private final NotificadorBackendService notificadorBackendService;
+    private final AsientoRedisService asientoRedisService;
+
+    @Value(&quot;${app.catedra.base-url:http://192.168.194.250:8080}&quot;)
+    private String catedraBaseUrl;
+
+<span class="nc" id="L39">    public EventoProxyController(NotificadorBackendService notificadorBackendService, AsientoRedisService asientoRedisService) {</span>
+<span class="nc" id="L40">        this.restTemplate = new RestTemplate();</span>
+<span class="nc" id="L41">        this.notificadorBackendService = notificadorBackendService;</span>
+<span class="nc" id="L42">        this.asientoRedisService = asientoRedisService;</span>
+<span class="nc" id="L43">    }</span>
+
+    @GetMapping(&quot;/resumidos&quot;)
+    public ResponseEntity&lt;List&lt;EventoResumenDTO&gt;&gt; listarEventosResumidos() {
+<span class="nc" id="L47">        log.debug(&quot;Proxy listar eventos resumidos contra Cátedra&quot;);</span>
+<span class="nc" id="L48">        String url = catedraBaseUrl + &quot;/api/endpoints/v1/eventos-resumidos&quot;;</span>
+<span class="nc" id="L49">        EventoResumenDTO[] array = restTemplate.getForObject(url, EventoResumenDTO[].class);</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        List&lt;EventoResumenDTO&gt; lista = array != null ? Arrays.asList(array) : List.of();</span>
+<span class="nc" id="L51">        return ResponseEntity.ok(lista);</span>
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;EventoDTO&gt;&gt; listarEventos() {
+<span class="nc" id="L56">        log.debug(&quot;Proxy listar eventos completos contra Cátedra&quot;);</span>
+<span class="nc" id="L57">        String url = catedraBaseUrl + &quot;/api/endpoints/v1/eventos&quot;;</span>
+<span class="nc" id="L58">        EventoDTO[] array = restTemplate.getForObject(url, EventoDTO[].class);</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        List&lt;EventoDTO&gt; lista = array != null ? Arrays.asList(array) : List.of();</span>
+<span class="nc" id="L60">        return ResponseEntity.ok(lista);</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;EventoDetalleDTO&gt; obtenerEvento(@PathVariable Long id) {
+<span class="nc" id="L65">        log.debug(&quot;Proxy obtener evento {} contra Cátedra&quot;, id);</span>
+<span class="nc" id="L66">        String url = catedraBaseUrl + &quot;/api/endpoints/v1/evento/&quot; + id;</span>
+<span class="nc" id="L67">        EventoDetalleDTO evento = restTemplate.getForObject(url, EventoDetalleDTO.class);</span>
+<span class="nc" id="L68">        return ResponseEntity.ok(evento);</span>
+    }
+
+    @PostMapping(&quot;/bloquear-asientos&quot;)
+    public ResponseEntity&lt;BloquearAsientosResponseDTO&gt; bloquearAsientos(@RequestBody BloquearAsientosRequestDTO request) {
+<span class="nc" id="L73">        log.debug(&quot;Proxy bloquear asientos contra Cátedra para evento {}&quot;, request.getEventoId());</span>
+
+<span class="nc" id="L75">        String url = catedraBaseUrl + &quot;/api/endpoints/v1/bloquear-asientos&quot;;</span>
+<span class="nc" id="L76">        BloquearAsientosResponseDTO response = restTemplate.postForObject(url, request, BloquearAsientosResponseDTO.class);</span>
+
+<span class="nc" id="L78">        BackendNotificacionDTO notificacion = new BackendNotificacionDTO();</span>
+<span class="nc" id="L79">        notificacion.setTopic(&quot;BLOQUEO_ASIENTOS&quot;);</span>
+<span class="nc" id="L80">        notificacion.setPayload(&quot;eventoId=&quot; + request.getEventoId());</span>
+<span class="nc" id="L81">        notificadorBackendService.notificar(notificacion);</span>
+
+<span class="nc" id="L83">        return ResponseEntity.ok(response);</span>
+    }
+
+    @GetMapping(&quot;/{id}/asientos-estado&quot;)
+    public ResponseEntity&lt;List&lt;AsientoEstadoDTO&gt;&gt; obtenerEstadoAsientos(@PathVariable Long id) {
+<span class="nc" id="L88">        log.debug(&quot;Proxy obtener estado de asientos para evento {} desde Redis&quot;, id);</span>
+<span class="nc" id="L89">        return ResponseEntity.ok(asientoRedisService.obtenerEstadoAsientos(id));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

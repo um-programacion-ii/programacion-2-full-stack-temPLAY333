@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KafkaConsumer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.broker</a> &gt; <span class="el_source">KafkaConsumer.java</span></div><h1>KafkaConsumer.java</h1><pre class="source lang-java linenums">package com.example.demo.broker;
+
+import static org.springframework.web.servlet.mvc.method.annotation.SseEmitter.event;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+@Component
+<span class="nc" id="L17">public class KafkaConsumer implements Consumer&lt;String&gt; {</span>
+
+<span class="nc" id="L19">    private static final Logger LOG = LoggerFactory.getLogger(KafkaConsumer.class);</span>
+
+<span class="nc" id="L21">    private Map&lt;String, SseEmitter&gt; emitters = new HashMap&lt;&gt;();</span>
+
+    public SseEmitter register(String key) {
+<span class="nc" id="L24">        LOG.debug(&quot;Registering sse client for {}&quot;, key);</span>
+<span class="nc" id="L25">        SseEmitter emitter = new SseEmitter();</span>
+<span class="nc" id="L26">        emitter.onCompletion(() -&gt; emitters.remove(key));</span>
+<span class="nc" id="L27">        emitters.put(key, emitter);</span>
+<span class="nc" id="L28">        return emitter;</span>
+    }
+
+    public void unregister(String key) {
+<span class="nc" id="L32">        LOG.debug(&quot;Unregistering sse emitter for: {}&quot;, key);</span>
+<span class="nc" id="L33">        Optional.ofNullable(emitters.get(key)).ifPresent(SseEmitter::complete);</span>
+<span class="nc" id="L34">    }</span>
+
+    @Override
+    public void accept(String input) {
+<span class="nc" id="L38">        LOG.debug(&quot;Got message from kafka stream: {}&quot;, input);</span>
+<span class="nc" id="L39">        emitters</span>
+<span class="nc" id="L40">            .entrySet()</span>
+<span class="nc" id="L41">            .stream()</span>
+<span class="nc" id="L42">            .map(Map.Entry::getValue)</span>
+<span class="nc" id="L43">            .forEach((SseEmitter emitter) -&gt; {</span>
+                try {
+<span class="nc" id="L45">                    emitter.send(event().data(input, MediaType.TEXT_PLAIN));</span>
+<span class="nc" id="L46">                } catch (IOException e) {</span>
+<span class="nc" id="L47">                    LOG.debug(&quot;error sending sse message, {}&quot;, input);</span>
+<span class="nc" id="L48">                }</span>
+<span class="nc" id="L49">            });</span>
+<span class="nc" id="L50">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

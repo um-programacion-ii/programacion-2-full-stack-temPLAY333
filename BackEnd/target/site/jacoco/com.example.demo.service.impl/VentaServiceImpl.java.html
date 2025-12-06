@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VentaServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.impl</a> &gt; <span class="el_source">VentaServiceImpl.java</span></div><h1>VentaServiceImpl.java</h1><pre class="source lang-java linenums">package com.example.demo.service.impl;
+
+import com.example.demo.domain.Venta;
+import com.example.demo.repository.VentaRepository;
+import com.example.demo.service.VentaService;
+import com.example.demo.service.dto.VentaDTO;
+import com.example.demo.service.mapper.VentaMapper;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Service Implementation for managing {@link com.example.demo.domain.Venta}.
+ */
+@Service
+@Transactional
+public class VentaServiceImpl implements VentaService {
+
+<span class="nc" id="L23">    private static final Logger LOG = LoggerFactory.getLogger(VentaServiceImpl.class);</span>
+
+    private final VentaRepository ventaRepository;
+
+    private final VentaMapper ventaMapper;
+
+<span class="nc" id="L29">    public VentaServiceImpl(VentaRepository ventaRepository, VentaMapper ventaMapper) {</span>
+<span class="nc" id="L30">        this.ventaRepository = ventaRepository;</span>
+<span class="nc" id="L31">        this.ventaMapper = ventaMapper;</span>
+<span class="nc" id="L32">    }</span>
+
+    @Override
+    public VentaDTO save(VentaDTO ventaDTO) {
+<span class="nc" id="L36">        LOG.debug(&quot;Request to save Venta : {}&quot;, ventaDTO);</span>
+<span class="nc" id="L37">        Venta venta = ventaMapper.toEntity(ventaDTO);</span>
+<span class="nc" id="L38">        venta = ventaRepository.save(venta);</span>
+<span class="nc" id="L39">        return ventaMapper.toDto(venta);</span>
+    }
+
+    @Override
+    public VentaDTO update(VentaDTO ventaDTO) {
+<span class="nc" id="L44">        LOG.debug(&quot;Request to update Venta : {}&quot;, ventaDTO);</span>
+<span class="nc" id="L45">        Venta venta = ventaMapper.toEntity(ventaDTO);</span>
+<span class="nc" id="L46">        venta = ventaRepository.save(venta);</span>
+<span class="nc" id="L47">        return ventaMapper.toDto(venta);</span>
+    }
+
+    @Override
+    public Optional&lt;VentaDTO&gt; partialUpdate(VentaDTO ventaDTO) {
+<span class="nc" id="L52">        LOG.debug(&quot;Request to partially update Venta : {}&quot;, ventaDTO);</span>
+
+<span class="nc" id="L54">        return ventaRepository</span>
+<span class="nc" id="L55">            .findById(ventaDTO.getId())</span>
+<span class="nc" id="L56">            .map(existingVenta -&gt; {</span>
+<span class="nc" id="L57">                ventaMapper.partialUpdate(existingVenta, ventaDTO);</span>
+
+<span class="nc" id="L59">                return existingVenta;</span>
+            })
+<span class="nc" id="L61">            .map(ventaRepository::save)</span>
+<span class="nc" id="L62">            .map(ventaMapper::toDto);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page&lt;VentaDTO&gt; findAll(Pageable pageable) {
+<span class="nc" id="L68">        LOG.debug(&quot;Request to get all Ventas&quot;);</span>
+<span class="nc" id="L69">        return ventaRepository.findAll(pageable).map(ventaMapper::toDto);</span>
+    }
+
+    public Page&lt;VentaDTO&gt; findAllWithEagerRelationships(Pageable pageable) {
+<span class="nc" id="L73">        return ventaRepository.findAllWithEagerRelationships(pageable).map(ventaMapper::toDto);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional&lt;VentaDTO&gt; findOne(Long id) {
+<span class="nc" id="L79">        LOG.debug(&quot;Request to get Venta : {}&quot;, id);</span>
+<span class="nc" id="L80">        return ventaRepository.findOneWithEagerRelationships(id).map(ventaMapper::toDto);</span>
+    }
+
+    @Override
+    public void delete(Long id) {
+<span class="nc" id="L85">        LOG.debug(&quot;Request to delete Venta : {}&quot;, id);</span>
+<span class="nc" id="L86">        ventaRepository.deleteById(id);</span>
+<span class="nc" id="L87">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
