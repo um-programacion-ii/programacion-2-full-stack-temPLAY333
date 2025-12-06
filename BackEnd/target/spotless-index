@@ -17,7 +17,7 @@ src\main\java\com\example\demo\config\LiquibaseConfiguration.java 2025-11-08T15:
 src\main\java\com\example\demo\config\LoggingAspectConfiguration.java 2025-11-08T15:45:49.065659400Z
 src\main\java\com\example\demo\config\LoggingConfiguration.java 2025-11-08T15:45:49.066658400Z
 src\main\java\com\example\demo\config\package-info.java 2025-11-08T15:45:49.067657600Z
-src\main\java\com\example\demo\config\SecurityConfiguration.java 2025-11-08T15:45:49.067657600Z
+src\main\java\com\example\demo\config\SecurityConfiguration.java 2025-11-13T18:56:50.610173Z
 src\main\java\com\example\demo\config\SecurityJwtConfiguration.java 2025-11-08T15:45:49.068655700Z
 src\main\java\com\example\demo\config\WebConfigurer.java 2025-11-08T15:45:49.069656300Z
 src\main\java\com\example\demo\domain\AbstractAuditingEntity.java 2025-11-08T15:45:49.069656300Z
@@ -38,6 +38,13 @@ src\main\java\com\example\demo\management\SecurityMetersService.java 2025-11-08T
 src\main\java\com\example\demo\MicroservicesFinalApp.java 2025-11-08T15:45:49.081656400Z
 src\main\java\com\example\demo\MicroservicesFinalApplication.java 2025-11-08T16:28:30.918867Z
 src\main\java\com\example\demo\package-info.java 2025-11-08T15:45:49.083660900Z
+src\main\java\com\example\demo\proxy\AsientoRedisService.java 2025-12-06T00:22:23.393194100Z
+src\main\java\com\example\demo\proxy\BackendNotificacionDTO.java 2025-12-06T00:17:55.093205400Z
+src\main\java\com\example\demo\proxy\EventoCambioConsumer.java 2025-12-06T00:27:40.191674800Z
+src\main\java\com\example\demo\proxy\EventoProxyController.java 2025-12-06T00:22:23.422195100Z
+src\main\java\com\example\demo\proxy\NotificadorBackendService.java 2025-12-06T00:17:55.073204200Z
+src\main\java\com\example\demo\proxy\UserProxyController.java 2025-12-06T00:22:23.429194600Z
+src\main\java\com\example\demo\proxy\VentaProxyController.java 2025-12-06T00:21:06.654854700Z
 src\main\java\com\example\demo\repository\AlumnoProfileRepository.java 2025-11-08T16:02:26.781880500Z
 src\main\java\com\example\demo\repository\AsientoRepository.java 2025-11-08T16:02:26.781880500Z
 src\main\java\com\example\demo\repository\AuthorityRepository.java 2025-11-08T15:45:49.086656800Z
@@ -63,6 +70,7 @@ src\main\java\com\example\demo\service\dto\AgregarUsuarioResponseDTO.java 2025-1
 src\main\java\com\example\demo\service\dto\AlumnoProfileDTO.java 2025-11-08T16:02:26.791885Z
 src\main\java\com\example\demo\service\dto\AsientoBloqueoEstadoDTO.java 2025-11-08T22:05:49.452754400Z
 src\main\java\com\example\demo\service\dto\AsientoDTO.java 2025-11-08T16:02:26.793881700Z
+src\main\java\com\example\demo\service\dto\AsientoEstadoDTO.java 2025-12-06T00:23:45.206822Z
 src\main\java\com\example\demo\service\dto\AsientoPosicionDTO.java 2025-11-08T22:05:49.452754400Z
 src\main\java\com\example\demo\service\dto\AsientoVentaDTO.java 2025-11-08T22:05:49.452754400Z
 src\main\java\com\example\demo\service\dto\AsientoVentaEstadoDTO.java 2025-11-08T22:05:49.452754400Z
@@ -121,9 +129,9 @@ src\main\java\com\example\demo\service\UsernameAlreadyUsedException.java 2025-11
 src\main\java\com\example\demo\service\UserService.java 2025-11-08T15:45:49.126270200Z
 src\main\java\com\example\demo\service\VentaService.java 2025-11-08T16:02:26.815879700Z
 src\main\java\com\example\demo\web\rest\AccountResource.java 2025-11-08T15:45:49.127270400Z
-src\main\java\com\example\demo\web\rest\AlumnoProfileResource.java 2025-11-08T16:02:26.816910400Z
+src\main\java\com\example\demo\web\rest\AlumnoProfileResource.java 2025-11-13T18:56:50.611174200Z
 src\main\java\com\example\demo\web\rest\AsientoResource.java 2025-11-08T16:02:26.817897800Z
-src\main\java\com\example\demo\web\rest\AuthenticateController.java 2025-11-08T15:45:49.129269700Z
+src\main\java\com\example\demo\web\rest\AuthenticateController.java 2025-11-13T18:56:50.612206100Z
 src\main\java\com\example\demo\web\rest\AuthorityResource.java 2025-11-08T15:45:49.130269800Z
 src\main\java\com\example\demo\web\rest\errors\BadRequestAlertException.java 2025-11-08T15:45:49.131269Z
 src\main\java\com\example\demo\web\rest\errors\EmailAlreadyUsedException.java 2025-11-08T15:45:49.131269Z
@@ -138,8 +146,8 @@ src\main\java\com\example\demo\web\rest\EventoTipoResource.java 2025-11-08T16:02
 src\main\java\com\example\demo\web\rest\IntegranteResource.java 2025-11-08T16:02:26.823904700Z
 src\main\java\com\example\demo\web\rest\MicroservicesFinalKafkaResource.java 2025-11-08T15:45:49.138270400Z
 src\main\java\com\example\demo\web\rest\package-info.java 2025-11-08T15:45:49.139270600Z
-src\main\java\com\example\demo\web\rest\PublicUserResource.java 2025-11-08T15:45:49.139270600Z
-src\main\java\com\example\demo\web\rest\UserResource.java 2025-11-08T15:45:49.140269900Z
+src\main\java\com\example\demo\web\rest\PublicUserResource.java 2025-11-13T18:56:50.613174400Z
+src\main\java\com\example\demo\web\rest\UserResource.java 2025-11-13T18:53:38.657695Z
 src\main\java\com\example\demo\web\rest\VentaResource.java 2025-11-08T16:02:26.826881Z
 src\main\java\com\example\demo\web\rest\vm\KeyAndPasswordVM.java 2025-11-08T15:45:49.141270Z
 src\main\java\com\example\demo\web\rest\vm\LoginVM.java 2025-11-08T15:45:49.142269700Z
@@ -185,6 +193,12 @@ src\test\java\com\example\demo\domain\VentaTest.java 2025-11-08T16:02:26.8468808
 src\test\java\com\example\demo\domain\VentaTestSamples.java 2025-11-08T16:02:26.846880800Z
 src\test\java\com\example\demo\IntegrationTest.java 2025-11-08T15:45:49.171271500Z
 src\test\java\com\example\demo\management\SecurityMetersServiceTests.java 2025-11-08T15:45:49.172270800Z
+src\test\java\com\example\demo\proxy\BackendNotificacionDTOTest.java 2025-12-06T00:33:11.042407200Z
+src\test\java\com\example\demo\proxy\EventoCambioConsumerTest.java 2025-12-06T00:32:05.435985300Z
+src\test\java\com\example\demo\proxy\EventoProxyControllerIT.java 2025-12-06T00:32:05.436985600Z
+src\test\java\com\example\demo\proxy\NotificadorBackendServiceTest.java 2025-12-06T00:32:05.437987200Z
+src\test\java\com\example\demo\proxy\UserProxyControllerIT.java 2025-12-06T00:32:05.437987200Z
+src\test\java\com\example\demo\proxy\VentaProxyControllerIT.java 2025-12-06T00:32:05.438986500Z
 src\test\java\com\example\demo\repository\timezone\DateTimeWrapper.java 2025-11-08T15:45:49.173270900Z
 src\test\java\com\example\demo\repository\timezone\DateTimeWrapperRepository.java 2025-11-08T15:45:49.174271900Z
 src\test\java\com\example\demo\security\DomainUserDetailsServiceIT.java 2025-11-08T15:45:49.174271900Z
