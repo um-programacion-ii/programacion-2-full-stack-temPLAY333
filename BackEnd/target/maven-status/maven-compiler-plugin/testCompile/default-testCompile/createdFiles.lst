@@ -16,6 +16,7 @@ com\example\demo\domain\AsientoTest.class
 com\example\demo\config\RedisTestContainersSpringContextCustomizerFactory$1.class
 com\example\demo\service\dto\AlumnoProfileDTOTest.class
 com\example\demo\domain\AlumnoProfileTest.class
+com\example\demo\proxy\NotificadorBackendServiceTest.class
 com\example\demo\web\rest\AlumnoProfileResourceIT.class
 com\example\demo\domain\EventoAsserts.class
 com\example\demo\service\mapper\VentaResumenMapperTest.class
@@ -30,11 +31,15 @@ com\example\demo\config\EmbeddedRedis.class
 com\example\demo\config\SqlTestContainersSpringContextCustomizerFactory$1.class
 com\example\demo\service\mapper\UserMapperTest.class
 com\example\demo\web\rest\TestUtil$ZonedDateTimeMatcher.class
+com\example\demo\proxy\VentaProxyControllerIT.class
 com\example\demo\config\RedisTestContainer.class
 com\example\demo\web\rest\IntegranteResourceIT.class
 com\example\demo\security\jwt\AuthenticationIntegrationTest.class
+com\example\demo\proxy\NotificadorBackendServiceTest$1.class
 com\example\demo\domain\AuthorityAsserts.class
 com\example\demo\domain\EventoTipoAsserts.class
+com\example\demo\proxy\UserProxyControllerIT.class
+com\example\demo\proxy\EventoCambioConsumerTest.class
 com\example\demo\config\CRLFLogConverterTest.class
 com\example\demo\web\rest\TestUtil$NumberMatcher.class
 com\example\demo\domain\AsientoTestSamples.class
@@ -45,6 +50,7 @@ com\example\demo\repository\timezone\DateTimeWrapper_.class
 com\example\demo\domain\EventoTestSamples.class
 com\example\demo\web\rest\TestUtil$1.class
 com\example\demo\service\mapper\VentaDetalleMapperTest.class
+com\example\demo\proxy\EventoProxyControllerIT.class
 com\example\demo\web\rest\EventoResourceIT.class
 com\example\demo\domain\EventoTipoTestSamples.class
 com\example\demo\web\rest\PublicUserResourceIT.class
@@ -92,5 +98,6 @@ com\example\demo\domain\VentaAsserts.class
 com\example\demo\repository\timezone\DateTimeWrapper.class
 com\example\demo\service\dto\AsientoDTOTest.class
 com\example\demo\web\rest\TestUtil.class
+com\example\demo\proxy\BackendNotificacionDTOTest.class
 com\example\demo\service\mapper\EventoDetalleMapperTest.class
 com\example\demo\service\mapper\VentaMapperTest.class

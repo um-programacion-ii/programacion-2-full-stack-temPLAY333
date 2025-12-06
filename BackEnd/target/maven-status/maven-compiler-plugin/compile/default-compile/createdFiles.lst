@@ -27,6 +27,8 @@ com\example\demo\service\mapper\EventoTipoMapper.class
 com\example\demo\security\SecurityUtils.class
 com\example\demo\service\mapper\BloqueoAsientoMapperImpl.class
 com\example\demo\web\rest\UserResource.class
+com\example\demo\proxy\EventoCambioConsumer.class
+com\example\demo\proxy\BackendNotificacionDTO.class
 com\example\demo\service\mapper\AgregarUsuarioMapperImpl.class
 com\example\demo\web\rest\EventoTipoResource.class
 com\example\demo\service\mapper\VentaResumenMapperImpl.class
@@ -50,6 +52,7 @@ com\example\demo\service\dto\RealizarVentaResponseDTO.class
 com\example\demo\service\mapper\VentaMapperImpl.class
 com\example\demo\domain\enumeration\Estado.class
 com\example\demo\service\mapper\RealizarVentaMapperImpl.class
+com\example\demo\proxy\NotificadorBackendService.class
 com\example\demo\domain\Integrante.class
 com\example\demo\service\VentaService.class
 com\example\demo\web\rest\errors\ErrorConstants.class
@@ -83,6 +86,7 @@ com\example\demo\service\mapper\IntegranteMapperImpl.class
 com\example\demo\management\package-info.class
 com\example\demo\aop\logging\package-info.class
 com\example\demo\repository\VentaRepository.class
+com\example\demo\service\dto\AsientoEstadoDTO.class
 com\example\demo\GeneratedByJHipster.class
 com\example\demo\repository\AlumnoProfileRepository.class
 com\example\demo\service\mapper\EventoMapperImpl.class
@@ -95,6 +99,7 @@ META-INF\spring-configuration-metadata.json
 com\example\demo\config\ApplicationProperties$Liquibase.class
 com\example\demo\service\dto\AdminUserDTO.class
 com\example\demo\domain\enumeration\package-info.class
+com\example\demo\proxy\AsientoRedisService.class
 com\example\demo\service\mapper\EventoDetalleMapperImpl.class
 com\example\demo\domain\EventoTipo_.class
 com\example\demo\service\dto\VentaDTO.class
@@ -118,6 +123,7 @@ com\example\demo\service\mapper\package-info.class
 com\example\demo\web\rest\AccountResource.class
 com\example\demo\config\LoggingConfiguration.class
 com\example\demo\service\mapper\VentaResumenMapper.class
+com\example\demo\proxy\EventoProxyController.class
 com\example\demo\service\dto\AgregarUsuarioResponseDTO.class
 com\example\demo\service\package-info.class
 com\example\demo\config\JacksonConfiguration$1.class
@@ -145,6 +151,7 @@ com\example\demo\web\rest\MicroservicesFinalKafkaResource.class
 com\example\demo\service\mapper\EventoTipoMapperImpl.class
 com\example\demo\service\mapper\UserMapper.class
 com\example\demo\config\DateTimeFormatConfiguration.class
+com\example\demo\proxy\VentaProxyController.class
 com\example\demo\domain\User_.class
 com\example\demo\service\IntegranteService.class
 com\example\demo\repository\AuthorityRepository.class
@@ -167,6 +174,7 @@ com\example\demo\service\dto\AlumnoProfileDTO.class
 com\example\demo\domain\Venta_.class
 com\example\demo\service\mapper\EventoResumenMapperImpl.class
 com\example\demo\service\MailService.class
+com\example\demo\proxy\UserProxyController.class
 com\example\demo\service\impl\VentaServiceImpl.class
 com\example\demo\security\AuthoritiesConstants.class
 com\example\demo\service\dto\EventoDetalleDTO.class
