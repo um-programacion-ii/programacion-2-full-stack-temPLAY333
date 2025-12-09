@@ -73,6 +73,8 @@ out/
 ######################
 /log/
 **/target/
+BackEnd/target/
+Proxy/target/
 
 ######################
 # Gradle
