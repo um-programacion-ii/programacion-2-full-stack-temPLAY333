@@ -72,7 +72,9 @@ out/
 # Maven
 ######################
 /log/
-/target/
+**/target/
+BackEnd/target/
+Proxy/target/
 
 ######################
 # Gradle
