@@ -94,7 +94,9 @@ src\main\java\com\example\demo\service\dto\VentaDetalleDTO.java 2025-11-08T22:05
 src\main\java\com\example\demo\service\dto\VentaDTO.java 2025-11-08T16:02:26.798880600Z
 src\main\java\com\example\demo\service\dto\VentaResumenDTO.java 2025-11-08T22:05:49.536380800Z
 src\main\java\com\example\demo\service\EmailAlreadyUsedException.java 2025-11-08T15:45:49.108270600Z
+src\main\java\com\example\demo\service\EventoExternalClient.java 2025-12-06T00:46:38.916378100Z
 src\main\java\com\example\demo\service\EventoService.java 2025-11-08T16:02:26.799880600Z
+src\main\java\com\example\demo\service\EventoSyncService.java 2025-12-06T00:46:38.917379100Z
 src\main\java\com\example\demo\service\EventoTipoService.java 2025-11-08T16:02:26.799880600Z
 src\main\java\com\example\demo\service\impl\AlumnoProfileServiceImpl.java 2025-11-08T16:02:26.800879600Z
 src\main\java\com\example\demo\service\impl\AsientoServiceImpl.java 2025-11-08T16:02:26.801893200Z
@@ -141,6 +143,7 @@ src\main\java\com\example\demo\web\rest\errors\FieldErrorVM.java 2025-11-08T15:4
 src\main\java\com\example\demo\web\rest\errors\InvalidPasswordException.java 2025-11-08T15:45:49.134269900Z
 src\main\java\com\example\demo\web\rest\errors\LoginAlreadyUsedException.java 2025-11-08T15:45:49.135269900Z
 src\main\java\com\example\demo\web\rest\errors\package-info.java 2025-11-08T15:45:49.135269900Z
+src\main\java\com\example\demo\web\rest\EventoConsultaResource.java 2025-12-06T00:46:38.921377500Z
 src\main\java\com\example\demo\web\rest\EventoResource.java 2025-11-08T16:02:26.821880300Z
 src\main\java\com\example\demo\web\rest\EventoTipoResource.java 2025-11-08T16:02:26.822881Z
 src\main\java\com\example\demo\web\rest\IntegranteResource.java 2025-11-08T16:02:26.823904700Z
@@ -213,6 +216,7 @@ src\test\java\com\example\demo\service\dto\EventoDTOTest.java 2025-11-08T16:02:2
 src\test\java\com\example\demo\service\dto\EventoTipoDTOTest.java 2025-11-08T16:02:26.851879600Z
 src\test\java\com\example\demo\service\dto\IntegranteDTOTest.java 2025-11-08T16:02:26.852879600Z
 src\test\java\com\example\demo\service\dto\VentaDTOTest.java 2025-11-08T16:02:26.852879600Z
+src\test\java\com\example\demo\service\EventoSyncServiceTest.java 2025-12-06T00:46:38.927379300Z
 src\test\java\com\example\demo\service\MailServiceIT.java 2025-11-08T15:45:49.185271500Z
 src\test\java\com\example\demo\service\mapper\AlumnoProfileMapperTest.java 2025-11-08T16:02:26.853879400Z
 src\test\java\com\example\demo\service\mapper\AsientoMapperTest.java 2025-11-08T16:02:26.854879600Z
@@ -236,6 +240,7 @@ src\test\java\com\example\demo\web\rest\AuthenticateControllerIT.java 2025-11-08
 src\test\java\com\example\demo\web\rest\AuthorityResourceIT.java 2025-11-08T15:45:49.195269600Z
 src\test\java\com\example\demo\web\rest\errors\ExceptionTranslatorIT.java 2025-11-08T15:45:49.196270100Z
 src\test\java\com\example\demo\web\rest\errors\ExceptionTranslatorTestController.java 2025-11-08T15:45:49.197270400Z
+src\test\java\com\example\demo\web\rest\EventoConsultaResourceIT.java 2025-12-06T00:46:38.929378300Z
 src\test\java\com\example\demo\web\rest\EventoResourceIT.java 2025-11-08T16:02:26.863879700Z
 src\test\java\com\example\demo\web\rest\EventoTipoResourceIT.java 2025-11-08T16:02:26.864878800Z
 src\test\java\com\example\demo\web\rest\IntegranteResourceIT.java 2025-11-08T16:02:26.865879700Z

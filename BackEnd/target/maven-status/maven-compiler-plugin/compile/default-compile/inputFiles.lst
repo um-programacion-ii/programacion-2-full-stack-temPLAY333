@@ -93,7 +93,9 @@ C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\service
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\service\dto\VentaDTO.java
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\service\dto\VentaResumenDTO.java
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\service\EmailAlreadyUsedException.java
+C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\service\EventoExternalClient.java
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\service\EventoService.java
+C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\service\EventoSyncService.java
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\service\EventoTipoService.java
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\service\impl\AlumnoProfileServiceImpl.java
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\service\impl\AsientoServiceImpl.java
@@ -140,6 +142,7 @@ C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\web\res
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\web\rest\errors\InvalidPasswordException.java
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\web\rest\errors\LoginAlreadyUsedException.java
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\web\rest\errors\package-info.java
+C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\web\rest\EventoConsultaResource.java
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\web\rest\EventoResource.java
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\web\rest\EventoTipoResource.java
 C:\Users\totob\IdeaProjects\Final\BackEnd\src\main\java\com\example\demo\web\rest\IntegranteResource.java
