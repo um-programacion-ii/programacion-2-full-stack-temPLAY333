@@ -36,3 +36,7 @@ Buenas tardes. Un par de cosas:
 3- El mapa de redis del evento contiene los asientos bloqueados, en ese caso tienen un campo de fecha que indica la expiración. Cuando estén armando el mapa de asientos para la venta deben tener esa fecha en cuenta para ver si esta bloqueado y si ha expirado o no, en caso de expirar se puede bloquear nuevamente.
 4- He agregado mas eventos a la base de datos. También he cambiado el tamaño de columnas a un valor chico para que puedan verlo decentemente desde la interfaz movil.
 5- He agregado validación al bloqueo de asientos para verificar que no sepueda bloquear la fila o columna 0 o numero negativo y no mas del limite de filas y columnas.
+
+IMPORTANTE:
+Por mas que existe el concepto de Usuario, solo va a existir uno. Es una aplicacion rara este. Piensa que, ya que es para la universidad, cada alumno tiene que crear el proprio entorno para usar la web.
+Por eso es que el ultimo endpoint, Devolver listado de ventas hechos por el ALUMNO. Es una aplicacion de un unico usuario, el alumno, es decir, yo
