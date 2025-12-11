@@ -7,5 +7,5 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity {@link EventoTipo} and its DTO {@link EventoTipoDTO}.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EventoTipoMapper extends EntityMapper<EventoTipoDTO, EventoTipo> {}

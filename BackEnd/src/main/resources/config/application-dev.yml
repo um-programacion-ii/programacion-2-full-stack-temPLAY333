@@ -32,9 +32,9 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://localhost:3306/MicroservicesFinal?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
-    username: root
-    password:
+    url: jdbc:mysql://${DB_DEV_HOST:localhost}:${DB_DEV_PORT:3306}/${DB_DEV_NAME:MicroservicesFinal}?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
+    username: ${DB_DEV_USERNAME:devuser}
+    password: ${DB_DEV_PASSWORD:devpass}
     hikari:
       poolName: Hikari
       auto-commit: false
@@ -57,7 +57,7 @@ spring:
     cache: false
 
 server:
-  port: 8080
+  port: 8081  # Backend en 8081, Proxy en 8080
   # make sure requests the proxy uri instead of the server one
   forward-headers-strategy: native
 
@@ -71,7 +71,7 @@ jhipster:
   cache: # Cache configuration
     redis: # Redis configuration
       expiration: 3600 # By default objects stay 1 hour (in seconds) in the cache
-      server: redis://localhost:6379
+      server: redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}
       cluster: false
       # server: redis://localhost:6379,redis://localhost:16379,redis://localhost:26379
       # cluster: true
@@ -113,3 +113,20 @@ jhipster:
 # ===================================================================
 
 # application:
+
+
+# Configuración de sincronización de eventos y Proxy
+app:
+  # URL del Proxy real (mismo para dev y prod)
+  # En DEV puedes usar localhost si el Proxy está local, sino usar la IP real
+  proxy:
+    base-url: ${PROXY_BASE_URL:http://localhost:8080}
+    # Si el Proxy está en otro servidor: http://192.168.x.x:8080
+
+  # Sincronización de eventos desde el Proxy
+  sync:
+    on-startup: true  # Sincronizar eventos al iniciar en DEV (llena BD rápido)
+    enabled: true     # Habilitar sincronización automática cada hora
+
+  # NOTA: La BD a llenar se decide por el perfil activo (dev = MySQL:3306, prod = MySQL:3307)
+

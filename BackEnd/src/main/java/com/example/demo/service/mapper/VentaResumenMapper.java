@@ -8,7 +8,7 @@ import org.mapstruct.*;
  * Mapper para convertir Venta -> VentaResumenDTO.
  * Asume que la entidad Venta tiene relación con Evento y que la cantidad de asientos se obtiene externamente.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface VentaResumenMapper {
 
     @Mapping(target = "eventoId", source = "venta.evento.id")

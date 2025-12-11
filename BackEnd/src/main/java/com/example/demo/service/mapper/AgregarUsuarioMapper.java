@@ -8,7 +8,7 @@ import org.mapstruct.*;
 /**
  * Mapper para el endpoint de alta de usuario: transforma el request en entidades de dominio.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AgregarUsuarioMapper {
 
     /**

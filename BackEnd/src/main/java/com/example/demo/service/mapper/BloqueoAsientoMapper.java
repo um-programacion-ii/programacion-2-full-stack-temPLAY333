@@ -9,7 +9,7 @@ import org.mapstruct.*;
  * Mapper para convertir Asiento -> AsientoBloqueoEstadoDTO en el contexto de bloqueo de asientos.
  * Convierte el enum Estado a la representación textual requerida (primera letra mayúscula).
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface BloqueoAsientoMapper {
 
     @Mapping(target = "estado", source = "estado", qualifiedByName = "estadoTexto")

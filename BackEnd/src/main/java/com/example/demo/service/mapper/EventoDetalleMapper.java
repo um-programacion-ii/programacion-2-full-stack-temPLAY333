@@ -11,7 +11,7 @@ import org.mapstruct.*;
 /**
  * Mapper para convertir Evento -> EventoDetalleDTO según el contrato del endpoint /api/endpoints/v1/evento/{id}.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EventoDetalleMapper {
 
     @Mapping(target = "id", source = "id")

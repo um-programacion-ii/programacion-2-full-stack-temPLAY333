@@ -14,7 +14,7 @@ import org.mapstruct.*;
  * Mapper para construir la respuesta de realizar venta.
  * Asume que la lógica de negocio determina el resultado y estados de los asientos.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RealizarVentaMapper {
 
     @Mapping(target = "eventoId", source = "venta.evento.id")

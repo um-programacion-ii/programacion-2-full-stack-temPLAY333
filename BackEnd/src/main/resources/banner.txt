@@ -1,10 +1,19 @@
 
-  ${AnsiColor.GREEN}      ██╗${AnsiColor.RED} ██╗   ██╗ ████████╗ ███████╗   ██████╗ ████████╗ ████████╗ ███████╗
-  ${AnsiColor.GREEN}      ██║${AnsiColor.RED} ██║   ██║ ╚══██╔══╝ ██╔═══██╗ ██╔════╝ ╚══██╔══╝ ██╔═════╝ ██╔═══██╗
-  ${AnsiColor.GREEN}      ██║${AnsiColor.RED} ████████║    ██║    ███████╔╝ ╚█████╗     ██║    ██████╗   ███████╔╝
-  ${AnsiColor.GREEN}██╗   ██║${AnsiColor.RED} ██╔═══██║    ██║    ██╔════╝   ╚═══██╗    ██║    ██╔═══╝   ██╔══██║
-  ${AnsiColor.GREEN}╚██████╔╝${AnsiColor.RED} ██║   ██║ ████████╗ ██║       ██████╔╝    ██║    ████████╗ ██║  ╚██╗
-  ${AnsiColor.GREEN} ╚═════╝ ${AnsiColor.RED} ╚═╝   ╚═╝ ╚═══════╝ ╚═╝       ╚═════╝     ╚═╝    ╚═══════╝ ╚═╝   ╚═╝
 
-${AnsiColor.BRIGHT_BLUE}:: JHipster 🤓  :: Running Spring Boot ${spring-boot.version} :: Startup profile(s) ${spring.profiles.active} ::
-:: https://www.jhipster.tech ::${AnsiColor.DEFAULT}
+${AnsiColor.BRIGHT_CYAN}
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║   ${AnsiColor.BRIGHT_YELLOW}██████╗  █████╗  ██████╗██╗  ██╗███████╗███╗   ██╗██████╗${AnsiColor.BRIGHT_CYAN}   ║
+║   ${AnsiColor.BRIGHT_YELLOW}██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔════╝████╗  ██║██╔══██╗${AnsiColor.BRIGHT_CYAN}  ║
+║   ${AnsiColor.BRIGHT_YELLOW}██████╔╝███████║██║     █████╔╝ █████╗  ██╔██╗ ██║██║  ██║${AnsiColor.BRIGHT_CYAN}  ║
+║   ${AnsiColor.BRIGHT_YELLOW}██╔══██╗██╔══██║██║     ██╔═██╗ ██╔══╝  ██║╚██╗██║██║  ██║${AnsiColor.BRIGHT_CYAN}  ║
+║   ${AnsiColor.BRIGHT_YELLOW}██████╔╝██║  ██║╚██████╗██║  ██╗███████╗██║ ╚████║██████╔╝${AnsiColor.BRIGHT_CYAN}  ║
+║   ${AnsiColor.BRIGHT_YELLOW}╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═════╝${AnsiColor.BRIGHT_CYAN}   ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+${AnsiColor.DEFAULT}
+${AnsiColor.BRIGHT_GREEN}► Spring Boot: ${spring-boot.version}
+${AnsiColor.BRIGHT_MAGENTA}► Profile: ${spring.profiles.active}
+${AnsiColor.BRIGHT_BLUE}► Port: 8081
+${AnsiColor.BRIGHT_CYAN}► Service: Backend API (Mobile/Frontend)
+${AnsiColor.DEFAULT}
