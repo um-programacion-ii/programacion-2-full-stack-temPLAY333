@@ -16,7 +16,7 @@ import org.mapstruct.*;
  * - eventoTipo: incluye id, nombre y descripcion
  * - integrantes: incluye id, nombre, apellido e identificacion (evita recursión mapeando sólo estos campos)
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EventoCompletoMapper {
 
     @Mapping(target = "eventoTipo", source = "eventoTipo", qualifiedByName = "eventoTipoNombreDescripcion")

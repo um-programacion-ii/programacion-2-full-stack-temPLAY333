@@ -9,7 +9,7 @@ import org.mapstruct.*;
 /**
  * Mapper para convertir Evento -> EventoResumenDTO con datos mínimos para listado.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EventoResumenMapper {
 
     @Mapping(target = "id", source = "id")

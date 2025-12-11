@@ -1,0 +1,9 @@
+{
+  "timestamp": "2025-12-10T20:20:00Z",
+  "topic": "EVENTO_CAMBIADO",
+  "partition": 0,
+  "offset": 12343,
+  "key": "evento-1",
+  "payload": "{\"eventoId\":1,\"tipoCambio\":\"DATOS_ACTUALIZADOS\",\"campos\":[\"titulo\",\"fecha\",\"precioEntrada\"]}"
+}
+

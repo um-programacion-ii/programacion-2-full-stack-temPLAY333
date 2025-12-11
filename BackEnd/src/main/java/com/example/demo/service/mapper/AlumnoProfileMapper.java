@@ -9,7 +9,7 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity {@link AlumnoProfile} and its DTO {@link AlumnoProfileDTO}.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AlumnoProfileMapper extends EntityMapper<AlumnoProfileDTO, AlumnoProfile> {
     @Mapping(target = "user", source = "user", qualifiedByName = "userLogin")
     AlumnoProfileDTO toDto(AlumnoProfile s);

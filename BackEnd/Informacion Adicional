@@ -29,3 +29,10 @@ e- Durante el bloqueo se cargan los datos del cliente y medio de pago. La parte 
 f- Se realiza la venta
 En redis, se almacena SOLAMENTE los asientos vendidos o bloqueados, el resto se debe considerar como asiento disponible.
 3- En el documento se define el endpoint de login de usuario de una forma similar a esta: http://SERVIDOR:PUERTO/api/authenticate pero en la sección de payload está mal escrito, figura otra dirección, la dirección correcta es la que estoy escribiendo acá.
+
+Buenas tardes. Un par de cosas:
+1- El proceso de bloqueo de asientos estaba reportando mal el bloqueo y la actualizacion de redis era incorrecta. Eso esta solucionado, prueben y me avisan
+2- Algo que no aclaré en su momento, al bloquear asientos el bloqueo se mantiene por 5 minutos, si se quiere vender sin bloqueo o con bloqueo vencido (por tiempo) no se puede realizar la venta.
+3- El mapa de redis del evento contiene los asientos bloqueados, en ese caso tienen un campo de fecha que indica la expiración. Cuando estén armando el mapa de asientos para la venta deben tener esa fecha en cuenta para ver si esta bloqueado y si ha expirado o no, en caso de expirar se puede bloquear nuevamente.
+4- He agregado mas eventos a la base de datos. También he cambiado el tamaño de columnas a un valor chico para que puedan verlo decentemente desde la interfaz movil.
+5- He agregado validación al bloqueo de asientos para verificar que no sepueda bloquear la fila o columna 0 o numero negativo y no mas del limite de filas y columnas.

@@ -8,7 +8,7 @@ import org.mapstruct.*;
 /**
  * Mapper para convertir entre LoginRequestDTO y el VM existente (si se mantiene) y producir LoginResponseDTO.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LoginMapper {
 
     @Mapping(target = "username", source = "username")

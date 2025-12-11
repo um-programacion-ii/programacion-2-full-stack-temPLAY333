@@ -13,7 +13,7 @@ import org.mapstruct.*;
 /**
  * Mapper para convertir Venta + Asientos -> VentaDetalleDTO.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface VentaDetalleMapper {
 
     @Mapping(target = "eventoId", source = "venta.evento.id")
