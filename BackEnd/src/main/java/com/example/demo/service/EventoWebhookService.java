@@ -66,7 +66,7 @@ public class EventoWebhookService {
 
     /**
      * Procesa evento de venta completada.
-     * Payload: {"ventaId":123,"eventoId":1,"asientos":[...],"fechaVenta":"..."}
+     * Payload: {"ventaId":123,"eventoId":1,"asientos":[...],"fechaVenta":"...","username":"alumno1"}
      */
     private void procesarVentaCompletada(String payload) {
         try {
@@ -79,12 +79,16 @@ public class EventoWebhookService {
             // Sincronizar el evento para actualizar asientos vendidos
             eventoSyncService.syncEventoById(eventoId);
 
-            // Aquí puedes agregar lógica adicional:
-            // - Actualizar estadísticas de ventas
-            // - Enviar notificación push a usuarios
-            // - Actualizar inventario de asientos
+            // TODO: Persistir venta en BD local
+            // 1. Buscar/crear usuario por username
+            // 2. Buscar evento por eventoId
+            // 3. Crear entidad Venta con datos del JSON
+            // 4. Crear entidades Asiento asociadas
+            // 5. Guardar en BD
 
+            // Por ahora solo registramos que se procesó
             log.info("Venta completada procesada - VentaId: {}, EventoId: {}", ventaId, eventoId);
+            log.info("La persistencia completa de la venta se implementará según los requisitos del negocio");
         } catch (Exception e) {
             log.error("Error al procesar venta completada: {}", payload, e);
         }

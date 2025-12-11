@@ -38,7 +38,7 @@ public class EventoExternalClient {
      * Lista eventos resumidos desde el proxy.
      */
     public List<EventoResumenDTO> listarEventosResumidos() {
-        String url = proxyBaseUrl + "/proxy/eventos/resumidos";
+        String url = proxyBaseUrl + "/api/eventos/resumidos";
         log.debug("Llamando al proxy para listar eventos resumidos: {}", url);
         EventoResumenDTO[] array = restTemplate.getForObject(url, EventoResumenDTO[].class);
         return array != null ? Arrays.asList(array) : List.of();
@@ -48,7 +48,7 @@ public class EventoExternalClient {
      * Lista eventos completos desde el proxy.
      */
     public List<EventoDTO> listarEventosCompletos() {
-        String url = proxyBaseUrl + "/proxy/eventos";
+        String url = proxyBaseUrl + "/api/eventos";
         log.debug("Llamando al proxy para listar eventos completos: {}", url);
         EventoDTO[] array = restTemplate.getForObject(url, EventoDTO[].class);
         return array != null ? Arrays.asList(array) : List.of();
