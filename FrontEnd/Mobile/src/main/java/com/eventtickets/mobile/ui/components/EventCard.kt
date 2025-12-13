@@ -13,6 +13,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -64,12 +65,20 @@ fun EventCard(
                     fontSize = 14.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = event.categoria,
-                    color = Secondary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Card(
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Secondary
+                    )
+                ) {
+                    Text(
+                        text = event.eventoTipo.nombre,
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
             }
         }
     }

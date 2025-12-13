@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -25,13 +25,10 @@ fun ConfirmSeatsScreen(
     onBackClick: () -> Unit,
     onConfirmClick: () -> Unit
 ) {
-    val event = MockData.getEventById(eventId)
+    val event = MockData.getEventosResumidos().find { it.id == eventId }
 
-    // Asientos de ejemplo (en la implementación real vendrían del ViewModel compartido)
-    val selectedSeats = listOf(
-        Pair(5, 7),
-        Pair(5, 8)
-    )
+    // Obtener asientos reales del PurchaseManager
+    val selectedSeats = com.eventtickets.mobile.data.PurchaseManager.getSelectedSeats()
     val pricePerSeat = 1250.0
     val totalPrice = selectedSeats.size * pricePerSeat
 
@@ -48,7 +45,7 @@ fun ConfirmSeatsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
                             tint = TextPrimary
                         )

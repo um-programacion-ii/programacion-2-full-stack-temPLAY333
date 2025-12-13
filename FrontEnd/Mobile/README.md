@@ -2,7 +2,7 @@
 
 > **Aplicación móvil para compra de entradas a eventos**  
 > Kotlin Multiplatform (Android/iOS)  
-> Dark Mode · Verde/Azul Oscuro
+> Light Mode · Púrpura/Rosa
 
 ---
 
@@ -10,48 +10,48 @@
 
 ### Colores Principales
 ```kotlin
-// Dark Mode Base
-val Background = Color(0xFF0A0E1A)           // Azul muy oscuro - Fondo principal
-val Surface = Color(0xFF141B2E)              // Azul oscuro - Cards y superficies
-val SurfaceVariant = Color(0xFF1A2238)       // Azul oscuro variante - Elevated surfaces
+// Light Mode Base
+val Background = Color(0xFFFFFFFF)           // Blanco - Fondo principal
+val Surface = Color(0xFFFFFFFF)              // Blanco - Cards y superficies
+val SurfaceVariant = Color(0xFFF5F5F5)       // Gris claro - Elevated surfaces
 
 // Colores de Acento
-val Primary = Color(0xFF00E5A0)              // Verde neón - Acciones principales
-val PrimaryVariant = Color(0xFF00B37F)       // Verde oscuro - Hover states
-val Secondary = Color(0xFF4169E1)            // Azul real - Acciones secundarias
-val SecondaryVariant = Color(0xFF2E4C8C)     // Azul oscuro - Hover secundario
+val Primary = Color(0xFF6A5AE0)              // Púrpura vibrante - Acciones principales
+val PrimaryVariant = Color(0xFF5548C8)       // Púrpura oscuro - Hover states
+val Secondary = Color(0xFFE05A6A)            // Rosa coral - Acciones secundarias
+val SecondaryVariant = Color(0xFFD64456)     // Rosa oscuro - Hover secundario
 
 // Estados de Asientos
-val SeatAvailable = Color(0xFF00E5A0)        // Verde neón - Disponible
-val SeatSelected = Color(0xFF4169E1)         // Azul real - Seleccionado
-val SeatBlocked = Color(0xFFFFB84D)          // Naranja suave - Bloqueado
-val SeatSold = Color(0xFFE63946)             // Rojo - Vendido
+val SeatAvailable = Color(0xFF4CAF50)        // Verde - Disponible
+val SeatSelected = Color(0xFF6A5AE0)         // Púrpura - Seleccionado
+val SeatBlocked = Color(0xFFFFA000)          // Naranja - Bloqueado
+val SeatSold = Color(0xFF757575)             // Gris - Vendido
 
 // Textos
-val TextPrimary = Color(0xFFE8EAF6)          // Blanco azulado - Texto principal
-val TextSecondary = Color(0xFF9FA8C7)        // Gris azulado - Texto secundario
-val TextDisabled = Color(0xFF5A6785)         // Gris oscuro - Texto deshabilitado
+val TextPrimary = Color(0xFF212121)          // Casi negro - Texto principal
+val TextSecondary = Color(0xFF757575)        // Gris medio - Texto secundario
+val TextDisabled = Color(0xFFBDBDBD)         // Gris claro - Texto deshabilitado
 
 // Estados
-val Success = Color(0xFF00E5A0)              // Verde - Éxito
-val Error = Color(0xFFE63946)                // Rojo - Error
-val Warning = Color(0xFFFFB84D)              // Naranja - Advertencia
-val Info = Color(0xFF4169E1)                 // Azul - Info
+val Success = Color(0xFF388E3C)              // Verde - Éxito
+val Error = Color(0xFFD32F2F)                // Rojo - Error
+val Warning = Color(0xFFFFA000)              // Naranja - Advertencia
+val Info = Color(0xFF0288D1)                 // Azul - Info
 ```
 
 ### Gradientes
 ```kotlin
 val GradientPrimary = Brush.linearGradient(
     colors = listOf(
-        Color(0xFF00E5A0),
-        Color(0xFF4169E1)
+        Color(0xFF6A5AE0),
+        Color(0xFFE05A6A)
     )
 )
 
 val GradientBackground = Brush.verticalGradient(
     colors = listOf(
-        Color(0xFF0A0E1A),
-        Color(0xFF141B2E)
+        Color(0xFFFFFFFF),
+        Color(0xFFF5F5F5)
     )
 )
 ```
