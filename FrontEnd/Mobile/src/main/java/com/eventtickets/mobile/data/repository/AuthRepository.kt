@@ -8,6 +8,26 @@ import com.eventtickets.mobile.data.network.dto.*
  */
 class AuthRepository {
 
+    suspend fun register(username: String, email: String, password: String): Result<RegisterResponse> {
+        return try {
+            val response = RetrofitClient.apiService.register(
+                RegisterRequest(username, email, password)
+            )
+
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorMsg = when (response.code()) {
+                    400 -> "Usuario o email ya existe"
+                    else -> "Error al crear cuenta: ${response.code()}"
+                }
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Error de conexión: ${e.message}"))
+        }
+    }
+
     suspend fun login(username: String, password: String): Result<String> {
         return try {
             val response = RetrofitClient.apiService.authenticate(

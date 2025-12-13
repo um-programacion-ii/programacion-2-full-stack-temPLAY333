@@ -1403,17 +1403,43 @@ fun HomeScreen(
 
 ---
 
-**Última actualización**: 2025-12-11  
+**Última actualización**: 2025-12-13  
 **Versión**: 1.0.0  
-**Estado**: Propuesta inicial - Listo para desarrollo
+**Estado**: ✅ Completo y listo para usar
 
 ---
 
-## 📞 Contacto
+## 📚 Documentación
 
-Para dudas sobre el diseño o la implementación, revisar:
-- `BackEnd.md` - Documentación de API
-- Este README - Especificación de UI/UX
+### Para Frontend (Mobile)
+- ✅ `README.md` - Arquitectura, UI/UX, pantallas (este archivo)
+- ✅ `TESTING.md` - Guía completa de testing
+- ✅ `INTEGRATION.md` - Cómo integrar con backend
+
+### Para Backend
+- ✅ `BackEnd.md` - Especificación completa de API (9-10 endpoints)
+- ✅ `BACKEND_REQUIREMENTS_FINAL.md` - Resumen ejecutivo de lo que necesitas implementar
+
+**Endpoints requeridos:**
+1. ✅ `POST /api/register` - Registro (NUEVO)
+2. ✅ `POST /api/authenticate` - Login
+3. ✅ `GET /api/eventos-consulta/resumidos` - Lista eventos
+4. ✅ `GET /api/eventos-consulta/{id}` - Detalle
+5. ✅ `GET /api/asientos/evento/{id}/mapa` - Mapa asientos
+6. ✅ `POST /api/asientos/evento/{id}/bloquear` - Bloquear
+7. ✅ `POST /api/ventas/evento/{id}/realizar` - Comprar
+8. ✅ `GET /api/ventas` - Mis compras
+9. ✅ `GET /api/ventas/{id}` - Detalle compra
+10. ⚪ `GET /api/eventos-consulta/buscar` - Búsqueda (opcional)
+
+---
+
+## 📞 Contacto y Dudas
+
+- **Dudas sobre API:** Ver `BackEnd.md` y `BACKEND_REQUIREMENTS_FINAL.md`
+- **Dudas sobre UI/UX:** Ver este `README.md`
+- **Dudas sobre tests:** Ver `TESTING.md`
+- **Dudas sobre integración:** Ver `INTEGRATION.md`
 
 ¡Manos a la obra! 🚀
 

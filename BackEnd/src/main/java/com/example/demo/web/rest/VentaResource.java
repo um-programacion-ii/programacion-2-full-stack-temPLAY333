@@ -88,15 +88,18 @@ public class VentaResource {
 
     /**
      * GET /api/ventas/{id} : Obtiene los detalles de una venta específica.
+     * Solo permite acceder a ventas del usuario autenticado.
      *
      * @param id ID de la venta
+     * @param principal Usuario autenticado
      * @return Detalles de la venta
      */
     @GetMapping("/{id}")
-    public ResponseEntity<VentaDTO> obtenerVenta(@PathVariable Long id) {
-        log.debug("REST request para obtener venta {}", id);
+    public ResponseEntity<VentaDTO> obtenerVenta(@PathVariable Long id, Principal principal) {
+        String username = principal.getName();
+        log.debug("REST request para obtener venta {} del usuario {}", id, username);
 
-        return ventaService.obtenerVenta(id)
+        return ventaService.obtenerVenta(id, username)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }

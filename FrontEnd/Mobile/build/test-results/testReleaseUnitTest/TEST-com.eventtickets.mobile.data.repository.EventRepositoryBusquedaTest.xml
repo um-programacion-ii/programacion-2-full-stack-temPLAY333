@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.eventtickets.mobile.data.repository.EventRepositoryBusquedaTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2025-12-13T18:04:08.108Z" hostname="DESKTOP-Q5T47FV" time="0.395">
+  <properties/>
+  <testcase name="buscarEventos sin parámetros retorna todos los eventos" classname="com.eventtickets.mobile.data.repository.EventRepositoryBusquedaTest" time="0.047"/>
+  <testcase name="buscarEventos con texto y categoría retorna eventos filtrados por ambos" classname="com.eventtickets.mobile.data.repository.EventRepositoryBusquedaTest" time="0.04"/>
+  <testcase name="buscarEventos con múltiples resultados retorna todos correctamente" classname="com.eventtickets.mobile.data.repository.EventRepositoryBusquedaTest" time="0.04"/>
+  <testcase name="buscarEventos con categoría retorna eventos de esa categoría" classname="com.eventtickets.mobile.data.repository.EventRepositoryBusquedaTest" time="0.04"/>
+  <testcase name="buscarEventos con respuesta null retorna failure" classname="com.eventtickets.mobile.data.repository.EventRepositoryBusquedaTest" time="0.037"/>
+  <testcase name="buscarEventos con error de red retorna failure" classname="com.eventtickets.mobile.data.repository.EventRepositoryBusquedaTest" time="0.04"/>
+  <testcase name="buscarEventos mapea correctamente DTOs a modelo de dominio" classname="com.eventtickets.mobile.data.repository.EventRepositoryBusquedaTest" time="0.038"/>
+  <testcase name="buscarEventos sin resultados retorna lista vacía" classname="com.eventtickets.mobile.data.repository.EventRepositoryBusquedaTest" time="0.036"/>
+  <testcase name="buscarEventos con texto retorna eventos filtrados" classname="com.eventtickets.mobile.data.repository.EventRepositoryBusquedaTest" time="0.038"/>
+  <testcase name="buscarEventos con error 404 retorna failure con mensaje" classname="com.eventtickets.mobile.data.repository.EventRepositoryBusquedaTest" time="0.039"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -39,10 +39,7 @@ class AuthTokenServiceTest {
 
     @BeforeEach
     void setUp() {
-        WebClient.Builder builder = mock(WebClient.Builder.class);
-        when(builder.build()).thenReturn(webClient);
-
-        authTokenService = new AuthTokenService(builder);
+        authTokenService = new AuthTokenService();
 
         // Configurar valores usando reflection
         ReflectionTestUtils.setField(authTokenService, "catedraBaseUrl", "http://test:8080");
@@ -50,6 +47,7 @@ class AuthTokenServiceTest {
         ReflectionTestUtils.setField(authTokenService, "username", "testuser");
         ReflectionTestUtils.setField(authTokenService, "password", "testpass");
         ReflectionTestUtils.setField(authTokenService, "tokenTtlSeconds", 3600L);
+        ReflectionTestUtils.setField(authTokenService, "webClientRaw", webClient);
     }
 
     @Test
@@ -150,6 +148,48 @@ class AuthTokenServiceTest {
         Optional<String> token = authTokenService.getCurrentToken();
         assertTrue(token.isPresent());
         assertEquals("scheduled-refresh-token", token.get());
+    }
+
+    @Test
+    void init_conCredencialesConfiguradasDeberiaObtenerToken() {
+        // Arrange - Las credenciales ya están configuradas via ReflectionTestUtils en setUp()
+        LoginResponseDTO mockResponse = new LoginResponseDTO();
+        mockResponse.setIdToken("init-token");
+
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.contentType(any())).thenReturn(requestBodySpec);
+        when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(), any())).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(LoginResponseDTO.class)).thenReturn(Mono.just(mockResponse));
+
+        // Act
+        authTokenService.init();
+
+        // Assert
+        verify(webClient, atLeastOnce()).post();
+        Optional<String> token = authTokenService.getCurrentToken();
+        assertTrue(token.isPresent(), "El token debería estar presente después de init()");
+    }
+
+    @Test
+    void init_sinCredencialesNoDeberiaIntentarObtenerToken() {
+        // Arrange - Crear service sin credenciales
+        AuthTokenService serviceNoCreds = new AuthTokenService();
+
+        ReflectionTestUtils.setField(serviceNoCreds, "catedraBaseUrl", "http://test:8080");
+        ReflectionTestUtils.setField(serviceNoCreds, "apiBase", "/api");
+        ReflectionTestUtils.setField(serviceNoCreds, "username", "");
+        ReflectionTestUtils.setField(serviceNoCreds, "password", "");
+        ReflectionTestUtils.setField(serviceNoCreds, "tokenTtlSeconds", 3600L);
+
+        // Act
+        serviceNoCreds.init();
+
+        // Assert
+        Optional<String> token = serviceNoCreds.getCurrentToken();
+        assertFalse(token.isPresent(), "No debería haber token si no hay credenciales");
     }
 }
 

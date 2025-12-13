@@ -57,15 +57,59 @@
 
 ## 🔐 Autenticación
 
-### 1. Login
+### 1. Registro de Usuario (Sign Up)
+
+**Endpoint**: `POST /api/register`
+
+**Request Body**:
+```json
+{
+  "username": "juan_perez",
+  "email": "juan@ejemplo.com",
+  "password": "mipassword123"
+}
+```
+
+**Response** (201 Created):
+```json
+{
+  "mensaje": "Usuario creado exitosamente",
+  "user_id": 1,
+  "username": "juan_perez"
+}
+```
+
+**Response** (400 Bad Request):
+```json
+{
+  "mensaje": "Validación fallida",
+  "errores": [
+    "El username ya existe"
+  ]
+}
+```
+
+**Validaciones**:
+- Username: único, 3-50 caracteres, solo letras/números/guiones
+- Email: único, formato válido
+- Password: mínimo 6 caracteres, se guarda hasheado (BCrypt)
+
+**Notas**:
+- La app tiene pantalla `SignInScreen` lista para este endpoint
+- Después de registrarse, el usuario debe hacer login
+- Permite múltiples usuarios (aunque inicialmente sea uno solo)
+
+---
+
+### 2. Login
 
 **Endpoint**: `POST /api/authenticate`
 
 **Request Body**:
 ```json
 {
-  "username": "admin",
-  "password": "admin"
+  "username": "juan_perez",
+  "password": "mipassword123"
 }
 ```
 
@@ -73,6 +117,13 @@
 ```json
 {
   "id_token": "eyJhbGciOiJIUzUxMiJ9..."
+}
+```
+
+**Response** (401 Unauthorized):
+```json
+{
+  "mensaje": "Usuario o contraseña incorrectos"
 }
 ```
 
@@ -85,6 +136,7 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiJ9...
 **Expiración**: 
 - Token válido por 24 horas
 - Si recibes `401 Unauthorized`, debes hacer login nuevamente
+- El token contiene `user_id` para identificar al usuario
 
 ---
 
@@ -114,6 +166,56 @@ GET /api/eventos-consulta/resumidos
 ```
 
 **UI**: Mostrar lista de tarjetas con título, fecha, imagen
+
+---
+
+### Paso 1.5: Buscar/Filtrar Eventos (Opcional)
+
+```
+GET /api/eventos-consulta/buscar?texto={query}
+```
+
+**Query Parameters**:
+- `texto` (String, opcional): Busca en título y resumen del evento
+- `categoria` (String, opcional): Filtra por tipo de evento (ej: "Música", "Deportes")
+
+**Ejemplo**:
+```
+GET /api/eventos-consulta/buscar?texto=rock&categoria=Música
+```
+
+**Response** (200 OK):
+```json
+[
+  {
+    "id": 1,
+    "titulo": "Concierto Rock",
+    "resumen": "Banda local de rock",
+    "fecha": "2025-12-15T20:00:00Z",
+    "imagen": "https://...",
+    "eventoTipo": {
+      "id": 1,
+      "nombre": "Música"
+    }
+  }
+]
+```
+
+**Notas**:
+- La búsqueda debe ser **case-insensitive**
+- Si `texto` está vacío, retorna todos los eventos (como `/resumidos`)
+- Si no hay resultados, retorna array vacío `[]`
+- La app tiene SearchBar en HomeScreen lista para usar este endpoint
+
+**Alternativa (Frontend)**:
+Si hay < 100 eventos, también es válido hacer el filtrado en el frontend:
+```kotlin
+// Frontend descarga todos y filtra localmente
+val eventos = getAllEventos()
+val filtrados = eventos.filter { 
+    it.titulo.contains(query, ignoreCase = true) 
+}
+```
 
 ---
 
@@ -1339,15 +1441,26 @@ interface BackendApiService {
 - [ ] Timeouts: 30 segundos mínimo
 - [ ] Manejo de errores HTTP (401, 400, 404, 500)
 
+### Pantalla de Registro (SignInScreen)
+- [ ] Endpoint: `POST /api/register`
+- [ ] Validar username, email y password
+- [ ] Mostrar errores si usuario/email ya existe
+- [ ] Después de registro exitoso, redirigir a Login
+
 ### Pantalla de Login
 - [ ] Endpoint: `POST /api/authenticate`
 - [ ] Guardar token JWT en almacenamiento seguro
 - [ ] Agregar token a todas las llamadas subsiguientes
+- [ ] Botón "Crear Cuenta" que lleva a SignInScreen
 
-### Pantalla de Eventos
+### Pantalla de Eventos (HomeScreen)
 - [ ] Endpoint: `GET /api/eventos-consulta/resumidos`
 - [ ] Mostrar: título, fecha, imagen, tipo
 - [ ] Pull-to-refresh para actualizar
+- [ ] **OPCIONAL:** SearchBar en TopBar
+  - [ ] Endpoint: `GET /api/eventos-consulta/buscar?texto={query}`
+  - [ ] O filtrado local en frontend (si < 100 eventos)
+  - [ ] Mostrar "Sin resultados" si no hay matches
 
 ### Pantalla de Detalle
 - [ ] Endpoint: `GET /api/eventos-consulta/{id}`
@@ -1389,6 +1502,38 @@ interface BackendApiService {
 - [ ] Guardar en KeyStore/Keychain
 - [ ] Renovar al recibir 401
 - [ ] Borrar al cerrar sesión
+
+---
+
+## 📊 Resumen de Endpoints
+
+### Endpoints Esenciales (Requeridos)
+
+| # | Método | Endpoint | Descripción | Pantalla |
+|---|--------|----------|-------------|----------|
+| 1 | POST | `/api/register` | Registro de usuario | SignInScreen |
+| 2 | POST | `/api/authenticate` | Login | LoginScreen |
+| 3 | GET | `/api/eventos-consulta/resumidos` | Lista de eventos | HomeScreen |
+| 4 | GET | `/api/eventos-consulta/{id}` | Detalle de evento | EventDetailScreen |
+| 5 | GET | `/api/asientos/evento/{id}/mapa` | Mapa de asientos | SeatMapScreen |
+| 6 | POST | `/api/asientos/evento/{id}/bloquear` | Bloquear asientos | ConfirmSeatsScreen |
+| 7 | POST | `/api/ventas/evento/{id}/realizar` | Completar compra | PurchaseSummaryScreen |
+| 8 | GET | `/api/ventas` | Mis compras | MyPurchasesScreen |
+| 9 | GET | `/api/ventas/{id}` | Detalle de compra | PurchaseDetailScreen |
+
+**Total:** 9 endpoints esenciales
+
+---
+
+### Endpoints Opcionales (Nice to Have)
+
+| # | Método | Endpoint | Descripción | Cuándo implementar |
+|---|--------|----------|-------------|---------------------|
+| 10 | GET | `/api/eventos-consulta/buscar` | Buscar/filtrar eventos | Si hay > 100 eventos |
+
+**Nota sobre búsqueda:**
+- **< 100 eventos:** Implementar filtrado en **frontend** (más rápido, sin latencia)
+- **> 100 eventos:** Implementar búsqueda en **backend** (necesario por volumen)
 
 ---
 

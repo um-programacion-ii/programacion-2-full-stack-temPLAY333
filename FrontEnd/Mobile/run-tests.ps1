@@ -1,61 +1,83 @@
 #!/usr/bin/env pwsh
 # Script para ejecutar tests y mostrar resumen
 
-Write-Host "🧪 Ejecutando tests..." -ForegroundColor Cyan
+Write-Host "Ejecutando tests..." -ForegroundColor Cyan
 Write-Host ""
 
-$output = & .\gradlew test 2>&1 | Out-String
+# Ejecutar gradlew y capturar salida
+$ErrorActionPreference = 'Continue'
+.\gradlew test --console=plain 2>&1 | Tee-Object -Variable output | Out-Null
 
-# Extraer resultado
-if ($output -match "(\d+) tests completed, (\d+) failed") {
-    $total = $matches[1]
-    $failed = $matches[2]
-    $passed = $total - $failed
-    $percentage = [math]::Round(($passed / $total) * 100, 2)
+# Convertir array a string
+$outputStr = $output -join "`n"
 
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor White
-    Write-Host "📊 RESULTADO DE TESTS" -ForegroundColor Yellow
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor White
-    Write-Host ""
-    Write-Host "  Total:   $total tests" -ForegroundColor White
-    Write-Host "  ✅ Pasan: $passed tests ($percentage%)" -ForegroundColor Green
-    Write-Host "  ❌ Fallan: $failed tests" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor White
+Write-Host ""
+Write-Host "========================================" -ForegroundColor White
+Write-Host "ANALIZANDO RESULTADOS..." -ForegroundColor Yellow
+Write-Host "========================================" -ForegroundColor White
+Write-Host ""
 
-    if ($failed -eq 0) {
-        Write-Host ""
-        Write-Host "🎉 ¡Todos los tests pasan!" -ForegroundColor Green
-        Write-Host ""
-    } else {
-        Write-Host ""
-        Write-Host "⚠️  Algunos tests fallan. Ver reporte en:" -ForegroundColor Yellow
-        Write-Host "   build/reports/tests/testDebugUnitTest/index.html" -ForegroundColor Gray
-        Write-Host ""
+# Buscar en el archivo de reporte XML
+$reportFile = "build\test-results\testDebugUnitTest\TEST-*.xml"
+if (Test-Path $reportFile) {
+    $xmlFiles = Get-ChildItem $reportFile
+    $totalTests = 0
+    $totalFailures = 0
+
+    foreach ($file in $xmlFiles) {
+        [xml]$xml = Get-Content $file
+        if ($xml.testsuite) {
+            $totalTests += [int]$xml.testsuite.tests
+            $totalFailures += [int]$xml.testsuite.failures + [int]$xml.testsuite.errors
+        }
     }
-} elseif ($output -match "(\d+) tests completed") {
-    $total = $matches[1]
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor White
-    Write-Host "📊 RESULTADO DE TESTS" -ForegroundColor Yellow
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor White
-    Write-Host ""
-    Write-Host "  ✅ Todos los $total tests pasan!" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor White
-    Write-Host ""
-    Write-Host "🎉 ¡100% de éxito!" -ForegroundColor Green
-    Write-Host ""
+
+    if ($totalTests -gt 0) {
+        $passed = $totalTests - $totalFailures
+        $percentage = [math]::Round(($passed / $totalTests) * 100, 2)
+
+        Write-Host "  Total:   $totalTests tests" -ForegroundColor White
+        Write-Host "  Pasan:   $passed tests ($percentage%)" -ForegroundColor Green
+        Write-Host "  Fallan:  $totalFailures tests" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "========================================" -ForegroundColor White
+
+        if ($totalFailures -eq 0) {
+            Write-Host ""
+            Write-Host "Todos los tests pasan!" -ForegroundColor Green
+        } else {
+            Write-Host ""
+            Write-Host "Ver reporte detallado en:" -ForegroundColor Yellow
+            Write-Host "  build\reports\tests\testDebugUnitTest\index.html" -ForegroundColor Gray
+        }
+    }
 } else {
-    Write-Host "❌ No se pudo determinar el resultado" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Ver output completo arriba" -ForegroundColor Gray
+    # Fallback: buscar en output
+    if ($outputStr -match "(\d+) tests completed, (\d+) failed") {
+        $total = [int]$matches[1]
+        $failed = [int]$matches[2]
+        $passed = $total - $failed
+        $percentage = [math]::Round(($passed / $total) * 100, 2)
+
+        Write-Host "  Total:   $total tests" -ForegroundColor White
+        Write-Host "  Pasan:   $passed tests ($percentage%)" -ForegroundColor Green
+        Write-Host "  Fallan:  $failed tests" -ForegroundColor Red
+    } elseif ($outputStr -match "(\d+) tests completed") {
+        $total = [int]$matches[1]
+        Write-Host "  Todos los $total tests pasan!" -ForegroundColor Green
+    } else {
+        Write-Host "No se encontraron resultados de tests." -ForegroundColor Yellow
+        Write-Host "Los tests se ejecutaron pero no se pudo parsear el resultado." -ForegroundColor Gray
+    }
 }
 
-# Mostrar si BUILD SUCCESSFUL o FAILED
-if ($output -match "BUILD SUCCESSFUL") {
-    Write-Host "✅ BUILD SUCCESSFUL" -ForegroundColor Green
-} elseif ($output -match "BUILD FAILED") {
-    Write-Host "❌ BUILD FAILED" -ForegroundColor Red
+Write-Host ""
+
+# Mostrar estado del build
+if ($outputStr -match "BUILD SUCCESSFUL") {
+    Write-Host "BUILD SUCCESSFUL" -ForegroundColor Green
+} elseif ($outputStr -match "BUILD FAILED") {
+    Write-Host "BUILD FAILED" -ForegroundColor Red
 }
 
 Write-Host ""

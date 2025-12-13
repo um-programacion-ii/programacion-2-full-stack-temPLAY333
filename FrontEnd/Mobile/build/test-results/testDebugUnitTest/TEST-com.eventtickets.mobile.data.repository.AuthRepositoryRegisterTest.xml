@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.eventtickets.mobile.data.repository.AuthRepositoryRegisterTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2025-12-13T18:03:57.568Z" hostname="DESKTOP-Q5T47FV" time="0.993">
+  <properties/>
+  <testcase name="register con username existente retorna error 400" classname="com.eventtickets.mobile.data.repository.AuthRepositoryRegisterTest" time="0.628"/>
+  <testcase name="register con respuesta null retorna error" classname="com.eventtickets.mobile.data.repository.AuthRepositoryRegisterTest" time="0.048"/>
+  <testcase name="register valida formato de request" classname="com.eventtickets.mobile.data.repository.AuthRepositoryRegisterTest" time="0.05"/>
+  <testcase name="register con email existente retorna error 400" classname="com.eventtickets.mobile.data.repository.AuthRepositoryRegisterTest" time="0.052"/>
+  <testcase name="register con error de red retorna excepción" classname="com.eventtickets.mobile.data.repository.AuthRepositoryRegisterTest" time="0.047"/>
+  <testcase name="register con caracteres especiales en username funciona" classname="com.eventtickets.mobile.data.repository.AuthRepositoryRegisterTest" time="0.047"/>
+  <testcase name="register con error 500 del servidor retorna mensaje genérico" classname="com.eventtickets.mobile.data.repository.AuthRepositoryRegisterTest" time="0.055"/>
+  <testcase name="register exitoso retorna RegisterResponse" classname="com.eventtickets.mobile.data.repository.AuthRepositoryRegisterTest" time="0.066"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

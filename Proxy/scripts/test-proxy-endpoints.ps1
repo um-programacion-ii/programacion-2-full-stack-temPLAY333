@@ -61,7 +61,7 @@ function Show-Menu {
     Write-Host "PRUEBA DE ENDPOINTS DEL PROXY" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Cyan
     Write-Host "Proxy URL: $PROXY_URL" -ForegroundColor Yellow
-    Write-Host "Autenticación: Automática (manejada por el Proxy)" -ForegroundColor Green
+    Write-Host "Autenticacion: Automatica (manejada por el Proxy)" -ForegroundColor Green
     Write-Host ""
     Write-Host "== USUARIOS ==" -ForegroundColor Magenta
     Write-Host "1. Login de usuario (POST $API_BASE/users/login)" -ForegroundColor White
@@ -78,7 +78,7 @@ function Show-Menu {
     Write-Host "8. Listar ventas (GET $API_BASE/ventas)" -ForegroundColor White
     Write-Host "9. Ver venta por ID (GET $API_BASE/ventas/{id})" -ForegroundColor White
     Write-Host ""
-    Write-Host "== ADMINISTRACIÓN ==" -ForegroundColor Magenta
+    Write-Host "== ADMINISTRACION ==" -ForegroundColor Magenta
     Write-Host "A. Health check (GET /actuator/health)" -ForegroundColor White
     Write-Host "B. Estado del token JWT (GET /actuator/auth/status)" -ForegroundColor White
     Write-Host "C. Renovar token JWT (POST /actuator/auth/refresh)" -ForegroundColor White
@@ -144,7 +144,7 @@ function Invoke-ProxyRequest {
         Write-Host "Mensaje: $msg" -ForegroundColor Red
 
         if ($statusCode -eq 401) {
-            Write-Host "No autorizado. El Proxy no pudo autenticarse con la cátedra." -ForegroundColor Yellow
+            Write-Host "No autorizado. El Proxy no pudo autenticarse con la catedra." -ForegroundColor Yellow
             Write-Host "Verifica: GET /actuator/auth/status" -ForegroundColor Yellow
         }
         if ($statusCode -eq 404) {

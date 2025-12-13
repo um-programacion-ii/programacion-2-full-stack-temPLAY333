@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2025-12-13T18:03:55.492Z" hostname="DESKTOP-Q5T47FV" time="1.911">
+  <properties/>
+  <testcase name="onNameChange actualiza el nombre" classname="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" time="1.363"/>
+  <testcase name="onSignInClick con contraseñas no coincidentes muestra error" classname="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" time="0.139"/>
+  <testcase name="onConfirmPasswordChange actualiza confirmación" classname="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" time="0.001"/>
+  <testcase name="onSignInClick con email vacío muestra error" classname="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" time="0.003"/>
+  <testcase name="onSignInClick con email inválido muestra error" classname="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" time="0.003"/>
+  <testcase name="onSignInClick con nombre vacío muestra error" classname="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" time="0.002"/>
+  <testcase name="onPasswordChange actualiza la contraseña" classname="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" time="0.001"/>
+  <testcase name="onSignInClick con contraseña corta muestra error" classname="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" time="0.002"/>
+  <testcase name="onEmailChange actualiza el email" classname="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" time="0.001"/>
+  <testcase name="validación ocurre antes de llamar al repository" classname="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" time="0.393"/>
+  <testcase name="estado inicial es correcto" classname="com.eventtickets.mobile.ui.screens.signin.SignInViewModelTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (C:\Users\totob\.gradle\caches\8.14\transforms\61204cf543692e842d0a16539eabf700\transformed\jetified-byte-buddy-agent-1.14.6.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

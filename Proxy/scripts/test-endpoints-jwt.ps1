@@ -49,9 +49,16 @@ if (-not $API_BASE)    { $API_BASE    = "/api" }
 
 $API_V1 = "$SERVER_URL$API_BASE/endpoints/v1"
 
+Write-Host "DEBUG: SERVER_URL = $SERVER_URL" -ForegroundColor Gray
+Write-Host "DEBUG: API_BASE = $API_BASE" -ForegroundColor Gray
+Write-Host "DEBUG: API_V1 = $API_V1" -ForegroundColor Gray
+
 if (-not $JWT_TOKEN) {
     Write-Host "Aviso: JWT_TOKEN no encontrado en .env. Podrás hacer login (opción 2) pero el resto puede fallar con 401." -ForegroundColor Yellow
+} else {
+    Write-Host "DEBUG: JWT_TOKEN encontrado (longitud: $($JWT_TOKEN.Length) caracteres)" -ForegroundColor Gray
 }
+Write-Host ""
 
 $jsonContent = 'application/json'
 # Construir headers compatibles con PS 5.1 (sin if inline)

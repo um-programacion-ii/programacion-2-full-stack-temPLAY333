@@ -78,7 +78,7 @@ class VentaProxyControllerTest {
         when(responseSpec.bodyToMono(RealizarVentaResponseDTO.class)).thenReturn(Mono.just(response));
 
         // Act (async)
-        MvcResult result = mockMvc.perform(post("/proxy/ventas/realizar")
+        MvcResult result = mockMvc.perform(post("/api/ventas/realizar")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(request().asyncStarted())
@@ -119,7 +119,7 @@ class VentaProxyControllerTest {
                 .thenReturn(Mono.just(ventas));
 
         // Act (async)
-        MvcResult result = mockMvc.perform(get("/proxy/ventas"))
+        MvcResult result = mockMvc.perform(get("/api/ventas"))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
@@ -153,7 +153,7 @@ class VentaProxyControllerTest {
         when(responseSpec.bodyToMono(VentaDTO.class)).thenReturn(Mono.just(venta));
 
         // Act (async)
-        MvcResult result = mockMvc.perform(get("/proxy/ventas/{id}", ventaId))
+        MvcResult result = mockMvc.perform(get("/api/ventas/{id}", ventaId))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
@@ -193,7 +193,7 @@ class VentaProxyControllerTest {
                 .thenReturn(Mono.error(new RuntimeException("Servicio no disponible")));
 
         // Act (async)
-        MvcResult result = mockMvc.perform(post("/proxy/ventas/realizar")
+        MvcResult result = mockMvc.perform(post("/api/ventas/realizar")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(request().asyncStarted())

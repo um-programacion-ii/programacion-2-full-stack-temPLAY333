@@ -12,6 +12,9 @@ interface ApiService {
 
     // ==================== AUTENTICACIÓN ====================
 
+    @POST("/api/register")
+    suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>
+
     @POST("/api/authenticate")
     suspend fun authenticate(@Body credentials: LoginRequest): Response<LoginResponse>
 
@@ -19,6 +22,12 @@ interface ApiService {
 
     @GET("/api/eventos-consulta/resumidos")
     suspend fun getEventosResumidos(): Response<List<EventoResumenDTO>>
+
+    @GET("/api/eventos-consulta/buscar")
+    suspend fun buscarEventos(
+        @Query("texto") texto: String? = null,
+        @Query("categoria") categoria: String? = null
+    ): Response<List<EventoResumenDTO>>
 
     @GET("/api/eventos-consulta/{id}")
     suspend fun getEventoDetalle(@Path("id") id: Long): Response<EventoDetalleDTO>

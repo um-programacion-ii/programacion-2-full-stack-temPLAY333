@@ -23,15 +23,19 @@ import java.util.List;
  * Controlador proxy para operaciones de eventos y asientos.
  */
 @RestController
-@RequestMapping("/proxy/eventos")
+@RequestMapping("/api/eventos")
 public class EventoProxyController {
 
     private static final Logger log = LoggerFactory.getLogger(EventoProxyController.class);
 
     private final WebClient webClient;
     private final AsientoRedisService asientoRedisService;
+
     @org.springframework.beans.factory.annotation.Autowired(required = false)
     private um.prog2.service.NotificadorBackendService notificadorBackendService;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private um.prog2.service.MockCatedraService mockCatedraService;
 
     @Value("${app.catedra.base-url}")
     private String catedraBaseUrl;
@@ -48,6 +52,12 @@ public class EventoProxyController {
     @GetMapping("/resumidos")
     public Mono<ResponseEntity<List<EventoResumenDTO>>> listarEventosResumidos() {
         log.debug("Proxy solicitando eventos resumidos");
+
+        // Si el mock está activo, usarlo
+        if (mockCatedraService != null) {
+            log.debug("Usando MockCatedraService para eventos resumidos");
+            return Mono.just(ResponseEntity.ok(mockCatedraService.listarEventosResumidos()));
+        }
 
         return webClient.get()
             .uri(catedraBaseUrl + "/api/endpoints/v1/eventos-resumidos")
@@ -66,6 +76,12 @@ public class EventoProxyController {
     public Mono<ResponseEntity<List<EventoDTO>>> listarEventosCompletos() {
         log.debug("Proxy solicitando eventos completos");
 
+        // Si el mock está activo, usarlo
+        if (mockCatedraService != null) {
+            log.debug("Usando MockCatedraService para eventos completos");
+            return Mono.just(ResponseEntity.ok(mockCatedraService.listarEventosCompletos()));
+        }
+
         return webClient.get()
             .uri(catedraBaseUrl + "/api/endpoints/v1/eventos")
             .retrieve()
@@ -82,6 +98,17 @@ public class EventoProxyController {
     @GetMapping("/{id}")
     public Mono<ResponseEntity<EventoDetalleDTO>> obtenerEvento(@PathVariable Long id) {
         log.debug("Proxy solicitando evento con id: {}", id);
+
+        // Si el mock está activo, usarlo
+        if (mockCatedraService != null) {
+            log.debug("Usando MockCatedraService para evento {}", id);
+            EventoDetalleDTO detalle = mockCatedraService.obtenerEventoDetalle(id);
+            if (detalle != null) {
+                return Mono.just(ResponseEntity.ok(detalle));
+            } else {
+                return Mono.just(ResponseEntity.notFound().build());
+            }
+        }
 
         return webClient.get()
             .uri(catedraBaseUrl + "/api/endpoints/v1/evento/{id}", id)
@@ -101,6 +128,16 @@ public class EventoProxyController {
     public Mono<ResponseEntity<BloquearAsientosResponseDTO>> bloquearAsientos(
             @Valid @RequestBody BloquearAsientosRequestDTO request) {
         log.debug("Proxy bloqueando asientos para evento: {}", request.getEventoId());
+
+        // Si el mock está activo, usarlo
+        if (mockCatedraService != null) {
+            log.debug("Usando MockCatedraService para bloquear asientos");
+            BloquearAsientosResponseDTO response = mockCatedraService.bloquearAsientos(
+                request.getEventoId(),
+                request.getAsientos()
+            );
+            return Mono.just(ResponseEntity.ok(response));
+        }
 
         return webClient.post()
             .uri(catedraBaseUrl + "/api/endpoints/v1/bloquear-asientos")
@@ -128,6 +165,12 @@ public class EventoProxyController {
      */
     @GetMapping("/{id}/asientos-estado")
     public Mono<ResponseEntity<List<AsientoEstadoDTO>>> obtenerEstadoAsientos(@PathVariable Long id) {
+        // Si el mock está activo, usarlo
+        if (mockCatedraService != null) {
+            log.debug("Usando MockCatedraService para estado de asientos del evento {}", id);
+            return Mono.just(ResponseEntity.ok(mockCatedraService.obtenerEstadoAsientos(id)));
+        }
+
         return Mono.defer(() -> Mono.just(asientoRedisService.obtenerEstadoAsientos(id)))
             .map(ResponseEntity::ok)
             .onErrorResume(err -> {
