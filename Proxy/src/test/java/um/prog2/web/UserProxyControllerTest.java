@@ -60,7 +60,7 @@ class UserProxyControllerTest {
         when(responseSpec.bodyToMono(LoginResponseDTO.class)).thenReturn(Mono.just(response));
 
         // Act
-        MvcResult result = mockMvc.perform(post("/proxy/users/login")
+        MvcResult result = mockMvc.perform(post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(request().asyncStarted())
@@ -92,7 +92,7 @@ class UserProxyControllerTest {
         when(responseSpec.bodyToMono(LoginResponseDTO.class)).thenReturn(Mono.error(new RuntimeException("Unauthorized")));
 
         // Act
-        MvcResult result = mockMvc.perform(post("/proxy/users/login")
+        MvcResult result = mockMvc.perform(post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(request().asyncStarted())

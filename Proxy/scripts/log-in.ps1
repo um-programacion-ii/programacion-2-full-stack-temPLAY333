@@ -20,13 +20,13 @@ $body = @{
     firstName = "Tomas"
     lastName = "Bourguet"
     email = "t.bourguet@alumno.um.edu.ar"
-    nombreAlumno = "Tomás Bourguet"
+    nombreAlumno = "Tomas Bourguet"
     descripcionProyecto = "Proyecto Final de Microservicios para prog2"
 } | ConvertTo-Json
 
 $headers = @{ "Content-Type" = "application/json" }
 
-Write-Host "=== Enviando petición a: $url ===" -ForegroundColor Cyan
+Write-Host "=== Enviando peticion a: $url ===" -ForegroundColor Cyan
 Write-Host "Body:" -ForegroundColor Yellow
 Write-Host $body
 Write-Host ""

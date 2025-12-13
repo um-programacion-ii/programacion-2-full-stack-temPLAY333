@@ -72,7 +72,7 @@ class EventoProxyControllerTest {
         when(asientoRedisService.obtenerEstadoAsientos(eventoId)).thenReturn(asientos);
 
         // Act (async porque usa Mono.defer)
-        MvcResult result = mockMvc.perform(get("/proxy/eventos/{id}/asientos-estado", eventoId))
+        MvcResult result = mockMvc.perform(get("/api/eventos/{id}/asientos-estado", eventoId))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
@@ -116,7 +116,7 @@ class EventoProxyControllerTest {
         when(responseSpec.bodyToMono(BloquearAsientosResponseDTO.class)).thenReturn(Mono.just(response));
 
         // Act (async)
-        MvcResult result = mockMvc.perform(post("/proxy/eventos/bloquear-asientos")
+        MvcResult result = mockMvc.perform(post("/api/eventos/bloquear-asientos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(request().asyncStarted())
@@ -149,7 +149,7 @@ class EventoProxyControllerTest {
         when(responseSpec.bodyToMono(EventoDetalleDTO.class)).thenReturn(Mono.just(evento));
 
         // Act (async)
-        MvcResult result = mockMvc.perform(get("/proxy/eventos/{id}", eventoId))
+        MvcResult result = mockMvc.perform(get("/api/eventos/{id}", eventoId))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
@@ -197,7 +197,7 @@ class EventoProxyControllerTest {
         when(responseSpec.bodyToMono(any(ParameterizedTypeReference.class))).thenReturn(Mono.just(eventos));
 
         // Act (async)
-        MvcResult result = mockMvc.perform(get("/proxy/eventos/resumidos"))
+        MvcResult result = mockMvc.perform(get("/api/eventos/resumidos"))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
@@ -267,7 +267,7 @@ class EventoProxyControllerTest {
         when(responseSpec.bodyToMono(any(ParameterizedTypeReference.class))).thenReturn(Mono.just(eventos));
 
         // Act (async)
-        MvcResult result = mockMvc.perform(get("/proxy/eventos"))
+        MvcResult result = mockMvc.perform(get("/api/eventos"))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 

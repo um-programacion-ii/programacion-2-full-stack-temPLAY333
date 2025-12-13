@@ -15,7 +15,7 @@ import um.prog2.dto.autenticacion.LoginResponseDTO;
  * Controlador proxy para operaciones de usuarios (autenticación).
  */
 @RestController
-@RequestMapping("/proxy/users")
+@RequestMapping("/api/users")
 public class UserProxyController {
 
     private static final Logger log = LoggerFactory.getLogger(UserProxyController.class);

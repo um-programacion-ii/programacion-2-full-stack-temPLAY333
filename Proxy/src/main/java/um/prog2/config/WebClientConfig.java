@@ -28,6 +28,7 @@ public class WebClientConfig {
 
     public WebClientConfig(AuthTokenService authTokenService) {
         this.authTokenService = authTokenService;
+        log.info("WebClientConfig: Inicializado con AuthTokenService");
     }
 
     /**
@@ -65,13 +66,20 @@ public class WebClientConfig {
         // usa el token estático (si existe). Si tampoco hay, no agrega Authorization.
         ExchangeFilterFunction authFilter = (request, next) -> {
             String token = authTokenService.getCurrentToken().orElse(null);
+            String tokenSource = "AuthTokenService";
+
             if (token == null && hasStaticToken) {
                 token = staticToken;
+                tokenSource = "static (.env)";
             }
 
             if (token == null || token.isBlank()) {
+                log.warn("WebClient Filter: NO HAY TOKEN disponible para request a {}", request.url());
                 return next.exchange(request);
             }
+
+            log.debug("WebClient Filter: Aplicando token desde {} (longitud: {}) a request: {}",
+                      tokenSource, token.length(), request.url());
 
             String finalToken = token;
             ClientRequest newRequest = ClientRequest.from(request)

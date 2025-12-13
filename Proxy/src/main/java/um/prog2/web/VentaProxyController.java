@@ -20,14 +20,18 @@ import java.util.List;
  * Controlador proxy para operaciones de ventas.
  */
 @RestController
-@RequestMapping("/proxy/ventas")
+@RequestMapping("/api/ventas")
 public class VentaProxyController {
 
     private static final Logger log = LoggerFactory.getLogger(VentaProxyController.class);
 
     private final WebClient webClient;
+
     @org.springframework.beans.factory.annotation.Autowired(required = false)
     private um.prog2.service.NotificadorBackendService notificadorBackendService;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private um.prog2.service.MockCatedraService mockCatedraService;
 
     @Value("${app.catedra.base-url}")
     private String catedraBaseUrl;
@@ -45,6 +49,16 @@ public class VentaProxyController {
     public Mono<ResponseEntity<RealizarVentaResponseDTO>> realizarVenta(
             @Valid @RequestBody RealizarVentaRequestDTO request) {
         log.debug("Proxy realizando venta para evento: {}", request.getEventoId());
+
+        // Si el mock está activo, usarlo
+        if (mockCatedraService != null) {
+            log.debug("Usando MockCatedraService para realizar venta");
+            RealizarVentaResponseDTO response = mockCatedraService.realizarVenta(
+                request.getEventoId(),
+                request.getAsientos()
+            );
+            return Mono.just(ResponseEntity.ok(response));
+        }
 
         return webClient.post()
             .uri(catedraBaseUrl + "/api/endpoints/v1/realizar-venta")
@@ -79,6 +93,12 @@ public class VentaProxyController {
     public Mono<ResponseEntity<List<VentaResumenDTO>>> listarVentas() {
         log.debug("Proxy solicitando listado de ventas");
 
+        // Si el mock está activo, usarlo
+        if (mockCatedraService != null) {
+            log.debug("Usando MockCatedraService para listar ventas");
+            return Mono.just(ResponseEntity.ok(mockCatedraService.listarVentas()));
+        }
+
         return webClient.get()
             .uri(catedraBaseUrl + "/api/endpoints/v1/listar-ventas")
             .retrieve()
@@ -99,6 +119,17 @@ public class VentaProxyController {
     @GetMapping("/{id}")
     public Mono<ResponseEntity<VentaDTO>> obtenerVenta(@PathVariable Long id) {
         log.debug("Proxy solicitando venta con id: {}", id);
+
+        // Si el mock está activo, usarlo
+        if (mockCatedraService != null) {
+            log.debug("Usando MockCatedraService para obtener venta {}", id);
+            VentaDTO venta = mockCatedraService.obtenerVenta(id);
+            if (venta != null) {
+                return Mono.just(ResponseEntity.ok(venta));
+            } else {
+                return Mono.just(ResponseEntity.notFound().build());
+            }
+        }
 
         return webClient.get()
             .uri(catedraBaseUrl + "/api/endpoints/v1/listar-venta/{id}", id)
