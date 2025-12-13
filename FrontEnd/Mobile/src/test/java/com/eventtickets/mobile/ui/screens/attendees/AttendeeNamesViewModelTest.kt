@@ -245,7 +245,7 @@ class AttendeeNamesViewModelTest {
         )
 
         val vm = AttendeeNamesViewModel(enableTimer = false)
-        vm.initialize(1L)
+        vm.initialize()
         val seats = vm.uiState.value.seats
 
         // When

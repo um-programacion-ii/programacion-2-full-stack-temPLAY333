@@ -2,6 +2,8 @@ package com.eventtickets.mobile.ui.screens.signin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eventtickets.mobile.data.AppConfig
+import com.eventtickets.mobile.data.repository.AuthRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +21,9 @@ data class SignInUiState(
     val signInSuccess: Boolean = false
 )
 
-class SignInViewModel : ViewModel() {
+class SignInViewModel(
+    private val authRepository: AuthRepository = AuthRepository()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SignInUiState())
     val uiState = _uiState.asStateFlow()
@@ -103,14 +107,48 @@ class SignInViewModel : ViewModel() {
                 }
             }
 
-            // Simular llamada al backend
-            delay(1500)
+            // Usar username como email si no tiene @
+            val username = currentState.name.replace(" ", "_").lowercase()
+            val email = if (currentState.email.contains("@")) {
+                currentState.email
+            } else {
+                "${currentState.email}@ejemplo.com"
+            }
 
-            // Por ahora, siempre es exitoso (lógica simple)
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    signInSuccess = true
+            if (AppConfig.USE_MOCK_DATA) {
+                // Modo Mock: Simular registro exitoso
+                delay(1500)
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        signInSuccess = true
+                    )
+                }
+            } else {
+                // Modo Backend: Llamada real
+                val result = authRepository.register(
+                    username = username,
+                    email = email,
+                    password = currentState.password
+                )
+
+                result.fold(
+                    onSuccess = { response ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                signInSuccess = true
+                            )
+                        }
+                    },
+                    onFailure = { error ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = error.message ?: "Error al crear cuenta"
+                            )
+                        }
+                    }
                 )
             }
         }

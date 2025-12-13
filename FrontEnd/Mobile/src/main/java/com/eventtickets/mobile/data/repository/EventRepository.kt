@@ -11,6 +11,34 @@ import com.eventtickets.mobile.data.network.RetrofitClient
  */
 class EventRepository {
 
+    suspend fun buscarEventos(texto: String? = null, categoria: String? = null): Result<List<Event>> {
+        return try {
+            val response = RetrofitClient.apiService.buscarEventos(texto, categoria)
+
+            if (response.isSuccessful && response.body() != null) {
+                val eventos = response.body()!!.map { dto ->
+                    Event(
+                        id = dto.id,
+                        titulo = dto.titulo,
+                        resumen = dto.resumen,
+                        fecha = dto.fecha,
+                        imagen = dto.imagen,
+                        eventoTipo = EventoTipo(
+                            id = dto.eventoTipo.id,
+                            nombre = dto.eventoTipo.nombre,
+                            descripcion = dto.eventoTipo.descripcion
+                        )
+                    )
+                }
+                Result.success(eventos)
+            } else {
+                Result.failure(Exception("Error al buscar eventos: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun getEventosResumidos(): Result<List<Event>> {
         return try {
             val response = RetrofitClient.apiService.getEventosResumidos()

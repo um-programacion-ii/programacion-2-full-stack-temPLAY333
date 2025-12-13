@@ -4,6 +4,19 @@ import com.google.gson.annotations.SerializedName
 
 // ==================== AUTENTICACIÓN ====================
 
+data class RegisterRequest(
+    val username: String,
+    val email: String,
+    val password: String
+)
+
+data class RegisterResponse(
+    val mensaje: String,
+    @SerializedName("user_id")
+    val userId: Long,
+    val username: String
+)
+
 data class LoginRequest(
     val username: String,
     val password: String
