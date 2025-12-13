@@ -1,0 +1,44 @@
+name: Issue de Prog2
+description: Crear un nuevo issue para el trabajo práctico vinculado a un milestone y proyecto
+assignees: [temPLAY333]
+labels: [enhancement]
+type: "Feature"
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **Completa los siguientes campos para registrar este issue correctamente.**  
+
+  - type: input
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: ¿Qué se busca lograr con este issue?
+      value: Crear lad clases [] siguiendo el principio []
+    validations:
+      required: true
+
+  - type: textarea
+    id: detalles
+    attributes:
+      label: Detalles de implementación
+      description: Explicá brevemente los pasos o componentes involucrados.
+      value: |
+        - Crear clase []
+        - Agregar constructor con parámetros, getters y setters
+        - Implementar el metodo []
+    validations:
+      required: true
+
+  - type: dropdown
+    id: dificultad
+    attributes:
+      label: Dificultad
+      description: Seleccioná la dificultad del issue
+      options:
+        - Baja
+        - Media
+        - Alta
+    validations:
+      required: true

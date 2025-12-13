@@ -1,0 +1,226 @@
+El sistema está dividido en cuatro componentes:
+3.1. Servicio de la Cátedra (cátedra)
+Desarrollado por la cátedra. Expone una serie de endpoints y servicios que el alumno
+deberá consumir para realizar diferentes actividades como ser: listados, ventas, bloqueos,
+etc.
+3.2. Servicios adicionales de la cátedra (servicios)
+Se agregan 2 servicios adicionales. Estos servicios se encuentran asociados al servicio de
+la cátedra pero serán consumidos por el servicio proxy del alumno.
+3.2.1 Kafka
+Este servicio se utiliza para notificar cambios en la información de los eventos, cuando en el
+servicio de la cátedra se produce un cambio en un evento será registrado en Kafka y el
+alumno deberá leer información desde allí o puede ser utilizado como notificación de
+cambios.
+3.2.2 Redis
+Este servicio servirá para mantener la información actualizada de las ubicaciones de los
+asientos de cada evento. El backend deberá consultar el servicio de redis para mantenerse
+actualizado respecto de los asientos.
+3.3. Backend del Alumno (backend)
+Desarrollado en Java utilizando springBoot (preferentemente JHipster). Es el backend que
+interactúa con el cliente móvil y el servicio de la cátedra.
+3.4. Servicio Proxy del Alumno (proxy)
+Servicio adicional, también desarrollado por el alumno. Es el único que tiene acceso a
+Kafka y Redis de la cátedra. Sirve como intermediario entre el backend y estos servicios.
+3.5. Cliente móvil (móvil)
+El cliente móvil será desarrollado por el alumno en Kotlin Multiplatform (KMP).
+Este cliente será la interfaz gráfica del backend.
+4. Funcionalidad global
+4.1 Manejo de eventos
+El servicio de la cátedra almacena eventos que serán modificados en cualquier momento,
+estos cambios pueden ser:
+● agregar nuevos eventos
+● eventos que expiran por tiempo. Desaparece del listado una vez que expira.
+● eventos que se cancelan.
+● eventos donde se cambian algunos datos.
+El servicio del backend debe mantener sincronizado los eventos que se encuentran en el
+servicio de la cátedra en su almacenamiento de datos local.
+Cada cambio que se produzca de los eventos en el servicio de la cátedra será notificado en
+Kafka (que es una cola que irá almacenando los cambios en orden cronológico). Se
+notificará el dato cambiado en el evento.
+Cada alumno tendrá su consumer group id para poder leer los datos de forma
+independiente de los demás alumnos.
+Cada cambio que se realice en los datos de los eventos el servicio del alumno deberá
+actualizar sus datos locales para tener los datos perfectamente sincronizados.
+El alumno puede usar el contenido del evento para actualizar sus datos locales o
+simplemente utilizarlo para enterarse que ha ocurrido un cambio y poder sincronizar los
+datos llamando al endpoint de información de eventos.
+4.2 Proceso de selección de eventos y ubicaciones
+La siguiente explicación está relacionada a la actividad del cliente móvil y el backend
+durante el proceso de selección de eventos.
+a- El cliente móvil debe poder obtener una lista de eventos desde el backend, esta lista es
+resumida y sirve para poder seleccionar algún evento que nos interese.
+b- Al seleccionar el evento se muestran todos los detalles del mismo incluyendo la cantidad
+de asientos disponibles y las ubicaciones.
+c- En este momento se genera una sesión que dura X cantidad de minutos que debe
+mantenerse incluso si se inicia sesión desde otro cliente con el mismo usuario.
+d- Inicialmente se elige 1 solo asiento y se puede incrementar hasta 4, cuando se
+seleccionan los asientos y se decide continuar se deben bloquear los asientos (contra el
+servicio de la cátedra)
+e- A continuación se debe cargar el nombre y apellido de cada uno de los asientos. En este
+punto se puede volver hacia atrás para agregar/quitar asientos o reasignarles un lugar.
+4.3 Venta
+Una vez seleccionados los nombres de los asientos se puede realizar la venta confirmando
+la compra. También se le puede volver hacia atrás para cambiar el nombre de los asientos.
+Al realizar la venta se debe registrar localmente en el sistema y notificar al servidor de la
+cátedra.
+4.4 Resumen y sesión
+Resumiendo el proceso se siguen los siguientes pasos:
+a- Listado de todos los eventos
+b- Selección de evento
+c- Selección de asientos
+d- Carga de nombres de los asientos
+e- Venta
+Si se inicia sesión en otro cliente móvil, se debe retomar en el punto donde había quedado
+en la interfaz anterior. Por ejemplo, si en un cliente se había seleccionado los asientos y
+estaba en la pantalla para cargar los nombres, el cliente nuevo deberá continuar desde ese
+punto.
+4.5 Cierre de sesión / expiración de sesión
+Si el cliente cierra sesión en el cliente móvil se deberá invalidar los datos y al iniciar sesión
+nuevamente deberá comenzar el proceso nuevamente.
+Si la sesión expira el cliente al iniciar sesión nuevamente arrancará desde el paso 1.
+5. Funcionalidades por componente
+5.1. Servicio de la Cátedra (cátedra)
+Estas son las funcionalidades del servicio
+● Registro de alumnos: se debe registrar el alumno para obtener un ID de sesión y
+un token de JWT para poder consumir el servicio de la cátedra.
+● Gestión de eventos: creación, modificación y baja. Esto lo manejan los profesores
+de la cátedra.
+● Bloqueo de asientos: al recibir la notificación del backend, bloquea temporalmente
+los asientos (actualizando Redis).
+● Registro de ventas: al confirmar una compra, el backend notifica la venta y se
+actualiza el estado en Redis.
+● Notificaciones vía Kafka: cuando ocurre un cambio en un evento será registrado en
+el tópico de kafa para que cada alumno tome las medidas necesarias.
+● Exposición de datos de eventos:
+○ Listado completo de eventos activos.
+○ Detalles individuales por ID.
+● Exposición de datos de ventas:
+○ Listado resumido de todas las ventas.
+○ Detalle individual de cada venta.
+Endpoints para los alumnos
+● Registro de sesión del alumno. http://SERVIDOR:PUERTO/api/v1/agregar_usuario .
+Ver payload 1.
+● Login de usuario. http://localhost:8080/api/authenticate . Ver payload 2.
+● Listado
+completo
+de
+eventos
+(datos
+resumidos).
+http://SERVIDOR:PUERTO/api/endpoints/v1/eventos-resumidos. Ver payload 3.
+● Listado
+completo
+de
+eventos
+(con
+todos
+http://SERVIDOR:PUERTO/api/endpoints/v1/eventos. Ver payload 4.
+● Datos
+completos
+de
+un
+los
+http://SERVIDOR:PUERTO/api/endpoints/v1/evento/{id} . Ver payload 5.
+● Bloqueo
+de
+asiento
+por
+datos).
+evento.
+evento.
+http://SERVIDOR:PUERTO/api/endpoints/v1/bloquear-asientos . Ver payload 6.
+● Venta
+de
+asientos
+por
+http://SERVIDOR:PUERTO/api/endpoints/v1/realizar-venta . Ver payload 7.
+evento.
+● Listado completo de ventas por cada alumno (datos resumidos).
+http://SERVIDOR:PUERTO/api/endpoints/v1/listar-ventas . Ver payload 8.
+● Ver
+datos
+de
+una
+venta
+particular.
+http://SERVIDOR:PUERTO/api/endpoints/v1/listar-venta/{id}. Ver payload 9.
+5.2. Servicio Backend del Alumno (backend)
+● Registro de backend contra el servidor de cátedra:
+en
+○ Este proceso es manual y no lo hace el servicio. Al hacerlo manual se
+obtiene un token que debe utilizarse para configurar el servicio para acceder
+a los endpoints del servicio de la cátedra.
+● Registro de usuarios/clientes:
+○ Cada usuario o cliente es alguien que quiere anotarse en un evento.
+○ JHipster tiene una interfaz web para la creación de usuarios que es parte de
+lo que se genera al crear la aplicación. Esta interfaz puede utilizarse para
+crear nuevos usuarios, por lo que no es necesario realizar el registro de
+usuarios nuevos desde la aplicación móvil.
+● Inicio de sesión:
+○ El cliente móvil (o utilizando algún cliente web tipo insomnia, postman o
+cURL) inicia sesión contra el backend.
+○ Mantiene sesiones activas utilizando Redis local.
+○ Las sesiones expiran a los 30 minutos de inactividad (valor
+parametrizable).
+○ Si se inicia sesión en otro cliente simultáneamente ambos verán lo mismo de
+la sesión.
+● Manejo de eventos y asientos:
+○ Lista eventos consumiendo los endpoints de la cátedra.
+○ Al seleccionar un evento, solicita al proxy los datos de asientos en Redis.
+○ Al seleccionar asientos y avanzar al paso de cargar datos de los asientos ,
+los bloquea temporalmente (5 minutos) notificando a cátedra (a través del
+proxy).
+○ Antes de la venta, verifica que los asientos aún estén disponibles.
+○ Al confirmar la venta, notifica a cátedra y espera confirmación.
+● Persistencia:
+○ Debe almacenar información local sobre eventos y ventas en base de datos.
+○ Si no puede confirmar la venta localmente, esta debe quedar pendiente y
+reintentarse hasta concretarse.
+○ Se puede dar un caso de ambigüedad si otra persona compró el mismo
+asiento, pero este conflicto no será resuelto en esta instancia.
+● Sesiones concurrentes:
+○ El sistema debe permitir múltiples sesiones activas simultáneamente.
+○ Redis local debe garantizar persistencia ante reinicios del backend o
+despliegues con múltiples instancias.
+● Actualizaciones:
+○ El proxy recibe notificaciones desde Kafka y debe comunicarse con el
+backend para informar los cambios.
+5.3. Servicio Proxy del Alumno (proxy)
+● Accede a Redis de la cátedra para:
+○ Consultar el estado de los asientos cuando lo solicite el backend.
+● Está suscripto al tópico Kafka:
+○ Recibe notificaciones de cambios en eventos.
+○ Debe comunicarse con el backend para informar los cambios.
+● Se debe resolver la forma en que el proxy notificará al backend de algún cambio en
+los eventos.
+5.4. Cliente móvil (móvil)
+● Iniciar sesión contra el backend:
+○ Se debe ingresar el usuario y contraseña para generar la sesión.
+● Listar eventos:
+○ Se debe mostrar una lista de eventos y dar lugar a seleccionarlos.
+○ Los datos que se muestran son aquellos relevantes para poder entender de
+qué se trata el evento y que no ocupe demasiado lugar en pantalla.
+● Detalles del evento seleccionado:
+○ Visualizar la información detallada de un evento.
+○ Visualizar el mapa de asientos.
+○ Agregar una opción para volver al paso anterior.
+● Selección de asientos:
+○ Seleccionar hasta cuatro asientos por sesión.
+○ Visualmente se deben ver los asientos libres, vendidos, seleccionados por mi
+y bloqueados por otro. Se puede hacer cambiando de color el elemento que
+representa al asiento.
+○ Se puede indicar la cantidad de asientos a reservar (de 1 a 4)
+○ Se pueden seleccionar los asientos que deseamos.
+○ Agregar una opción para volver al paso anterior.
+● Cargar datos de las personas:
+○ Seleccionar cada asiento y cargarle el nombre.
+● Compra de entradas:
+○ Habrá un botón que permita hacer la compra una vez que se decida
+realizarla.
+○ Agregar una opción para volver al paso anterior.
+6. Autenticación y Comunicación
+● Toda la comunicación entre servicios se hace mediante JSON.
+● Los servicios deben estar autenticados mediante tokens JWT, ya sea entre el
+backend y el servicio de la cátedra como el backend contra el servicio proxy.
+● Cada servicio debe estar configurado con sus credenciales para poder consumir
+otros servicios.

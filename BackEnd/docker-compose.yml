@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Base de datos MySQL para DESARROLLO
+  mysql-dev:
+    image: mysql:8.0
+    container_name: microservices-mysql-dev
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: MicroservicesFinal
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - backend-network
+
+  # Base de datos MySQL para PRODUCCIÓN
+  mysql-prod:
+    image: mysql:8.0
+    container_name: microservices-mysql-prod
+    environment:
+      MYSQL_ROOT_PASSWORD: prodroot123
+      MYSQL_DATABASE: MicroservicesFinal_prod
+      MYSQL_USER: produser
+      MYSQL_PASSWORD: prodpass123
+    ports:
+      - "3307:3306"  # Puerto 3307 en host, 3306 en contenedor
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - backend-network
+
+  # Redis para cache (compartido dev/prod)
+  redis:
+    image: redis:7-alpine
+    container_name: microservices-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend-network
+
+# NOTA: Kafka y Zookeeper NO son necesarios aquí.
+# El Proxy consume Kafka de la Cátedra (192.168.194.250:9092).
+# El Backend solo recibe webhooks HTTP del Proxy.
+
+volumes:
+  mysql_dev_data:
+    driver: local
+  mysql_prod_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  backend-network:
+    driver: bridge
+
