@@ -88,11 +88,10 @@ public class VentaService {
                 // 3. Persistir venta localmente
                 persistirVentaLocal(eventoId, asientos, username, response);
 
-                return response;
             } else {
                 log.warn("Venta para evento {} no fue exitosa: {}", eventoId, response != null ? response.getDescripcion() : "Sin respuesta");
-                return response;
             }
+            return response;
         } catch (Exception e) {
             log.error("Error al realizar venta para evento {}", eventoId, e);
 
@@ -135,8 +134,8 @@ public class VentaService {
     public List<VentaDTO> obtenerVentasUsuario(String username) {
         log.debug("Obteniendo ventas para usuario {}", username);
 
-        // TODO: Filtrar por usuario
-        List<Venta> ventas = ventaRepository.findAll();
+        // Filtrar por usuario autenticado
+        List<Venta> ventas = ventaRepository.findByUsuarioIsCurrentUser();
 
         return ventas.stream()
             .map(ventaMapper::toDto)
@@ -145,15 +144,18 @@ public class VentaService {
 
     /**
      * Obtiene los detalles de una venta específica.
+     * Valida que la venta pertenezca al usuario autenticado.
      *
      * @param ventaId ID de la venta
-     * @return Detalles de la venta
+     * @param username Usuario autenticado
+     * @return Detalles de la venta si pertenece al usuario
      */
     @Transactional(readOnly = true)
-    public Optional<VentaDTO> obtenerVenta(Long ventaId) {
-        log.debug("Obteniendo venta con ID {}", ventaId);
+    public Optional<VentaDTO> obtenerVenta(Long ventaId, String username) {
+        log.debug("Obteniendo venta con ID {} para usuario {}", ventaId, username);
 
         return ventaRepository.findById(ventaId)
+            .filter(venta -> venta.getUsuario().getLogin().equals(username))
             .map(ventaMapper::toDto);
     }
 }

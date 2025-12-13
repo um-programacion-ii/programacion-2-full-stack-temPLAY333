@@ -127,6 +127,12 @@ public class EventoSyncService {
     }
 
     private void processAndSaveEvento(EventoDTO eventoDTO) {
+        // Validar que el evento tenga ID
+        if (eventoDTO.getId() == null) {
+            log.error("EventoDTO sin ID, no se puede procesar: {}", eventoDTO);
+            throw new IllegalArgumentException("El evento debe tener un ID");
+        }
+
         // Buscar si ya existe en BD local
         Evento evento = eventoRepository.findById(eventoDTO.getId()).orElse(new Evento());
 
@@ -143,22 +149,37 @@ public class EventoSyncService {
         evento.setPrecioEntrada(eventoDTO.getPrecioEntrada());
 
         // Procesar EventoTipo
-        if (eventoDTO.getEventoTipo() != null) {
-            EventoTipo eventoTipo = eventoTipoRepository
-                .findById(eventoDTO.getEventoTipo().getId())
-                .orElseGet(() -> {
-                    EventoTipo nuevoTipo = new EventoTipo();
-                    nuevoTipo.setId(eventoDTO.getEventoTipo().getId());
-                    nuevoTipo.setNombre(eventoDTO.getEventoTipo().getNombre());
-                    return eventoTipoRepository.save(nuevoTipo);
-                });
+        if (eventoDTO.getEventoTipo() != null && eventoDTO.getEventoTipo().getNombre() != null) {
+            EventoTipo eventoTipo;
+
+            // Si tiene ID, intentar buscar por ID primero
+            if (eventoDTO.getEventoTipo().getId() != null) {
+                eventoTipo = eventoTipoRepository
+                    .findById(eventoDTO.getEventoTipo().getId())
+                    .orElseGet(() -> crearNuevoEventoTipo(eventoDTO.getEventoTipo()));
+            } else {
+                // Si no tiene ID, buscar por nombre
+                eventoTipo = eventoTipoRepository
+                    .findAll()
+                    .stream()
+                    .filter(et -> et.getNombre().equals(eventoDTO.getEventoTipo().getNombre()))
+                    .findFirst()
+                    .orElseGet(() -> crearNuevoEventoTipo(eventoDTO.getEventoTipo()));
+            }
             evento.setEventoTipo(eventoTipo);
+        } else {
+            log.warn("Evento {} no tiene tipo de evento asignado o nombre de tipo es nulo", eventoDTO.getId());
         }
 
         // Procesar integrantes
         if (eventoDTO.getIntegrantes() != null && !eventoDTO.getIntegrantes().isEmpty()) {
             Set<Integrante> integrantes = new HashSet<>();
             for (IntegranteDTO integranteDTO : eventoDTO.getIntegrantes()) {
+                if (integranteDTO.getId() == null) {
+                    log.warn("Integrante sin ID en evento {}, se omitirá", eventoDTO.getId());
+                    continue;
+                }
+
                 Integrante integrante = integranteRepository
                     .findById(integranteDTO.getId())
                     .orElseGet(() -> {
@@ -179,7 +200,23 @@ public class EventoSyncService {
         log.debug("Evento {} guardado/actualizado en BD local", evento.getId());
     }
 
+    private EventoTipo crearNuevoEventoTipo(EventoTipoDTO eventoTipoDTO) {
+        EventoTipo nuevoTipo = new EventoTipo();
+        if (eventoTipoDTO.getId() != null) {
+            nuevoTipo.setId(eventoTipoDTO.getId());
+        }
+        nuevoTipo.setNombre(eventoTipoDTO.getNombre());
+        nuevoTipo.setDescripcion(eventoTipoDTO.getDescripcion());
+        return eventoTipoRepository.save(nuevoTipo);
+    }
+
     private void processAndSaveEventoDetalle(EventoDetalleDTO eventoDetalleDTO) {
+        // Validar que el evento tenga ID
+        if (eventoDetalleDTO.getId() == null) {
+            log.error("EventoDetalleDTO sin ID, no se puede procesar: {}", eventoDetalleDTO);
+            throw new IllegalArgumentException("El evento debe tener un ID");
+        }
+
         // Similar a processAndSaveEvento pero con más detalle
         Evento evento = eventoRepository.findById(eventoDetalleDTO.getId()).orElse(new Evento());
 
@@ -195,7 +232,7 @@ public class EventoSyncService {
         evento.setPrecioEntrada(eventoDetalleDTO.getPrecioEntrada());
 
         // EventoTipo - buscar por nombre ya que BasicDTO no tiene ID
-        if (eventoDetalleDTO.getEventoTipo() != null) {
+        if (eventoDetalleDTO.getEventoTipo() != null && eventoDetalleDTO.getEventoTipo().getNombre() != null) {
             // Buscar por nombre o crear nuevo
             EventoTipo eventoTipo = eventoTipoRepository
                 .findAll()
@@ -209,12 +246,22 @@ public class EventoSyncService {
                     return eventoTipoRepository.save(nuevoTipo);
                 });
             evento.setEventoTipo(eventoTipo);
+        } else {
+            log.warn("Evento detallado {} no tiene tipo de evento asignado o nombre es nulo", eventoDetalleDTO.getId());
         }
 
-        // Integrantes - BasicDTO no tiene ID, buscar por nombre/apellido
+        // Integrantes - BasicDTO no tiene ID, buscar por nombre/apellido/identificación
         if (eventoDetalleDTO.getIntegrantes() != null && !eventoDetalleDTO.getIntegrantes().isEmpty()) {
             Set<Integrante> integrantes = new HashSet<>();
             for (IntegranteBasicDTO integranteBasicDTO : eventoDetalleDTO.getIntegrantes()) {
+                // Validar que tenga los datos mínimos necesarios
+                if (integranteBasicDTO.getNombre() == null ||
+                    integranteBasicDTO.getApellido() == null ||
+                    integranteBasicDTO.getIdentificacion() == null) {
+                    log.warn("Integrante con datos incompletos en evento {}, se omitirá", eventoDetalleDTO.getId());
+                    continue;
+                }
+
                 // Buscar por nombre y apellido o crear nuevo
                 Integrante integrante = integranteRepository
                     .findAll()

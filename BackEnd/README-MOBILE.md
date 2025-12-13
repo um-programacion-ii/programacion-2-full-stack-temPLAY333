@@ -51,21 +51,52 @@
 2. **SIEMPRE** usa los endpoints del Backend (puerto 8081)
 3. **Todas las respuestas** son JSON
 4. **Todas las fechas** están en formato ISO-8601 (UTC)
-5. **Usuario único**: La aplicación es para un solo usuario (el alumno)
+5. **Multi-usuario**: Cada usuario puede crear su cuenta y solo ver sus propias compras
+6. **Seguridad**: Todas las operaciones de compra requieren autenticación JWT
 
 ---
 
 ## 🔐 Autenticación
 
-### 1. Login
+### 1. Registro de Usuario
+
+**Endpoint**: `POST /api/register`
+
+**Request Body**:
+```json
+{
+  "login": "juanperez",
+  "email": "juan@ejemplo.com",
+  "password": "mipassword123",
+  "langKey": "es"
+}
+```
+
+**Response** (201 Created):
+- No retorna body
+- Status: 201 Created
+
+**Errores**:
+- `400 Bad Request`: Usuario o email ya existe
+- `400 Bad Request`: Password demasiado corto (mínimo 4 caracteres)
+
+**Validaciones**:
+- **login**: 1-50 caracteres, único
+- **email**: Formato válido, único
+- **password**: Mínimo 4 caracteres
+- **langKey**: Idioma (ej: "es", "en")
+
+---
+
+### 2. Login
 
 **Endpoint**: `POST /api/authenticate`
 
 **Request Body**:
 ```json
 {
-  "username": "admin",
-  "password": "admin"
+  "username": "juanperez",
+  "password": "mipassword123"
 }
 ```
 
@@ -82,9 +113,41 @@ Todas las llamadas subsiguientes deben incluir el header:
 Authorization: Bearer eyJhbGciOiJIUzUxMiJ9...
 ```
 
+**Contenido del Token**:
+El JWT incluye:
+- `sub`: Username del usuario
+- `user_id`: ID del usuario en la BD
+- `exp`: Timestamp de expiración
+
 **Expiración**: 
 - Token válido por 24 horas
 - Si recibes `401 Unauthorized`, debes hacer login nuevamente
+
+---
+
+### 3. Obtener Información del Usuario
+
+**Endpoint**: `GET /api/account`
+
+**Headers**:
+```
+Authorization: Bearer {token}
+```
+
+**Response** (200 OK):
+```json
+{
+  "id": 1,
+  "login": "juanperez",
+  "email": "juan@ejemplo.com",
+  "firstName": null,
+  "lastName": null,
+  "imageUrl": null,
+  "activated": true,
+  "langKey": "es",
+  "authorities": ["ROLE_USER"]
+}
+```
 
 ---
 
