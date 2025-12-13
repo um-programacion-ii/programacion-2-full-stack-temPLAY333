@@ -1,16 +1,36 @@
 package com.eventtickets.mobile.ui.screens.login
 
+import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -20,34 +40,27 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.eventtickets.mobile.ui.components.PrimaryButton
 import com.eventtickets.mobile.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit
+    loginViewModel: LoginViewModel = viewModel(),
+    onLoginSuccess: () -> Unit,
+    onCreateAccountClick: () -> Unit
 ) {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    Log.d("AppFlow", "LoginScreen: Composing")
+    val uiState by loginViewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
 
-    fun handleLogin() {
-        errorMessage = ""
-
-        if (username.isEmpty() || password.isEmpty()) {
-            errorMessage = "Por favor, completa todos los campos"
-            return
-        }
-
-        // Login hardcodeado
-        isLoading = true
-        if (username == "admin" && password == "admin") {
+    // Observe the loginSuccess flag to navigate
+    LaunchedEffect(uiState.loginSuccess) {
+        Log.d("AppFlow", "LoginScreen: LaunchedEffect running, loginSuccess = ${uiState.loginSuccess}")
+        if (uiState.loginSuccess) {
             onLoginSuccess()
-        } else {
-            isLoading = false
-            errorMessage = "Usuario o contraseña incorrectos"
+            loginViewModel.onLoginHandled() // Reset the flag
         }
     }
 
@@ -66,65 +79,34 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Logo
-            Text(
-                text = "🎫",
-                fontSize = 64.sp
-            )
+            Text("🎫", fontSize = 64.sp)
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "EventTickets",
-                color = TextPrimary,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Text("EventTickets", color = TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Ingresa a tu cuenta",
-                color = TextSecondary,
-                fontSize = 16.sp
-            )
+            Text("Ingresa a tu cuenta", color = TextSecondary, fontSize = 16.sp)
 
             Spacer(modifier = Modifier.height(48.dp))
 
             // Username field
             OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
+                value = uiState.username,
+                onValueChange = { loginViewModel.onUsernameChange(it) },
                 label = { Text("Usuario") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Usuario"
-                    )
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Primary,
-                    unfocusedBorderColor = TextSecondary,
-                    focusedLabelColor = Primary,
-                    unfocusedLabelColor = TextSecondary,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary,
-                    cursorColor = Primary
-                ),
+                leadingIcon = { Icon(Icons.Default.Person, "Usuario") },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                isError = uiState.errorMessage != null
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Password field
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = uiState.password,
+                onValueChange = { loginViewModel.onPasswordChange(it) },
                 label = { Text("Contraseña") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Contraseña"
-                    )
-                },
+                leadingIcon = { Icon(Icons.Default.Lock, "Contraseña") },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
@@ -135,18 +117,10 @@ fun LoginScreen(
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Primary,
-                    unfocusedBorderColor = TextSecondary,
-                    focusedLabelColor = Primary,
-                    unfocusedLabelColor = TextSecondary,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary,
-                    cursorColor = Primary
-                ),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                isError = uiState.errorMessage != null
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -154,13 +128,14 @@ fun LoginScreen(
             // Login button
             PrimaryButton(
                 text = "INICIAR SESIÓN",
-                onClick = { handleLogin() },
-                loading = isLoading,
-                enabled = username.isNotEmpty() && password.isNotEmpty()
+                onClick = { loginViewModel.onLoginClick() },
+                loading = uiState.isLoading,
+                enabled = uiState.username.isNotEmpty() && uiState.password.isNotEmpty() && !uiState.isLoading
             )
 
             // Error message
-            if (errorMessage.isNotEmpty()) {
+            val errorMessage = uiState.errorMessage
+            if (errorMessage != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = errorMessage,
@@ -171,12 +146,53 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Hint
-            Text(
-                text = "💡 Usuario: admin | Contraseña: admin",
-                color = TextSecondary,
-                fontSize = 12.sp
-            )
+            // Divider con texto
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                androidx.compose.material3.HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    color = TextSecondary.copy(alpha = 0.3f)
+                )
+                Text(
+                    text = "  o  ",
+                    color = TextSecondary,
+                    fontSize = 14.sp
+                )
+                androidx.compose.material3.HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    color = TextSecondary.copy(alpha = 0.3f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Botón Crear Cuenta
+            androidx.compose.material3.OutlinedButton(
+                onClick = onCreateAccountClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                    contentColor = Primary
+                ),
+                border = BorderStroke(2.dp, Primary)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PersonAdd,
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(
+                    text = "CREAR CUENTA",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("💡 Usuario: admin | Contraseña: admin", color = TextSecondary, fontSize = 12.sp)
         }
     }
 }

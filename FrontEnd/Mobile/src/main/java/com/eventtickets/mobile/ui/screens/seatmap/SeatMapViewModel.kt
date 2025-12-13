@@ -2,58 +2,85 @@ package com.eventtickets.mobile.ui.screens.seatmap
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eventtickets.mobile.data.model.Seat
-import com.eventtickets.mobile.data.model.SeatState
+import com.eventtickets.mobile.data.MockData
+import com.eventtickets.mobile.data.model.AsientoMapaDto
+import com.eventtickets.mobile.data.model.MapaAsientosDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class SeatMapUiState(
+    val isLoading: Boolean = true,
+    val error: String? = null,
+    val eventTitle: String = "",
+    val seatMap: MapaAsientosDto? = null,
+    val selectedSeats: List<AsientoMapaDto> = emptyList()
+)
 
 class SeatMapViewModel : ViewModel() {
 
-    private val _seatMap = MutableStateFlow<Map<Pair<Int, Int>, Seat>>(emptyMap())
-    val seatMap: StateFlow<Map<Pair<Int, Int>, Seat>> = _seatMap
+    private val _uiState = MutableStateFlow(SeatMapUiState())
+    val uiState: StateFlow<SeatMapUiState> = _uiState.asStateFlow()
 
-    private val _selectedSeats = MutableStateFlow<List<Seat>>(emptyList())
-    val selectedSeats: StateFlow<List<Seat>> = _selectedSeats
-
-    fun loadSeats(eventId: Long) {
+    fun loadSeatMap(eventId: Long) {
         viewModelScope.launch {
-            // Aquí iría la lógica para cargar los asientos desde una API
-            // Por ahora, generaremos un mapa de asientos de ejemplo
-            val seats = mutableMapOf<Pair<Int, Int>, Seat>()
-            for (row in 1..15) {
-                for (col in 1..20) {
-                    val state = when {
-                        row == 5 && col in 7..8 -> SeatState.SOLD // Ejemplo de asientos vendidos
-                        row == 6 && col == 10 -> SeatState.BLOCKED
-                        else -> SeatState.AVAILABLE
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                // Fetch both event details and seat map
+                val event = MockData.getEventoDetalleById(eventId)
+                val seatMap = MockData.getSeatMapForEvent(eventId)
+
+                if (event != null && seatMap != null) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            eventTitle = event.titulo,
+                            seatMap = seatMap
+                        )
                     }
-                    seats[Pair(row, col)] = Seat(
-                        id = "$row-$col",
-                        fila = row,
-                        columna = col,
-                        estado = state,
-                        precio = 1250.0
-                    )
+                } else {
+                    _uiState.update { it.copy(isLoading = false, error = "No se pudo cargar el mapa de asientos.") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = "Ocurrió un error inesperado.") }
+            }
+        }
+    }
+
+    fun toggleSeatSelection(row: Int, column: Int) {
+        val seatMap = _uiState.value.seatMap ?: return
+        val existingSeat = seatMap.asientos.find { it.fila == row && it.columna == column }
+
+        // Can only select available seats
+        if (existingSeat != null && existingSeat.estado != "Disponible") {
+            return // Or show a toast/message
+        }
+
+        val seatIdentifier = AsientoMapaDto(fila = row, columna = column, estado = "Seleccionado")
+
+        _uiState.update { currentState ->
+            val alreadySelected = currentState.selectedSeats.any { it.fila == row && it.columna == column }
+            val newSelectedSeats = if (alreadySelected) {
+                currentState.selectedSeats.filterNot { it.fila == row && it.columna == column }
+            } else {
+                if (currentState.selectedSeats.size < 4) { // Max 4 seats
+                    currentState.selectedSeats + seatIdentifier
+                } else {
+                    // Optional: show a message that max seats reached
+                    currentState.selectedSeats
                 }
             }
-            _seatMap.value = seats
+            currentState.copy(selectedSeats = newSelectedSeats)
         }
     }
 
-    fun toggleSeat(seat: Seat) {
-        val currentSelected = _selectedSeats.value.toMutableList()
-        if (currentSelected.contains(seat)) {
-            currentSelected.remove(seat)
-        } else {
-            if (currentSelected.size < 4) { // Límite de 4 asientos
-                currentSelected.add(seat)
-            }
-        }
-        _selectedSeats.value = currentSelected
-    }
-
-    fun isSeatSelected(seat: Seat): Boolean {
-        return _selectedSeats.value.contains(seat)
+    /**
+     * Guarda la selección de asientos en el PurchaseManager
+     */
+    fun confirmSelection(eventId: Long) {
+        val selectedSeats = _uiState.value.selectedSeats.map { it.fila to it.columna }
+        com.eventtickets.mobile.data.PurchaseManager.startPurchase(eventId, selectedSeats)
     }
 }
