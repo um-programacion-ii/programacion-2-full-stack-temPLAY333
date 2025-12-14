@@ -18,6 +18,7 @@ public interface EventoResumenMapper {
     @Mapping(target = "descripcion", source = "descripcion")
     @Mapping(target = "fecha", source = "fecha")
     @Mapping(target = "precioEntrada", source = "precioEntrada")
+    @Mapping(target = "imagen", source = "imagen")
     @Mapping(target = "eventoTipo", source = "eventoTipo", qualifiedByName = "eventoTipoNombreDescripcion")
     EventoResumenDTO toDto(Evento evento);
 
@@ -28,4 +29,3 @@ public interface EventoResumenMapper {
     @Mapping(target = "descripcion", source = "descripcion")
     EventoTipoDTO toDtoEventoTipoNombreDescripcion(EventoTipo eventoTipo);
 }
-
