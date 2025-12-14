@@ -54,11 +54,6 @@ public class Venta implements Serializable {
     @JsonIgnoreProperties(value = { "eventoTipo", "integrantes" }, allowSetters = true)
     private Evento evento;
 
-    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "venta" }, allowSetters = true)
-    private java.util.Set<Asiento> asientos = new java.util.HashSet<>();
-
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -162,37 +157,6 @@ public class Venta implements Serializable {
 
     public Venta evento(Evento evento) {
         this.setEvento(evento);
-        return this;
-    }
-
-    public java.util.Set<Asiento> getAsientos() {
-        return this.asientos;
-    }
-
-    public void setAsientos(java.util.Set<Asiento> asientos) {
-        if (this.asientos != null) {
-            this.asientos.forEach(i -> i.setVenta(null));
-        }
-        if (asientos != null) {
-            asientos.forEach(i -> i.setVenta(this));
-        }
-        this.asientos = asientos;
-    }
-
-    public Venta asientos(java.util.Set<Asiento> asientos) {
-        this.setAsientos(asientos);
-        return this;
-    }
-
-    public Venta addAsiento(Asiento asiento) {
-        this.asientos.add(asiento);
-        asiento.setVenta(this);
-        return this;
-    }
-
-    public Venta removeAsiento(Asiento asiento) {
-        this.asientos.remove(asiento);
-        asiento.setVenta(null);
         return this;
     }
 

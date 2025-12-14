@@ -9,11 +9,7 @@
     <logger name="tech.jhipster" level="WARN"/>
 
     <!-- https://www.testcontainers.org/supported_docker_environment/logging_config/ -->
-    <!-- Reducir ruido de Testcontainers -->
-    <logger name="org.testcontainers" level="WARN"/>
-    <logger name="tc.mysql" level="WARN"/>
-    <logger name="tc.redis" level="WARN"/>
-    <logger name="tc.testcontainers" level="WARN"/>
+    <logger name="org.testcontainers" level="INFO"/>
     <logger name="com.github.dockerjava" level="WARN"/>
 
     <logger name="jakarta.activation" level="WARN"/>

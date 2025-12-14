@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class EventoMobileResourceIT {
 
-    private static final String MOBILE_API_URL = "/api/eventos-consulta";
+    private static final String MOBILE_API_URL = "/api/mobile/eventos";
     private static final String MOBILE_API_URL_RESUMIDOS = MOBILE_API_URL + "/resumidos";
     private static final String MOBILE_API_URL_ID = MOBILE_API_URL + "/{id}";
     private static final String MOBILE_API_URL_SYNC = MOBILE_API_URL + "/sync";

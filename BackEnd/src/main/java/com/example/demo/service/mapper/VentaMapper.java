@@ -15,7 +15,6 @@ import org.mapstruct.*;
 public interface VentaMapper extends EntityMapper<VentaDTO, Venta> {
     @Mapping(target = "usuario", source = "usuario", qualifiedByName = "userLogin")
     @Mapping(target = "evento", source = "evento", qualifiedByName = "eventoId")
-    @Mapping(target = "asientos", source = "asientos")
     VentaDTO toDto(Venta s);
 
     @Named("userLogin")
@@ -25,15 +24,7 @@ public interface VentaMapper extends EntityMapper<VentaDTO, Venta> {
     UserDTO toDtoUserLogin(User user);
 
     @Named("eventoId")
+    @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
-    @Mapping(target = "titulo", source = "titulo")
-    @Mapping(target = "resumen", source = "resumen")
-    @Mapping(target = "descripcion", source = "descripcion")
-    @Mapping(target = "fecha", source = "fecha")
-    @Mapping(target = "direccion", source = "direccion")
-    @Mapping(target = "imagen", source = "imagen")
-    @Mapping(target = "filaAsientos", source = "filaAsientos")
-    @Mapping(target = "columnAsientos", source = "columnAsientos")
-    @Mapping(target = "precioEntrada", source = "precioEntrada")
     EventoDTO toDtoEventoId(Evento evento);
 }

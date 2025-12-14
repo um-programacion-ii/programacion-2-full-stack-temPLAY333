@@ -43,8 +43,6 @@ public class EventoResumenDTO implements Serializable {
     @NotNull
     private BigDecimal precioEntrada;
 
-    private String imagen; // URL de la imagen del evento
-
     @NotNull
     private EventoTipoDTO eventoTipo;
 
@@ -60,8 +58,6 @@ public class EventoResumenDTO implements Serializable {
     public void setFecha(Instant fecha) { this.fecha = fecha; }
     public BigDecimal getPrecioEntrada() { return precioEntrada; }
     public void setPrecioEntrada(BigDecimal precioEntrada) { this.precioEntrada = precioEntrada; }
-    public String getImagen() { return imagen; }
-    public void setImagen(String imagen) { this.imagen = imagen; }
     public EventoTipoDTO getEventoTipo() { return eventoTipo; }
     public void setEventoTipo(EventoTipoDTO eventoTipo) { this.eventoTipo = eventoTipo; }
 

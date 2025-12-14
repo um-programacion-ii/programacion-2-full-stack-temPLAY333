@@ -2,48 +2,66 @@ package com.example.demo.service.dto;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 /**
- * DTO para recibir notificaciones del Proxy.
- * El Proxy envía un webhook genérico con este formato para todos los tipos de eventos.
+ * DTO para recibir notificaciones del Proxy vía webhook.
  *
- * Campos:
- * - timestamp: Momento en que el Proxy procesa el evento
- * - topic: Tipo de evento (ej: VENTA_COMPLETADA, ASIENTOS_BLOQUEADOS, EVENTO_CAMBIADO)
- * - partition: Partición de Kafka (null si viene de HTTP)
- * - offset: Offset de Kafka (null si viene de HTTP)
- * - key: Key del mensaje Kafka (null si viene de HTTP)
- * - payload: JSON crudo como string - el Backend debe parsearlo según el tipo
- *
- * Ejemplo:
- * {
- *   "timestamp": "2025-12-14T15:30:00Z",
- *   "topic": "VENTA_COMPLETADA",
- *   "partition": 0,
- *   "offset": 12345,
- *   "key": "evento-1",
- *   "payload": "{\"ventaId\":123,...}"
- * }
+ * El Proxy envía este DTO cuando:
+ * - Recibe eventos de Kafka de la Cátedra (ventas, bloqueos, cambios)
+ * - (Opcional) Responde a operaciones HTTP síncronas
  */
 public class BackendNotificacionDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Momento en que el Proxy generó/recibió la notificación.
+     */
     private Instant timestamp;
+
+    /**
+     * Tipo lógico del evento:
+     * - VENTA_COMPLETADA
+     * - ASIENTOS_BLOQUEADOS
+     * - EVENTO_CAMBIADO
+     * - UNKNOWN
+     */
     private String topic;
+
+    /**
+     * Partición de Kafka (si aplica, null si viene de HTTP).
+     */
     private Integer partition;
+
+    /**
+     * Offset de Kafka (si aplica, null si viene de HTTP).
+     */
     private Long offset;
+
+    /**
+     * Clave del mensaje de Kafka (si aplica).
+     */
     private String key;
+
+    /**
+     * Payload JSON crudo del evento como String.
+     * Debe parsearse en el Backend según el tipo de evento.
+     */
     private String payload;
 
-    public BackendNotificacionDTO() {}
+    // Constructores
 
-    public BackendNotificacionDTO(Instant timestamp, String topic, String payload) {
-        this.timestamp = timestamp;
+    public BackendNotificacionDTO() {
+        this.timestamp = Instant.now();
+    }
+
+    public BackendNotificacionDTO(String topic, String payload) {
+        this.timestamp = Instant.now();
         this.topic = topic;
         this.payload = payload;
     }
+
+    // Getters y Setters
 
     public Instant getTimestamp() {
         return timestamp;
@@ -94,24 +112,6 @@ public class BackendNotificacionDTO implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BackendNotificacionDTO)) return false;
-        BackendNotificacionDTO that = (BackendNotificacionDTO) o;
-        return Objects.equals(timestamp, that.timestamp) &&
-               Objects.equals(topic, that.topic) &&
-               Objects.equals(partition, that.partition) &&
-               Objects.equals(offset, that.offset) &&
-               Objects.equals(key, that.key) &&
-               Objects.equals(payload, that.payload);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(timestamp, topic, partition, offset, key, payload);
-    }
-
-    @Override
     public String toString() {
         return "BackendNotificacionDTO{" +
             "timestamp=" + timestamp +
@@ -119,7 +119,7 @@ public class BackendNotificacionDTO implements Serializable {
             ", partition=" + partition +
             ", offset=" + offset +
             ", key='" + key + '\'' +
-            ", payload='" + (payload != null ? payload.substring(0, Math.min(100, payload.length())) + "..." : null) + '\'' +
+            ", payload='" + payload + '\'' +
             '}';
     }
 }

@@ -32,9 +32,9 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://localhost:3306/MicroservicesFinal?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
-    username: devuser
-    password: devpass
+    url: jdbc:mysql://${DB_DEV_HOST:localhost}:${DB_DEV_PORT:3306}/${DB_DEV_NAME:MicroservicesFinal}?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
+    username: ${DB_DEV_USERNAME:devuser}
+    password: ${DB_DEV_PASSWORD:devpass}
     hikari:
       poolName: Hikari
       auto-commit: false

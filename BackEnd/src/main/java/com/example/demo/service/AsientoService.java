@@ -61,8 +61,8 @@ public class AsientoService {
 
             MapaAsientosDTO mapa = new MapaAsientosDTO();
             mapa.setEventoId(eventoId);
-            mapa.setFilas(filas);
-            mapa.setColumnas(columnas);
+            mapa.setTotalFilas(filas);
+            mapa.setTotalColumnas(columnas);
 
             List<AsientoRedisDTO> asientos = new ArrayList<>();
 
@@ -137,8 +137,8 @@ public class AsientoService {
     private MapaAsientosDTO crearMapaVacio(Long eventoId, Integer filas, Integer columnas) {
         MapaAsientosDTO mapa = new MapaAsientosDTO();
         mapa.setEventoId(eventoId);
-        mapa.setFilas(filas);
-        mapa.setColumnas(columnas);
+        mapa.setTotalFilas(filas);
+        mapa.setTotalColumnas(columnas);
         mapa.setAsientos(new ArrayList<>());
         return mapa;
     }

@@ -17,7 +17,6 @@ public interface EventoResumenMapper {
     @Mapping(target = "resumen", source = "resumen")
     @Mapping(target = "descripcion", source = "descripcion")
     @Mapping(target = "fecha", source = "fecha")
-    @Mapping(target = "imagen", source = "imagen")
     @Mapping(target = "precioEntrada", source = "precioEntrada")
     @Mapping(target = "eventoTipo", source = "eventoTipo", qualifiedByName = "eventoTipoNombreDescripcion")
     EventoResumenDTO toDto(Evento evento);
