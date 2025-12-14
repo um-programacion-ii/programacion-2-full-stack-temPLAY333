@@ -168,18 +168,38 @@ fun SuccessSummaryState(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            val purchaseResult by purchaseSummaryViewModel.purchaseResult.collectAsState()
+            val purchaseError by purchaseSummaryViewModel.purchaseError.collectAsState()
+
+            LaunchedEffect(purchaseResult) {
+                purchaseResult?.let { ventaId ->
+                    onConfirmClick(ventaId)
+                    purchaseSummaryViewModel.resetPurchaseState()
+                }
+            }
+
+            if (purchaseError != null) {
+                AlertDialog(
+                    onDismissRequest = { purchaseSummaryViewModel.resetPurchaseState() },
+                    title = { Text("Error") },
+                    text = { Text(purchaseError ?: "Error desconocido") },
+                    confirmButton = {
+                        TextButton(onClick = { purchaseSummaryViewModel.resetPurchaseState() }) {
+                            Text("OK")
+                        }
+                    }
+                )
+            }
+
             PrimaryButton(
                 text = "CONFIRMAR COMPRA",
                 onClick = {
                     isLoading = true
-                    val purchaseId = purchaseSummaryViewModel.completePurchase()
-                    if (purchaseId != null) {
-                        onConfirmClick(purchaseId)
-                    } else {
-                        // Mostrar error - por ahora usa un ID de respaldo
-                        onConfirmClick(999L)
+                    // Preparar asientos con nombres para la venta
+                    val asientosConNombres = attendees.map { (seat, name) ->
+                        Triple(seat.first, seat.second, name)
                     }
-                    isLoading = false
+                    purchaseSummaryViewModel.completePurchase(event.id, asientosConNombres)
                 },
                 loading = isLoading
             )

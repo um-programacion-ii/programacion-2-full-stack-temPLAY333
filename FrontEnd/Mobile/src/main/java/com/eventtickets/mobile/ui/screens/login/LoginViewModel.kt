@@ -2,7 +2,7 @@ package com.eventtickets.mobile.ui.screens.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import com.eventtickets.mobile.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -21,6 +21,8 @@ class LoginViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
 
+    private val authRepository = AuthRepository()
+
     fun onUsernameChange(username: String) {
         _uiState.update { it.copy(username = username, errorMessage = null) }
     }
@@ -38,11 +40,31 @@ class LoginViewModel : ViewModel() {
             }
 
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            delay(1000) // Simulate network call
-            if (_uiState.value.username == "admin" && _uiState.value.password == "admin") {
-                _uiState.update { it.copy(isLoading = false, loginSuccess = true) }
-            } else {
-                _uiState.update { it.copy(isLoading = false, errorMessage = "Usuario o contraseña incorrectos") }
+
+            try {
+                val result = authRepository.login(
+                    username = _uiState.value.username.trim(),
+                    password = _uiState.value.password
+                )
+
+                result.onSuccess { token ->
+                    // El token ya se guardó en RetrofitClient dentro del repository
+                    _uiState.update { it.copy(isLoading = false, loginSuccess = true) }
+                }.onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = error.message ?: "Error de autenticación"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = "Error de conexión: ${e.message}"
+                    )
+                }
             }
         }
     }

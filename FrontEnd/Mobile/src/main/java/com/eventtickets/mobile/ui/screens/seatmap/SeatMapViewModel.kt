@@ -2,9 +2,9 @@ package com.eventtickets.mobile.ui.screens.seatmap
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eventtickets.mobile.data.MockData
 import com.eventtickets.mobile.data.model.AsientoMapaDto
 import com.eventtickets.mobile.data.model.MapaAsientosDto
+import com.eventtickets.mobile.data.repository.EventRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,19 +24,24 @@ class SeatMapViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(SeatMapUiState())
     val uiState: StateFlow<SeatMapUiState> = _uiState.asStateFlow()
 
+    private val repository = EventRepository()
+
     fun loadSeatMap(eventId: Long) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 // Fetch both event details and seat map
-                val event = MockData.getEventoDetalleById(eventId)
-                val seatMap = MockData.getSeatMapForEvent(eventId)
+                val eventResult = repository.getEventoDetalle(eventId)
+                val seatMapResult = repository.getMapaAsientos(eventId)
 
-                if (event != null && seatMap != null) {
+                if (eventResult.isSuccess && seatMapResult.isSuccess) {
+                    val event = eventResult.getOrNull()
+                    val seatMap = seatMapResult.getOrNull()
+
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            eventTitle = event.titulo,
+                            eventTitle = event?.titulo ?: "",
                             seatMap = seatMap
                         )
                     }

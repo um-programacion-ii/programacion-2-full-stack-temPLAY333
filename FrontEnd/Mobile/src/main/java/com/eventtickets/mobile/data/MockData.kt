@@ -18,7 +18,6 @@ object MockData {
             titulo = "Concierto de Rock Sinfónico",
             resumen = "Una noche épica donde el rock clásico se encuentra con la majestuosidad de una orquesta sinfónica.",
             fecha = "2024-10-26T20:00:00Z",
-            imagen = "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             eventoTipo = EventoTipo(1, "Música")
         ),
         Event(
@@ -26,7 +25,6 @@ object MockData {
             titulo = "Final de Conferencia",
             resumen = "El partido decisivo que define al campeón de la conferencia. Un encuentro lleno de emoción y adrenalina.",
             fecha = "2024-11-15T18:00:00Z",
-            imagen = "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             eventoTipo = EventoTipo(2, "Deportes")
         ),
         Event(
@@ -34,7 +32,6 @@ object MockData {
             titulo = "Obra de Teatro Clásico",
             resumen = "Una reinterpretación moderna de un clásico de la literatura. Una experiencia teatral única e inolvidable.",
             fecha = "2024-12-05T21:00:00Z",
-            imagen = "https://images.unsplash.com/photo-1507924538820-ede94a04019d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             eventoTipo = EventoTipo(3, "Teatro")
         )
     )
@@ -153,7 +150,7 @@ object MockData {
                 3L -> "Teatro Colón, Cerrito 628, Buenos Aires"
                 else -> "Ubicación por definir"
             },
-            imagen = eventoResumido.imagen,
+            imagen = "https://via.placeholder.com/800x400?text=${eventoResumido.titulo}",
             filaAsientos = 15,
             columnAsientos = 20,
             eventoTipo = EventoTipo(

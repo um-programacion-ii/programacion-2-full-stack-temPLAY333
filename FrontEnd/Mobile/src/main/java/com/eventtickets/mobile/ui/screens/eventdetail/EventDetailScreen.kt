@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -67,6 +68,7 @@ fun EventDetailScreen(
             onBuyTicketsClick = { onBuyTicketsClick(eventId) }
         )
         is EventDetailUiState.Error -> ErrorDetailState(
+            errorMessage = state.message,
             onBackClick = onBackClick,
             onRetry = { eventDetailViewModel.loadEventDetail(eventId) }
         )
@@ -308,7 +310,7 @@ fun LoadingDetailState(onBackClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ErrorDetailState(onBackClick: () -> Unit, onRetry: () -> Unit) {
+fun ErrorDetailState(errorMessage: String, onBackClick: () -> Unit, onRetry: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -331,11 +333,34 @@ fun ErrorDetailState(onBackClick: () -> Unit, onRetry: () -> Unit) {
             modifier = Modifier.fillMaxSize().padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                Text(text = "No se pudo cargar el evento.", color = TextPrimary)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Error,
+                    contentDescription = null,
+                    tint = Error,
+                    modifier = Modifier.size(64.dp)
+                )
                 Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Error al cargar el evento",
+                    color = TextPrimary,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = errorMessage,
+                    color = TextSecondary,
+                    fontSize = 14.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(24.dp))
                 Button(onClick = onRetry) {
-                    Text("Reintentar")
+                    Text("REINTENTAR")
                 }
             }
         }

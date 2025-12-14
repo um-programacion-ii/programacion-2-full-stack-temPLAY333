@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.eventtickets.mobile.data.model.Purchase
+import com.eventtickets.mobile.ui.theme.Primary
+import com.eventtickets.mobile.ui.theme.Secondary
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -199,20 +201,29 @@ fun PurchaseCard(
         )
     ) {
         Column {
-            // Imagen del evento
+            // Icono del evento según tipo
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                Primary.copy(alpha = 0.7f),
+                                Secondary.copy(alpha = 0.9f)
+                            )
+                        )
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = purchase.evento.imagen,
-                    contentDescription = purchase.evento.titulo,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                Icon(
+                    imageVector = getEventIcon(purchase.evento.eventoTipo.nombre),
+                    contentDescription = purchase.evento.eventoTipo.nombre,
+                    tint = Color.White,
+                    modifier = Modifier.size(80.dp)
                 )
 
-                // Overlay gradient
+                // Overlay sutil
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -220,7 +231,7 @@ fun PurchaseCard(
                             Brush.verticalGradient(
                                 colors = listOf(
                                     Color.Transparent,
-                                    Color.Black.copy(alpha = 0.7f)
+                                    Color.Black.copy(alpha = 0.3f)
                                 )
                             )
                         )
@@ -403,6 +414,21 @@ private fun formatEventDate(isoDate: String): String {
         date?.let { outputFormat.format(it) } ?: isoDate
     } catch (e: Exception) {
         isoDate
+    }
+}
+
+// Función para obtener icono según tipo de evento
+private fun getEventIcon(tipoNombre: String): androidx.compose.ui.graphics.vector.ImageVector {
+    return when (tipoNombre.lowercase()) {
+        "música", "musica", "concierto" -> androidx.compose.material.icons.Icons.Default.MusicNote
+        "deportes", "deporte", "fútbol", "futbol", "basketball" -> androidx.compose.material.icons.Icons.Default.SportsBasketball
+        "teatro", "obra" -> androidx.compose.material.icons.Icons.Default.TheaterComedy
+        "cine", "película", "pelicula", "film" -> androidx.compose.material.icons.Icons.Default.Movie
+        "arte", "exposición", "exposicion", "galería", "galeria" -> androidx.compose.material.icons.Icons.Default.Palette
+        "conferencia", "charla", "seminario" -> androidx.compose.material.icons.Icons.Default.School
+        "festival", "feria" -> androidx.compose.material.icons.Icons.Default.Celebration
+        "comedia", "humor", "stand-up" -> androidx.compose.material.icons.Icons.Default.SentimentSatisfied
+        else -> androidx.compose.material.icons.Icons.Default.Event  // Icono por defecto
     }
 }
 

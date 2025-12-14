@@ -5,21 +5,19 @@ import com.google.gson.annotations.SerializedName
 // ==================== AUTENTICACIÓN ====================
 
 data class RegisterRequest(
-    val username: String,
+    val login: String,      // JHipster usa 'login' no 'username'
     val email: String,
-    val password: String
+    val password: String,
+    val langKey: String = "es"  // Requerido por JHipster
 )
 
-data class RegisterResponse(
-    val mensaje: String,
-    @SerializedName("user_id")
-    val userId: Long,
-    val username: String
-)
+// JHipster retorna 201 sin body
+// No hay RegisterResponse en JHipster estándar
 
 data class LoginRequest(
     val username: String,
-    val password: String
+    val password: String,
+    val rememberMe: Boolean = false
 )
 
 data class LoginResponse(
@@ -32,11 +30,13 @@ data class LoginResponse(
 data class EventoResumenDTO(
     val id: Long,
     val titulo: String,
-    val resumen: String,
+    val resumen: String? = null,
     val fecha: String, // ISO-8601
-    val imagen: String,
+    // ⚠️ NO tiene campo "imagen" - solo disponible en EventoDetalleDTO
+    @SerializedName("precio_entrada")
+    val precioEntrada: Double? = null,
     @SerializedName("evento_tipo")
-    val eventoTipo: EventoTipoDTO
+    val eventoTipo: EventoTipoDTO? = null
 )
 
 data class EventoDetalleDTO(
@@ -72,11 +72,9 @@ data class IntegranteDTO(
 
 data class MapaAsientosDTO(
     @SerializedName("evento_id")
-    val eventoId: Long,
-    @SerializedName("total_filas")
-    val totalFilas: Int,
-    @SerializedName("total_columnas")
-    val totalColumnas: Int,
+    val eventoId: Long? = null,
+    val filas: Int,        // Backend usa "filas" no "total_filas"
+    val columnas: Int,     // Backend usa "columnas" no "total_columnas"
     val asientos: List<AsientoMapaDTO>
 )
 
@@ -105,15 +103,11 @@ data class BloquearAsientosResponse(
 
 // ==================== VENTAS ====================
 
-data class RealizarVentaRequest(
-    val asientos: List<AsientoVentaDTO>
-)
-
+// Backend NO espera nombres en realizar venta, solo fila/columna
+// Los nombres no se envían según Backend-API.md
 data class AsientoVentaDTO(
     val fila: Int,
-    val columna: Int,
-    @SerializedName("nombre_asistente")
-    val nombreAsistente: String
+    val columna: Int
 )
 
 data class RealizarVentaResponse(
@@ -147,8 +141,12 @@ data class VentaDetalleDTO(
 data class EventoVentaDTO(
     val id: Long,
     val titulo: String,
+    val resumen: String? = null,
     val fecha: String,
-    val direccion: String
+    val direccion: String,
+    val imagen: String? = null,
+    @SerializedName("precio_entrada")
+    val precioEntrada: Double? = null
 )
 
 data class AsientoDTO(
@@ -157,7 +155,6 @@ data class AsientoDTO(
     val columna: Int,
     val estado: String,
     val precio: Double,
-    @SerializedName("nombre_asistente")
-    val nombreAsistente: String? = null
+    val persona: String? = null  // Backend usa 'persona' según Backend-API.md
 )
 

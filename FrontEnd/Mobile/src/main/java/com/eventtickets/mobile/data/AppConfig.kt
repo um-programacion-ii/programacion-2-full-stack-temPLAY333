@@ -15,7 +15,7 @@ object AppConfig {
      * - Para desarrollo/demo SIN backend: true
      * - Para testing CON backend: false
      */
-    const val USE_MOCK_DATA = true // <-- CAMBIA ESTO SEGÚN NECESITES
+    const val USE_MOCK_DATA = false // <-- Conectado al backend real
 
     /**
      * URL del backend (solo se usa si USE_MOCK_DATA = false)

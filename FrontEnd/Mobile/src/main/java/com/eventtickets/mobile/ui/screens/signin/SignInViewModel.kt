@@ -66,6 +66,16 @@ class SignInViewModel(
                     return@launch
                 }
 
+                currentState.name.replace(" ", "_").length !in 1..50 -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "El nombre debe tener entre 1 y 50 caracteres"
+                        )
+                    }
+                    return@launch
+                }
+
                 currentState.email.isBlank() -> {
                     _uiState.update {
                         it.copy(
@@ -86,11 +96,11 @@ class SignInViewModel(
                     return@launch
                 }
 
-                currentState.password.length < 6 -> {
+                currentState.password.length < 4 -> {
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = "La contraseña debe tener al menos 6 caracteres"
+                            errorMessage = "La contraseña debe tener al menos 4 caracteres"
                         )
                     }
                     return@launch

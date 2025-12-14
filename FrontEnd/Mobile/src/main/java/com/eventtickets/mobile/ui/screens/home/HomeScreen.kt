@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -20,7 +21,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.eventtickets.mobile.ui.components.EventCard
 import com.eventtickets.mobile.ui.components.shimmerBrush
 import com.eventtickets.mobile.ui.theme.Background
+import com.eventtickets.mobile.ui.theme.Error
 import com.eventtickets.mobile.ui.theme.TextPrimary
+import com.eventtickets.mobile.ui.theme.TextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,7 +82,10 @@ fun HomeScreen(
                     SuccessState(state = state, onEventClick = onEventClick)
                 }
                 is HomeUiState.Error -> {
-                    ErrorState(onRetry = { homeViewModel.loadEvents() })
+                    ErrorState(
+                        errorMessage = state.message,
+                        onRetry = { homeViewModel.loadEvents() }
+                    )
                 }
             }
         }
@@ -125,16 +131,38 @@ fun LoadingState() {
 }
 
 @Composable
-fun ErrorState(onRetry: () -> Unit) {
+fun ErrorState(errorMessage: String, onRetry: () -> Unit) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "Error al cargar los eventos", color = TextPrimary)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(24.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Error,
+                contentDescription = null,
+                tint = Error,
+                modifier = Modifier.size(64.dp)
+            )
             Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Error al cargar eventos",
+                color = TextPrimary,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = errorMessage,
+                color = TextSecondary,
+                fontSize = 14.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = onRetry) {
-                Text("Reintentar")
+                Text("REINTENTAR")
             }
         }
     }

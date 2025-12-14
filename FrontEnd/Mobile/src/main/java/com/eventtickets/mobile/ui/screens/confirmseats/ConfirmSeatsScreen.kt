@@ -8,12 +8,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.eventtickets.mobile.data.MockData
 import com.eventtickets.mobile.ui.components.PrimaryButton
 import com.eventtickets.mobile.ui.components.SecondaryButton
 import com.eventtickets.mobile.ui.theme.*
@@ -23,14 +25,47 @@ import com.eventtickets.mobile.ui.theme.*
 fun ConfirmSeatsScreen(
     eventId: Long,
     onBackClick: () -> Unit,
-    onConfirmClick: () -> Unit
+    onConfirmClick: () -> Unit,
+    viewModel: ConfirmSeatsViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
-    val event = MockData.getEventosResumidos().find { it.id == eventId }
+    val eventDetailViewModel: com.eventtickets.mobile.ui.screens.eventdetail.EventDetailViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val eventDetailState by eventDetailViewModel.uiState.collectAsState()
+    val confirmState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(eventId) {
+        eventDetailViewModel.loadEventDetail(eventId)
+    }
 
     // Obtener asientos reales del PurchaseManager
     val selectedSeats = com.eventtickets.mobile.data.PurchaseManager.getSelectedSeats()
     val pricePerSeat = 1250.0
     val totalPrice = selectedSeats.size * pricePerSeat
+
+    // Manejar el resultado de la confirmación
+    LaunchedEffect(confirmState.isConfirmed) {
+        if (confirmState.isConfirmed) {
+            onConfirmClick()
+        }
+    }
+
+    // Mostrar error si hay
+    if (confirmState.error != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.resetError() },
+            title = { Text("Error") },
+            text = { Text(confirmState.error ?: "") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.resetError() }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    val event = when (val state = eventDetailState) {
+        is com.eventtickets.mobile.ui.screens.eventdetail.EventDetailUiState.Success -> state.event
+        else -> null
+    }
 
     Scaffold(
         topBar = {
@@ -178,14 +213,18 @@ fun ConfirmSeatsScreen(
 
             PrimaryButton(
                 text = "BLOQUEAR ASIENTOS",
-                onClick = onConfirmClick
+                onClick = {
+                    viewModel.bloquearAsientos(eventId, selectedSeats)
+                },
+                loading = confirmState.isLoading
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             SecondaryButton(
                 text = "VOLVER",
-                onClick = onBackClick
+                onClick = onBackClick,
+                enabled = !confirmState.isLoading
             )
 
             Spacer(modifier = Modifier.height(24.dp))
