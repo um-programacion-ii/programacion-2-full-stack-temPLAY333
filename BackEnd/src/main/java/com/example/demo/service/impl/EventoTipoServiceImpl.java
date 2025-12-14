@@ -79,7 +79,7 @@ public class EventoTipoServiceImpl implements EventoTipoService {
     public List<EventoTipoDTO> findAllWhereEventoIsNull() {
         LOG.debug("Request to get all eventoTipos where Evento is null");
         return StreamSupport.stream(eventoTipoRepository.findAll().spliterator(), false)
-            .filter(eventoTipo -> eventoTipo.getEvento() == null)
+            .filter(eventoTipo -> eventoTipo.getEventos() == null || eventoTipo.getEventos().isEmpty())
             .map(eventoTipoMapper::toDto)
             .collect(Collectors.toCollection(LinkedList::new));
     }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20251214160000-1" author="auto">
+        <!-- Elimina la restricción única que prevenía que múltiples eventos compartan el mismo evento_tipo_id -->
+        <preConditions onFail="MARK_RAN">
+            <indexExists indexName="ux_evento__evento_tipo_id" tableName="evento" />
+        </preConditions>
+        <dropUniqueConstraint constraintName="ux_evento__evento_tipo_id" tableName="evento" />
+    </changeSet>
+</databaseChangeLog>
+

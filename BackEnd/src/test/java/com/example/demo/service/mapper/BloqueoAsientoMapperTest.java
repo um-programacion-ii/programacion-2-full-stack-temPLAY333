@@ -7,6 +7,7 @@ import com.example.demo.domain.enumeration.Estado;
 import com.example.demo.service.dto.AsientoBloqueoEstadoDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 class BloqueoAsientoMapperTest {
 
@@ -14,7 +15,7 @@ class BloqueoAsientoMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new BloqueoAsientoMapperImpl();
+        mapper = Mappers.getMapper(BloqueoAsientoMapper.class);
     }
 
     @Test

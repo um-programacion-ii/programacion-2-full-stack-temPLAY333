@@ -9,154 +9,153 @@ import com.example.demo.service.dto.RealizarVentaResponseDTO;
 import com.example.demo.service.dto.VentaDTO;
 import com.example.demo.service.mapper.VentaMapper;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 /**
  * Servicio para realizar ventas de asientos a través del Proxy.
+ *
+ * NOTE: This is a concrete implementation class kept so tests that instantiate
+ * VentaService directly (new VentaService(...)) continue to work. The real
+ * Spring-managed bean remains `VentaServiceImpl` annotated with @Service.
  */
-@Service
 @Transactional
 public class VentaService {
 
-    private static final Logger log = LoggerFactory.getLogger(VentaService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(VentaService.class);
 
-    private final RestTemplate restTemplate;
-    private final VentaRepository ventaRepository;
-    private final VentaMapper ventaMapper;
+    protected final VentaRepository ventaRepository;
 
-    @Value("${app.proxy.base-url:http://localhost:8080}")
-    private String proxyBaseUrl;
+    protected final VentaMapper ventaMapper;
+
+    protected final RestTemplate restTemplate;
+
+    // default proxy base url; in tests the field can be overridden via ReflectionTestUtils
+    protected String proxyBaseUrl = "http://localhost:8080";
 
     public VentaService(VentaRepository ventaRepository, VentaMapper ventaMapper) {
-        this.restTemplate = new RestTemplate();
         this.ventaRepository = ventaRepository;
         this.ventaMapper = ventaMapper;
+        this.restTemplate = new RestTemplate();
     }
 
-    /**
-     * Realiza una venta de asientos para un evento.
-     * Primero notifica a la Cátedra a través del Proxy.
-     * Luego persiste la venta localmente en la BD.
-     *
-     * @param eventoId ID del evento
-     * @param asientos Lista de asientos a vender (deben estar bloqueados)
-     * @param username Usuario que realiza la compra
-     * @return Respuesta de la venta
-     */
+    public VentaDTO save(VentaDTO ventaDTO) {
+        LOG.debug("Request to save Venta : {}", ventaDTO);
+        Venta venta = ventaMapper.toEntity(ventaDTO);
+        venta = ventaRepository.save(venta);
+        return ventaMapper.toDto(venta);
+    }
+
+    public VentaDTO update(VentaDTO ventaDTO) {
+        LOG.debug("Request to update Venta : {}", ventaDTO);
+        Venta venta = ventaMapper.toEntity(ventaDTO);
+        venta = ventaRepository.save(venta);
+        return ventaMapper.toDto(venta);
+    }
+
+    public Optional<VentaDTO> partialUpdate(VentaDTO ventaDTO) {
+        LOG.debug("Request to partially update Venta : {}", ventaDTO);
+
+        return ventaRepository
+            .findById(ventaDTO.getId())
+            .map(existingVenta -> {
+                ventaMapper.partialUpdate(existingVenta, ventaDTO);
+                return existingVenta;
+            })
+            .map(ventaRepository::save)
+            .map(ventaMapper::toDto);
+    }
+
+    public Page<VentaDTO> findAll(Pageable pageable) {
+        LOG.debug("Request to get all Ventas");
+        return ventaRepository.findAll(pageable).map(ventaMapper::toDto);
+    }
+
+    public Page<VentaDTO> findAllWithEagerRelationships(Pageable pageable) {
+        return ventaRepository.findAllWithEagerRelationships(pageable).map(ventaMapper::toDto);
+    }
+
+    public Optional<VentaDTO> findOne(Long id) {
+        LOG.debug("Request to get Venta : {}", id);
+        return ventaRepository.findOneWithEagerRelationships(id).map(ventaMapper::toDto);
+    }
+
+    public void delete(Long id) {
+        LOG.debug("Request to delete Venta : {}", id);
+        ventaRepository.deleteById(id);
+    }
+
+    // Business methods
     public RealizarVentaResponseDTO realizarVenta(Long eventoId, List<AsientoSeleccionDTO> asientos, String username) {
-        log.info("Realizando venta de {} asientos para evento {} por usuario {}", asientos.size(), eventoId, username);
+        LOG.info("Realizando venta de {} asientos para evento {} por usuario {}", asientos.size(), eventoId, username);
 
         try {
-            // 1. Crear request DTO
             RealizarVentaRequestDTO request = new RealizarVentaRequestDTO();
             request.setEventoId(eventoId);
 
-            // Convertir AsientoSeleccionDTO a AsientoVentaDTO
             List<AsientoVentaDTO> asientosVenta = asientos.stream()
                 .map(a -> {
                     AsientoVentaDTO dto = new AsientoVentaDTO();
                     dto.setFila(a.getFila());
                     dto.setColumna(a.getColumna());
-                    dto.setPersona(username); // Por defecto usar username, idealmente vendría del request
+                    dto.setPersona(username);
                     return dto;
                 })
                 .collect(Collectors.toList());
 
             request.setAsientos(asientosVenta);
 
-            // 2. Llamar al Proxy para notificar a la Cátedra
             String url = proxyBaseUrl + "/api/ventas/realizar";
-            ResponseEntity<RealizarVentaResponseDTO> responseEntity = restTemplate.postForEntity(
-                url,
-                request,
-                RealizarVentaResponseDTO.class
-            );
-
-            RealizarVentaResponseDTO response = responseEntity.getBody();
+            RealizarVentaResponseDTO response = restTemplate.postForObject(url, request, RealizarVentaResponseDTO.class);
 
             if (response != null && Boolean.TRUE.equals(response.getResultado())) {
-                log.info("Venta realizada exitosamente en la Cátedra para evento {}", eventoId);
-
-                // 3. Persistir venta localmente
+                LOG.info("Venta realizada exitosamente en la Cátedra para evento {}", eventoId);
                 persistirVentaLocal(eventoId, asientos, username, response);
-
             } else {
-                log.warn("Venta para evento {} no fue exitosa: {}", eventoId, response != null ? response.getDescripcion() : "Sin respuesta");
+                LOG.warn("Venta para evento {} no fue exitosa: {}", eventoId, response != null ? response.getDescripcion() : "Sin respuesta");
             }
-            return response;
+            return response != null ? response : crearErrorResponse("Sin respuesta del proxy");
         } catch (Exception e) {
-            log.error("Error al realizar venta para evento {}", eventoId, e);
-
-            // Retornar respuesta de error
-            RealizarVentaResponseDTO errorResponse = new RealizarVentaResponseDTO();
-            errorResponse.setResultado(false);
-            errorResponse.setDescripcion("Error al comunicarse con el servicio: " + e.getMessage());
-            return errorResponse;
+            LOG.error("Error al realizar venta para evento {}", eventoId, e);
+            return crearErrorResponse("Error al comunicarse con el servicio: " + e.getMessage());
         }
     }
 
-    /**
-     * Persiste la venta localmente en la BD del Backend.
-     */
-    private void persistirVentaLocal(Long eventoId, List<AsientoSeleccionDTO> asientos, String username, RealizarVentaResponseDTO response) {
+    protected RealizarVentaResponseDTO crearErrorResponse(String msg) {
+        RealizarVentaResponseDTO errorResponse = new RealizarVentaResponseDTO();
+        errorResponse.setResultado(false);
+        errorResponse.setDescripcion(msg);
+        return errorResponse;
+    }
+
+    protected void persistirVentaLocal(Long eventoId, List<AsientoSeleccionDTO> asientos, String username, RealizarVentaResponseDTO response) {
         try {
-            log.debug("Persistiendo venta local para evento {}", eventoId);
-
-            // Nota: La persistencia completa se hará cuando se reciba la confirmación
-            // asíncrona vía webhook desde el Proxy (evento VENTA_COMPLETADA de Kafka)
-            // Por ahora solo registramos en log que la venta fue aceptada por la Cátedra
-
-            log.info("Venta aceptada por la Cátedra para evento {}. Se persistirá cuando llegue confirmación vía Kafka", eventoId);
-
-            // La persistencia real se hace en EventoWebhookService.procesarVentaCompletada()
-            // cuando llega el evento VENTA_COMPLETADA desde Kafka vía Proxy
+            LOG.debug("Persistiendo venta local para evento {}", eventoId);
+            LOG.info("Venta aceptada por la Cátedra para evento {}. Se persistirá cuando llegue confirmación vía Kafka", eventoId);
         } catch (Exception e) {
-            log.error("Error al procesar venta localmente para evento {}", eventoId, e);
-            // No lanzar excepción para no afectar la venta en la Cátedra
+            LOG.error("Error al procesar venta localmente para evento {}", eventoId, e);
         }
     }
 
-    /**
-     * Obtiene todas las ventas de un usuario.
-     *
-     * @param username Usuario
-     * @return Lista de ventas
-     */
-    @Transactional(readOnly = true)
     public List<VentaDTO> obtenerVentasUsuario(String username) {
-        log.debug("Obteniendo ventas para usuario {}", username);
+        LOG.debug("Obteniendo ventas para usuario {}", username);
 
-        // Filtrar por usuario autenticado
         List<Venta> ventas = ventaRepository.findByUsuarioIsCurrentUser();
 
-        return ventas.stream()
-            .map(ventaMapper::toDto)
-            .toList();
+        return ventas.stream().map(ventaMapper::toDto).toList();
     }
 
-    /**
-     * Obtiene los detalles de una venta específica.
-     * Valida que la venta pertenezca al usuario autenticado.
-     *
-     * @param ventaId ID de la venta
-     * @param username Usuario autenticado
-     * @return Detalles de la venta si pertenece al usuario
-     */
-    @Transactional(readOnly = true)
     public Optional<VentaDTO> obtenerVenta(Long ventaId, String username) {
-        log.debug("Obteniendo venta con ID {} para usuario {}", ventaId, username);
+        LOG.debug("Obteniendo venta con ID {} para usuario {}", ventaId, username);
 
         return ventaRepository.findById(ventaId)
             .filter(venta -> venta.getUsuario().getLogin().equals(username))
             .map(ventaMapper::toDto);
     }
 }
-

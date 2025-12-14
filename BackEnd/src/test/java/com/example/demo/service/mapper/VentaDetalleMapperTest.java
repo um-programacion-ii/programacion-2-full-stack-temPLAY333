@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 class VentaDetalleMapperTest {
 
@@ -20,7 +21,7 @@ class VentaDetalleMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new VentaDetalleMapperImpl();
+        mapper = Mappers.getMapper(VentaDetalleMapper.class);
     }
 
     @Test

@@ -17,6 +17,7 @@ class VentaMapperTest {
 
     private final VentaMapper ventaMapper = Mappers.getMapper(VentaMapper.class);
     private final AsientoMapper asientoMapper = Mappers.getMapper(AsientoMapper.class);
+    private final EventoMapper eventoMapper = Mappers.getMapper(EventoMapper.class);
 
     private void injectAsientoMapper() {
         try {
@@ -31,9 +32,22 @@ class VentaMapperTest {
         }
     }
 
+    private void injectEventoMapper() {
+        try {
+            Field f = ventaMapper.getClass().getDeclaredField("eventoMapper");
+            f.setAccessible(true);
+            f.set(ventaMapper, eventoMapper);
+        } catch (NoSuchFieldException nsfe) {
+            // ignore if not present
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
     void toDto_shouldMapAsientos() {
         injectAsientoMapper();
+        injectEventoMapper();
 
         Venta venta = new Venta();
         venta.setId(1L);

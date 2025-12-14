@@ -1,0 +1,119 @@
+[
+    {
+        "titulo":  "Conferencia Nerd!",
+        "resumen":  "Esta es una conferencia de Nerds",
+        "descripcion":  "Esta es una conferencia de prueba para verificar que los datos estÃ¡n correctos",
+        "fecha":  "2026-01-10T11:00:00Z",
+        "direccion":  "Aula magna de la Universidad de Mendoza",
+        "imagen":  "https://scontent-scl2-1.xx.fbcdn.net/v/t1.6435-9/78167441_1316997891841734_2833734909829316608_n.jpg?stp=dst-jpg_p960x960_tt6\u0026_nc_cat=105\u0026ccb=1-7\u0026_nc_sid=127cfc\u0026_nc_ohc=1EcS_p0lVGUQ7kNvwE1jrdM\u0026_nc_oc=AdnCq7-RyHdhVpcPvW46Wehv10cjB9rcujwllkpiPP4H0OWUdbvCG0ygHh4zuXMQuIY\u0026_nc_zt=23\u0026_nc_ht=scontent-scl2-1.xx\u0026_nc_gid=_fzHXJUwDiUHBphj96cIcw\u0026oh=00_AfUm0lIje5462zK3WbGACoar67RKotbEXLqM6MeGpJdPoA\u0026oe=68B9E878",
+        "filaAsientos":  10,
+        "columnAsientos":  6,
+        "precioEntrada":  2662.79,
+        "eventoTipo":  {
+                           "nombre":  "Conferencia",
+                           "descripcion":  "Conferencia"
+                       },
+        "integrantes":  [
+                            {
+                                "nombre":  "MarÃ­a",
+                                "apellido":  "CorvalÃ¡n",
+                                "identificacion":  "Dra."
+                            }
+                        ],
+        "id":  1
+    },
+    {
+        "titulo":  "Otra Conferencia Nerd",
+        "resumen":  "Esta es otra conferencia de Nerds",
+        "descripcion":  "Esta es una conferencia de prueba para verificar que los datos estÃ¡n correctos version 2",
+        "fecha":  "2025-12-12T14:00:00Z",
+        "direccion":  "Aula magna de la Universidad de Mendoza",
+        "imagen":  "https://scontent-scl2-1.xx.fbcdn.net/v/t39.30808-6/498246488_1010495731278033_6589798781026206970_n.jpg?_nc_cat=100\u0026ccb=1-7\u0026_nc_sid=127cfc\u0026_nc_ohc=nNqMZ6Q01LwQ7kNvwFwn-Dp\u0026_nc_oc=Adka8XbkxUljf0sqN4faz1zUFFIKEAD5XKS-gZEumNPJNcSkMTfB92azVHLQYnKxqeI\u0026_nc_zt=23\u0026_nc_ht=scontent-scl2-1.xx\u0026_nc_gid=WzFrlM29lDxhAEfynHPxFQ\u0026oh=00_AfVoCftNVcxpatawm7mG3mA-FqqiwqSa-66iHFYp9Hw65Q\u0026oe=689863E1",
+        "filaAsientos":  20,
+        "columnAsientos":  8,
+        "precioEntrada":  4500.00,
+        "eventoTipo":  {
+                           "nombre":  "Obra de teatro",
+                           "descripcion":  "Obra de teatro"
+                       },
+        "integrantes":  [
+                            {
+                                "nombre":  "MarÃ­a",
+                                "apellido":  "CorvalÃ¡n",
+                                "identificacion":  "Dra."
+                            },
+                            {
+                                "nombre":  "Ricardo",
+                                "apellido":  "Tapia",
+                                "identificacion":  "Profesor"
+                            }
+                        ],
+        "id":  2
+    },
+    {
+        "titulo":  "Ciclo de MÃºsica ClÃ¡sica Evento 1",
+        "resumen":  "Evento musical de mÃºsica clÃ¡sica por vendimia - Evento 1/2",
+        "descripcion":  "Evento de mÃºsica clÃ¡sica relacionado a la fiesta nacional de la vendimia. Primer evento",
+        "fecha":  "2026-02-10T22:00:00Z",
+        "direccion":  "Teatro bustelo",
+        "imagen":  "https://www.unidiversidad.com.ar/cache/mg1371_608_1076.jpg",
+        "filaAsientos":  20,
+        "columnAsientos":  8,
+        "precioEntrada":  7500.00,
+        "eventoTipo":  {
+                           "nombre":  "Recital",
+                           "descripcion":  "Recital de mÃºsica"
+                       },
+        "integrantes":  [
+                            {
+                                "nombre":  "Antonela",
+                                "apellido":  "Smith",
+                                "identificacion":  ""
+                            },
+                            {
+                                "nombre":  "Ernestina",
+                                "apellido":  "Valentini",
+                                "identificacion":  ""
+                            }
+                        ],
+        "id":  3
+    },
+    {
+        "titulo":  "Ciclo de MÃºsica ClÃ¡sica Evento 2",
+        "resumen":  "Evento musical de mÃºsica clÃ¡sica por vendimia - Evento 2/2",
+        "descripcion":  "Evento de mÃºsica clÃ¡sica relacionado a la fiesta nacional de la vendimia. Primer evento",
+        "fecha":  "2026-01-30T20:00:00Z",
+        "direccion":  "Anfiteatro Frank Romero Day",
+        "imagen":  "https://media.diariouno.com.ar/adjuntos/298/migration/media/2019/04/DSC_0684-ok-700x395.jpg",
+        "filaAsientos":  20,
+        "columnAsientos":  10,
+        "precioEntrada":  9700.00,
+        "eventoTipo":  {
+                           "nombre":  "Recital",
+                           "descripcion":  "Recital de mÃºsica"
+                       },
+        "integrantes":  [
+
+                        ],
+        "id":  4
+    },
+    {
+        "titulo":  "Final Liga Mendocina de Basket",
+        "resumen":  "Partido final de la liga mendocina de basket - Equipo A vs Equipo 1",
+        "descripcion":  "Final del torneo de la liga mendocina de basket de verano - Equipo A Vs Equipo 1. Evento patrocinado por PowerENERGY",
+        "fecha":  "2026-01-14T14:00:00Z",
+        "direccion":  "Aconcagua Arena",
+        "imagen":  "https://grupoceosa.com/wp-content/uploads/2020/11/Webp.net-resizeimage-73-1.jpg",
+        "filaAsientos":  25,
+        "columnAsientos":  12,
+        "precioEntrada":  12500.00,
+        "eventoTipo":  {
+                           "nombre":  "Evento deportivo",
+                           "descripcion":  "Evento deportivo"
+                       },
+        "integrantes":  [
+
+                        ],
+        "id":  5
+    }
+]

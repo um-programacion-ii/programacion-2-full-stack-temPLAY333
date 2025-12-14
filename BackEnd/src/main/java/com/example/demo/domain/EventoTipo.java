@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -32,9 +34,10 @@ public class EventoTipo implements Serializable {
     @Column(name = "descripcion", length = 500)
     private String descripcion;
 
+    @OneToMany(mappedBy = "eventoTipo", fetch = FetchType.LAZY)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "eventoTipo", "integrantes" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "eventoTipo")
-    private Evento evento;
+    private Set<Evento> eventos = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -77,18 +80,46 @@ public class EventoTipo implements Serializable {
         this.descripcion = descripcion;
     }
 
+    public Set<Evento> getEventos() {
+        return this.eventos;
+    }
+
+    public void setEventos(Set<Evento> eventos) {
+        this.eventos = eventos;
+    }
+
+    public EventoTipo eventos(Set<Evento> eventos) {
+        this.setEventos(eventos);
+        return this;
+    }
+
+    public EventoTipo addEvento(Evento evento) {
+        this.eventos.add(evento);
+        evento.setEventoTipo(this);
+        return this;
+    }
+
+    public EventoTipo removeEvento(Evento evento) {
+        this.eventos.remove(evento);
+        evento.setEventoTipo(null);
+        return this;
+    }
+
+    // Compatibility helpers for legacy 1:1 API (tests/code expect getEvento/setEvento/evento)
+    // These adapt to the OneToMany model by returning/setting the first event in the collection.
     public Evento getEvento() {
-        return this.evento;
+        return this.eventos.stream().findFirst().orElse(null);
     }
 
     public void setEvento(Evento evento) {
-        if (this.evento != null) {
-            this.evento.setEventoTipo(null);
+        // Clear previous single-event mapping to emulate old 1:1 behaviour
+        if (this.eventos != null) {
+            this.eventos.forEach(e -> e.setEventoTipo(null));
+            this.eventos.clear();
         }
         if (evento != null) {
-            evento.setEventoTipo(this);
+            this.addEvento(evento);
         }
-        this.evento = evento;
     }
 
     public EventoTipo evento(Evento evento) {

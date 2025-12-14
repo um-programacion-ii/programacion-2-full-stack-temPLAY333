@@ -40,11 +40,4 @@ public interface EventoRepository extends EventoRepositoryWithBagRelationships, 
 
     @Query("select evento from Evento evento left join fetch evento.eventoTipo where evento.id =:id")
     Optional<Evento> findOneWithToOneRelationships(@Param("id") Long id);
-
-    // Nuevo: buscar por externalId
-    @Query("select evento from Evento evento left join fetch evento.eventoTipo where evento.externalId = :externalId")
-    Optional<Evento> findOneByExternalId(@Param("externalId") Long externalId);
-
-    @Query("select evento from Evento evento left join fetch evento.eventoTipo where evento.externalId in :externalIds")
-    List<Evento> findAllByExternalIds(@Param("externalIds") java.util.List<Long> externalIds);
 }

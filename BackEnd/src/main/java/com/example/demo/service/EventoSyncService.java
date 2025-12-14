@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.domain.Evento;
 import com.example.demo.domain.EventoTipo;
 import com.example.demo.domain.Integrante;
+import com.example.demo.proxy.EventoProxyController;
 import com.example.demo.repository.EventoRepository;
 import com.example.demo.repository.EventoTipoRepository;
 import com.example.demo.repository.IntegranteRepository;
@@ -13,22 +14,18 @@ import com.example.demo.service.dto.EventoTipoDTO;
 import com.example.demo.service.dto.IntegranteBasicDTO;
 import com.example.demo.service.dto.IntegranteDTO;
 import com.example.demo.service.mapper.EventoMapper;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
-import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * Servicio para sincronizar eventos desde la Cátedra hacia la base de datos local.
@@ -40,41 +37,31 @@ public class EventoSyncService {
 
     private static final Logger log = LoggerFactory.getLogger(EventoSyncService.class);
 
-    private final RestTemplate restTemplate;
+    private final EventoProxyController eventoProxyController;
     private final EventoRepository eventoRepository;
     private final EventoTipoRepository eventoTipoRepository;
     private final IntegranteRepository integranteRepository;
     private final EventoMapper eventoMapper;
-    private final EntityManager entityManager;
-
-    // Evita procesar el mismo evento en paralelo
-    private final ConcurrentMap<Long, Object> processingLocks = new ConcurrentHashMap<>();
-
-    @Value("${app.proxy.base-url:http://localhost:8080}")
-    private String proxyBaseUrl;
 
     public EventoSyncService(
+        EventoProxyController eventoProxyController,
         EventoRepository eventoRepository,
         EventoTipoRepository eventoTipoRepository,
         IntegranteRepository integranteRepository,
-        EventoMapper eventoMapper,
-        EntityManager entityManager
+        EventoMapper eventoMapper
     ) {
-        this.restTemplate = new RestTemplate();
+        this.eventoProxyController = eventoProxyController;
         this.eventoRepository = eventoRepository;
         this.eventoTipoRepository = eventoTipoRepository;
         this.integranteRepository = integranteRepository;
         this.eventoMapper = eventoMapper;
-        this.entityManager = entityManager;
     }
 
     /**
      * Sincroniza todos los eventos desde la Cátedra.
      * Se ejecuta cada hora: cron "0 0 * * * *" = segundo 0, minuto 0, cada hora
-     * Solo si app.sync.enabled=true
      */
     @Scheduled(cron = "0 0 * * * *")
-    @ConditionalOnProperty(name = "app.sync.enabled", havingValue = "true", matchIfMissing = true)
     public void syncAllEvents() {
         log.info("Iniciando sincronización automática de eventos desde Cátedra");
         try {
@@ -89,42 +76,39 @@ public class EventoSyncService {
      * Sincroniza eventos manualmente (útil para testing o triggers manuales).
      */
     public void syncEventsFromCatedra() {
-        log.debug("Obteniendo lista completa de eventos desde el Proxy");
+        log.debug("Obteniendo lista completa de eventos desde la Cátedra");
 
-        // Obtener eventos desde el Proxy
-        String url = proxyBaseUrl + "/api/eventos";
-        EventoDTO[] eventosArray = restTemplate.getForObject(url, EventoDTO[].class);
-        List<EventoDTO> eventosFromCatedra = eventosArray != null ? List.of(eventosArray) : List.of();
+        // Obtener eventos desde el proxy (Cátedra)
+        List<EventoDTO> eventosFromCatedra = eventoProxyController.listarEventos().getBody();
 
-        if (eventosFromCatedra.isEmpty()) {
-            log.warn("No se obtuvieron eventos desde el Proxy");
+        if (eventosFromCatedra == null || eventosFromCatedra.isEmpty()) {
+            log.warn("No se obtuvieron eventos desde la Cátedra");
             return;
         }
 
-        log.debug("Se obtuvieron {} eventos desde el Proxy", eventosFromCatedra.size());
+        log.debug("Se obtuvieron {} eventos desde la Cátedra", eventosFromCatedra.size());
 
-        // Procesar cada evento
+        // Procesar cada evento de forma aislada
         for (EventoDTO eventoDTO : eventosFromCatedra) {
             try {
                 processAndSaveEvento(eventoDTO);
             } catch (Exception e) {
-                log.error("Error al procesar evento con ID {}", eventoDTO.getId(), e);
+                log.error("Error al procesar evento con ID {}: {}", eventoDTO.getId(), e.getMessage(), e);
             }
         }
     }
 
     /**
-     * Sincroniza un evento específico desde el Proxy.
+     * Sincroniza un evento específico desde la Cátedra.
      */
     public void syncEventoById(Long eventoId) {
-        log.debug("Sincronizando evento específico con ID {} desde el Proxy", eventoId);
+        log.debug("Sincronizando evento específico con ID {} desde la Cátedra", eventoId);
 
         try {
-            String url = proxyBaseUrl + "/api/eventos/" + eventoId;
-            EventoDetalleDTO eventoDetalle = restTemplate.getForObject(url, EventoDetalleDTO.class);
+            EventoDetalleDTO eventoDetalle = eventoProxyController.obtenerEvento(eventoId).getBody();
 
             if (eventoDetalle == null) {
-                log.warn("No se encontró evento con ID {} en el Proxy", eventoId);
+                log.warn("No se encontró evento con ID {} en la Cátedra", eventoId);
                 return;
             }
 
@@ -136,142 +120,92 @@ public class EventoSyncService {
     }
 
     private void processAndSaveEvento(EventoDTO eventoDTO) {
-        Long externalId = eventoDTO.getId();
-        Object lock = new Object();
-        Object existing = processingLocks.putIfAbsent(externalId, lock);
-        if (existing != null) {
-            log.warn("Evento {} ya está siendo procesado por otra tarea, se omite ejecución concurrente", externalId);
+        if (eventoDTO == null) {
             return;
         }
-        try {
-            if (eventoDTO.getId() == null) {
-                log.error("EventoDTO sin ID, no se puede procesar: {}", eventoDTO);
-                throw new IllegalArgumentException("El evento debe tener un ID");
+        // Mapear en objeto entidad
+        Evento evento = eventoRepository.findById(eventoDTO.getId()).orElse(new Evento());
+        evento.setId(eventoDTO.getId());
+        evento.setTitulo(eventoDTO.getTitulo());
+        evento.setResumen(eventoDTO.getResumen());
+        evento.setDescripcion(eventoDTO.getDescripcion());
+        evento.setFecha(eventoDTO.getFecha() != null ? eventoDTO.getFecha() : Instant.now());
+        evento.setDireccion(eventoDTO.getDireccion());
+        evento.setImagen(eventoDTO.getImagen());
+        evento.setFilaAsientos(eventoDTO.getFilaAsientos());
+        evento.setColumnAsientos(eventoDTO.getColumnAsientos());
+        evento.setPrecioEntrada(eventoDTO.getPrecioEntrada());
+
+        // EventoTipo: buscar por id si viene, sino por nombre, sino crear
+        if (eventoDTO.getEventoTipo() != null) {
+            EventoTipo tipo = null;
+            if (eventoDTO.getEventoTipo().getId() != null) {
+                tipo = eventoTipoRepository.findById(eventoDTO.getEventoTipo().getId()).orElse(null);
             }
-
-            // Buscar por externalId
-            Evento evento;
-            Optional<Evento> found = eventoRepository.findOneByExternalId(externalId);
-            boolean exists = found.isPresent();
-            if (exists) {
-                evento = found.get();
-            } else {
-                evento = new Evento();
-                evento.setExternalId(externalId);
+            if (tipo == null && eventoDTO.getEventoTipo().getNombre() != null) {
+                String nombre = eventoDTO.getEventoTipo().getNombre().trim();
+                tipo = eventoTipoRepository.findAll()
+                    .stream()
+                    .filter(et -> et.getNombre().equalsIgnoreCase(nombre))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        EventoTipo nuevo = new EventoTipo();
+                        nuevo.setNombre(nombre);
+                        nuevo.setDescripcion(eventoDTO.getEventoTipo().getDescripcion());
+                        return eventoTipoRepository.save(nuevo);
+                    });
             }
+            evento.setEventoTipo(tipo);
+        }
 
-            // Mapear datos básicos
-            // NOTA: No tocar la PK `id` (GeneratedValue). Usamos externalId para correlación.
-            // evento.setId(eventoDTO.getId()); // no asignamos PK manualmente
-            evento.setTitulo(eventoDTO.getTitulo());
-            evento.setResumen(eventoDTO.getResumen());
-            evento.setDescripcion(eventoDTO.getDescripcion());
-            evento.setFecha(eventoDTO.getFecha());
-            evento.setDireccion(eventoDTO.getDireccion());
-            evento.setImagen(eventoDTO.getImagen());
-            evento.setFilaAsientos(eventoDTO.getFilaAsientos());
-            evento.setColumnAsientos(eventoDTO.getColumnAsientos());
-            evento.setPrecioEntrada(eventoDTO.getPrecioEntrada());
-
-            // Procesar EventoTipo
-            if (eventoDTO.getEventoTipo() != null && eventoDTO.getEventoTipo().getNombre() != null) {
-                EventoTipo eventoTipo;
-
-                // Si tiene ID, intentar buscar por ID primero
-                if (eventoDTO.getEventoTipo().getId() != null) {
-                    eventoTipo = eventoTipoRepository
-                        .findById(eventoDTO.getEventoTipo().getId())
-                        .orElseGet(() -> crearNuevoEventoTipo(eventoDTO.getEventoTipo()));
-                } else {
-                    // Si no tiene ID, buscar por nombre
-                    eventoTipo = eventoTipoRepository
-                        .findAll()
-                        .stream()
-                        .filter(et -> et.getNombre().equals(eventoDTO.getEventoTipo().getNombre()))
-                        .findFirst()
-                        .orElseGet(() -> crearNuevoEventoTipo(eventoDTO.getEventoTipo()));
+        // Integrantes: backend crea ID siempre. Buscar por identificacion o por nombre/apellido, si no crear nuevo.
+        Set<Integrante> integrantes = new HashSet<>();
+        if (eventoDTO.getIntegrantes() != null) {
+            int idx = 0;
+            for (IntegranteDTO integranteDTO : eventoDTO.getIntegrantes()) {
+                idx++;
+                Integrante integrante = null;
+                String identificacion = integranteDTO.getIdentificacion() != null ? integranteDTO.getIdentificacion().trim() : null;
+                if (identificacion != null && !identificacion.isEmpty()) {
+                    integrante = integranteRepository.findByIdentificacion(identificacion).orElse(null);
                 }
-                evento.setEventoTipo(eventoTipo);
-            } else {
-                log.warn("Evento {} no tiene tipo de evento asignado o nombre de tipo es nulo", eventoDTO.getId());
-            }
-
-            // Procesar integrantes
-            if (eventoDTO.getIntegrantes() != null && !eventoDTO.getIntegrantes().isEmpty()) {
-                Set<Integrante> integrantes = new HashSet<>();
-                for (IntegranteDTO integranteDTO : eventoDTO.getIntegrantes()) {
-                    if (integranteDTO.getId() == null) {
-                        log.warn("Integrante sin ID en evento {}, se omitirá", eventoDTO.getId());
-                        continue;
+                if (integrante == null) {
+                    String nombre = integranteDTO.getNombre() != null ? integranteDTO.getNombre().trim() : "";
+                    String apellido = integranteDTO.getApellido() != null ? integranteDTO.getApellido().trim() : "";
+                    if (!nombre.isEmpty() || !apellido.isEmpty()) {
+                        integrante = integranteRepository.findByNombreAndApellido(nombre, apellido).orElse(null);
                     }
-
-                    Integrante integrante = integranteRepository
-                        .findById(integranteDTO.getId())
-                        .orElseGet(() -> {
-                            Integrante nuevoIntegrante = new Integrante();
-                            nuevoIntegrante.setId(integranteDTO.getId());
-                            nuevoIntegrante.setNombre(integranteDTO.getNombre());
-                            nuevoIntegrante.setApellido(integranteDTO.getApellido());
-                            nuevoIntegrante.setIdentificacion(integranteDTO.getIdentificacion());
-                            return integranteRepository.save(nuevoIntegrante);
-                        });
-                    integrantes.add(integrante);
                 }
-                evento.setIntegrantes(integrantes);
-            }
-
-            // Guardar en BD local
-            try {
-                if (exists) {
-                    eventoRepository.save(evento);
-                } else {
-                    // persist explicitamente para insertar un nuevo registro; externalId ya seteado
-                    entityManager.persist(evento);
+                if (integrante == null) {
+                    // crear uno nuevo; si no hay identificacion, generar placeholder para cumplir not-null
+                    String idGen = identificacion != null && !identificacion.isEmpty() ? identificacion : ("gen-" + eventoDTO.getId() + "-" + idx);
+                    Integrante nuevo = new Integrante();
+                    nuevo.setNombre(integranteDTO.getNombre() != null ? integranteDTO.getNombre() : "");
+                    nuevo.setApellido(integranteDTO.getApellido() != null ? integranteDTO.getApellido() : "");
+                    nuevo.setIdentificacion(idGen);
+                    integrante = integranteRepository.save(nuevo);
+                    log.debug("Integrante creado por backend id={} identificacion={}", integrante.getId(), integrante.getIdentificacion());
                 }
-                log.debug("Evento {} guardado/actualizado en BD local", evento.getId());
-            } catch (Exception e) {
-                log.error("Error guardando evento {}: {}", eventoId, e.getMessage(), e);
-                // rethrow to be caught by outer caller and avoid silent data inconsistency
-                throw e;
-            } finally {
-                // asegurar liberar lock
-                processingLocks.remove(eventoId);
+                integrantes.add(integrante);
             }
-        } catch (RuntimeException ex) {
-            // asegurar liberar lock en caso de excepcion previa a la finally interno
-            processingLocks.remove(eventoId);
-            throw ex;
         }
-    }
+        evento.setIntegrantes(integrantes);
 
-    private EventoTipo crearNuevoEventoTipo(EventoTipoDTO eventoTipoDTO) {
-        EventoTipo nuevoTipo = new EventoTipo();
-        if (eventoTipoDTO.getId() != null) {
-            nuevoTipo.setId(eventoTipoDTO.getId());
+        // Persistir evento en su propia transacción para evitar rollback global
+        try {
+            saveEventoNewTransaction(evento);
+            log.debug("Evento {} guardado/actualizado en BD local (REQUIRES_NEW)", evento.getId());
+        } catch (Exception e) {
+            log.error("Error guardando evento {}: {}", evento.getId(), e.getMessage(), e);
+            throw e;
         }
-        nuevoTipo.setNombre(eventoTipoDTO.getNombre());
-        nuevoTipo.setDescripcion(eventoTipoDTO.getDescripcion());
-        return eventoTipoRepository.save(nuevoTipo);
     }
 
     private void processAndSaveEventoDetalle(EventoDetalleDTO eventoDetalleDTO) {
-        // Validar que el evento tenga ID
-        if (eventoDetalleDTO.getId() == null) {
-            log.error("EventoDetalleDTO sin ID, no se puede procesar: {}", eventoDetalleDTO);
-            throw new IllegalArgumentException("El evento debe tener un ID");
+        if (eventoDetalleDTO == null) {
+            return;
         }
-
-        // Similar a processAndSaveEvento pero con más detalle
-        Evento evento;
-        Long id = eventoDetalleDTO.getId();
-        boolean exists = eventoRepository.existsById(id);
-        if (exists) {
-            evento = eventoRepository.findById(id).orElse(new Evento());
-        } else {
-            evento = new Evento();
-            evento.setId(id);
-        }
-
+        Evento evento = eventoRepository.findById(eventoDetalleDTO.getId()).orElse(new Evento());
         evento.setId(eventoDetalleDTO.getId());
         evento.setTitulo(eventoDetalleDTO.getTitulo());
         evento.setResumen(eventoDetalleDTO.getResumen());
@@ -283,117 +217,102 @@ public class EventoSyncService {
         evento.setColumnAsientos(eventoDetalleDTO.getColumnAsientos());
         evento.setPrecioEntrada(eventoDetalleDTO.getPrecioEntrada());
 
-        // EventoTipo - buscar por nombre ya que BasicDTO no tiene ID
-        if (eventoDetalleDTO.getEventoTipo() != null && eventoDetalleDTO.getEventoTipo().getNombre() != null) {
-            // Buscar por nombre o crear nuevo
-            EventoTipo eventoTipo = eventoTipoRepository
-                .findAll()
+        // EventoTipo
+        if (eventoDetalleDTO.getEventoTipo() != null) {
+            EventoTipo tipo = null;
+            // EventoTipoBasicDTO doesn't have an ID; search by nombre
+            String nombre = eventoDetalleDTO.getEventoTipo().getNombre().trim();
+            tipo = eventoTipoRepository.findAll()
                 .stream()
-                .filter(et -> et.getNombre().equals(eventoDetalleDTO.getEventoTipo().getNombre()))
+                .filter(et -> et.getNombre().equalsIgnoreCase(nombre))
                 .findFirst()
                 .orElseGet(() -> {
-                    EventoTipo nuevoTipo = new EventoTipo();
-                    nuevoTipo.setNombre(eventoDetalleDTO.getEventoTipo().getNombre());
-                    nuevoTipo.setDescripcion(eventoDetalleDTO.getEventoTipo().getDescripcion());
-                    return eventoTipoRepository.save(nuevoTipo);
+                    EventoTipo nuevo = new EventoTipo();
+                    nuevo.setNombre(nombre);
+                    nuevo.setDescripcion(eventoDetalleDTO.getEventoTipo().getDescripcion());
+                    return eventoTipoRepository.save(nuevo);
                 });
-            evento.setEventoTipo(eventoTipo);
-        } else {
-            log.warn("Evento detallado {} no tiene tipo de evento asignado o nombre es nulo", eventoDetalleDTO.getId());
+            evento.setEventoTipo(tipo);
         }
 
-        // Integrantes - BasicDTO no tiene ID, buscar por nombre/apellido/identificación
-        if (eventoDetalleDTO.getIntegrantes() != null && !eventoDetalleDTO.getIntegrantes().isEmpty()) {
-            Set<Integrante> integrantes = new HashSet<>();
-            for (IntegranteBasicDTO integranteBasicDTO : eventoDetalleDTO.getIntegrantes()) {
-                // Validar que tenga los datos mínimos necesarios
-                if (integranteBasicDTO.getNombre() == null ||
-                    integranteBasicDTO.getApellido() == null ||
-                    integranteBasicDTO.getIdentificacion() == null) {
-                    log.warn("Integrante con datos incompletos en evento {}, se omitirá", eventoDetalleDTO.getId());
-                    continue;
+        // Integrantes
+        Set<Integrante> integrantes = new HashSet<>();
+        if (eventoDetalleDTO.getIntegrantes() != null) {
+            int idx = 0;
+            for (IntegranteBasicDTO integranteDTO : eventoDetalleDTO.getIntegrantes()) {
+                idx++;
+                Integrante integrante = null;
+                String identificacion = integranteDTO.getIdentificacion() != null ? integranteDTO.getIdentificacion().trim() : null;
+                if (identificacion != null && !identificacion.isEmpty()) {
+                    integrante = integranteRepository.findByIdentificacion(identificacion).orElse(null);
                 }
-
-                // Buscar por nombre y apellido o crear nuevo
-                Integrante integrante = integranteRepository
-                    .findAll()
-                    .stream()
-                    .filter(i ->
-                        i.getNombre().equals(integranteBasicDTO.getNombre()) &&
-                        i.getApellido().equals(integranteBasicDTO.getApellido()) &&
-                        i.getIdentificacion().equals(integranteBasicDTO.getIdentificacion())
-                    )
-                    .findFirst()
-                    .orElseGet(() -> {
-                        Integrante nuevoIntegrante = new Integrante();
-                        nuevoIntegrante.setNombre(integranteBasicDTO.getNombre());
-                        nuevoIntegrante.setApellido(integranteBasicDTO.getApellido());
-                        nuevoIntegrante.setIdentificacion(integranteBasicDTO.getIdentificacion());
-                        return integranteRepository.save(nuevoIntegrante);
-                    });
+                if (integrante == null) {
+                    String nombre = integranteDTO.getNombre() != null ? integranteDTO.getNombre().trim() : "";
+                    String apellido = integranteDTO.getApellido() != null ? integranteDTO.getApellido().trim() : "";
+                    if (!nombre.isEmpty() || !apellido.isEmpty()) {
+                        integrante = integranteRepository.findByNombreAndApellido(nombre, apellido).orElse(null);
+                    }
+                }
+                if (integrante == null) {
+                    String idGen = identificacion != null && !identificacion.isEmpty() ? identificacion : ("gen-" + eventoDetalleDTO.getId() + "-" + idx);
+                    Integrante nuevo = new Integrante();
+                    nuevo.setNombre(integranteDTO.getNombre() != null ? integranteDTO.getNombre() : "");
+                    nuevo.setApellido(integranteDTO.getApellido() != null ? integranteDTO.getApellido() : "");
+                    nuevo.setIdentificacion(idGen);
+                    integrante = integranteRepository.save(nuevo);
+                    log.debug("Integrante creado por backend id={} identificacion={}", integrante.getId(), integrante.getIdentificacion());
+                }
                 integrantes.add(integrante);
             }
-            evento.setIntegrantes(integrantes);
         }
+        evento.setIntegrantes(integrantes);
 
-        if (exists) {
-            eventoRepository.save(evento);
-        } else {
-            entityManager.persist(evento);
+        try {
+            saveEventoNewTransaction(evento);
+            log.debug("Evento detallado {} guardado/actualizado en BD local (REQUIRES_NEW)", evento.getId());
+        } catch (Exception e) {
+            log.error("Error guardando evento detallado {}: {}", evento.getId(), e.getMessage(), e);
+            throw e;
         }
-        log.debug("Evento detallado {} guardado/actualizado en BD local", evento.getId());
     }
 
-    /**
-     * Obtiene todos los eventos resumidos desde la BD local.
-     * No consulta la Cátedra, solo lee la BD sincronizada.
-     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Evento saveEventoNewTransaction(Evento evento) {
+        // Validar campos mínimos antes de persistir
+        if (evento.getTitulo() == null || evento.getFecha() == null || evento.getDireccion() == null) {
+            log.warn("Evento {} incompleto, no se persiste en REQUIRES_NEW", evento.getId());
+            return evento;
+        }
+        Evento saved = eventoRepository.save(evento);
+        log.debug("[REQUIRES_NEW] Evento {} guardado en BD", saved.getId());
+        return saved;
+    }
+
+    // Public query methods for controllers / frontend
     public List<EventoResumenDTO> obtenerEventosResumidos() {
-        log.debug("Obteniendo eventos resumidos desde BD local");
-
-        List<Evento> eventos = eventoRepository.findAll();
-
-        return eventos
-            .stream()
-            .map(evento -> {
-                EventoResumenDTO dto = new EventoResumenDTO();
-                dto.setId(evento.getId());
-                dto.setTitulo(evento.getTitulo());
-                dto.setResumen(evento.getResumen());
-                dto.setDescripcion(evento.getDescripcion());
-                dto.setFecha(evento.getFecha());
-                dto.setPrecioEntrada(evento.getPrecioEntrada());
-                if (evento.getEventoTipo() != null) {
-                    EventoTipoDTO eventoTipoDTO = new EventoTipoDTO();
-                    eventoTipoDTO.setId(evento.getEventoTipo().getId());
-                    eventoTipoDTO.setNombre(evento.getEventoTipo().getNombre());
-                    dto.setEventoTipo(eventoTipoDTO);
-                }
-                return dto;
-            })
-            .collect(Collectors.toList());
+        return eventoRepository.findAll().stream().map(e -> {
+            EventoResumenDTO dto = new EventoResumenDTO();
+            dto.setId(e.getId());
+            dto.setTitulo(e.getTitulo());
+            dto.setResumen(e.getResumen());
+            dto.setDescripcion(e.getDescripcion());
+            dto.setFecha(e.getFecha());
+            dto.setPrecioEntrada(e.getPrecioEntrada());
+            if (e.getEventoTipo() != null) {
+                EventoTipoDTO t = new EventoTipoDTO();
+                t.setId(e.getEventoTipo().getId());
+                t.setNombre(e.getEventoTipo().getNombre());
+                dto.setEventoTipo(t);
+            }
+            return dto;
+        }).collect(Collectors.toList());
     }
 
-    /**
-     * Obtiene todos los eventos completos desde la BD local.
-     * No consulta la Cátedra, solo lee la BD sincronizada.
-     */
     public List<EventoDTO> obtenerEventosCompletos() {
-        log.debug("Obteniendo eventos completos desde BD local");
-
-        List<Evento> eventos = eventoRepository.findAll();
-
-        return eventos.stream().map(eventoMapper::toDto).collect(Collectors.toList());
+        return eventoRepository.findAll().stream().map(eventoMapper::toDto).collect(Collectors.toList());
     }
 
-    /**
-     * Obtiene un evento específico por ID desde la BD local.
-     * No consulta la Cátedra, solo lee la BD sincronizada.
-     */
     public Optional<EventoDTO> obtenerEventoPorId(Long id) {
-        log.debug("Obteniendo evento {} desde BD local", id);
-
         return eventoRepository.findById(id).map(eventoMapper::toDto);
     }
 }
-

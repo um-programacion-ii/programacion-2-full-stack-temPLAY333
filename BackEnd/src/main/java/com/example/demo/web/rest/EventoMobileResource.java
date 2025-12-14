@@ -35,17 +35,20 @@ public class EventoMobileResource {
 
     private final EventoService eventoService;
     private final EventoRepository eventoRepository;
+    private final EventoMapper eventoMapper;
     private final EventoResumenMapper eventoResumenMapper;
     private final EventoSyncService eventoSyncService;
 
     public EventoMobileResource(
         EventoService eventoService,
         EventoRepository eventoRepository,
+        EventoMapper eventoMapper,
         EventoResumenMapper eventoResumenMapper,
         EventoSyncService eventoSyncService
     ) {
         this.eventoService = eventoService;
         this.eventoRepository = eventoRepository;
+        this.eventoMapper = eventoMapper;
         this.eventoResumenMapper = eventoResumenMapper;
         this.eventoSyncService = eventoSyncService;
     }
