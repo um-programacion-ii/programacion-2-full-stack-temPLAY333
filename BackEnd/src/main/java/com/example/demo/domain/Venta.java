@@ -57,7 +57,6 @@ public class Venta implements Serializable {
     private Evento evento;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "venta" }, allowSetters = true)
     private Set<Asiento> asientos = new HashSet<>();
 

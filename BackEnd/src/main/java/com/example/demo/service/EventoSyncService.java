@@ -17,7 +17,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +45,10 @@ public class EventoSyncService {
     private final EventoTipoRepository eventoTipoRepository;
     private final IntegranteRepository integranteRepository;
     private final EventoMapper eventoMapper;
+    private final EntityManager entityManager;
+
+    // Evita procesar el mismo evento en paralelo
+    private final ConcurrentMap<Long, Object> processingLocks = new ConcurrentHashMap<>();
 
     @Value("${app.proxy.base-url:http://localhost:8080}")
     private String proxyBaseUrl;
@@ -50,13 +57,15 @@ public class EventoSyncService {
         EventoRepository eventoRepository,
         EventoTipoRepository eventoTipoRepository,
         IntegranteRepository integranteRepository,
-        EventoMapper eventoMapper
+        EventoMapper eventoMapper,
+        EntityManager entityManager
     ) {
         this.restTemplate = new RestTemplate();
         this.eventoRepository = eventoRepository;
         this.eventoTipoRepository = eventoTipoRepository;
         this.integranteRepository = integranteRepository;
         this.eventoMapper = eventoMapper;
+        this.entityManager = entityManager;
     }
 
     /**
@@ -127,77 +136,112 @@ public class EventoSyncService {
     }
 
     private void processAndSaveEvento(EventoDTO eventoDTO) {
-        // Validar que el evento tenga ID
-        if (eventoDTO.getId() == null) {
-            log.error("EventoDTO sin ID, no se puede procesar: {}", eventoDTO);
-            throw new IllegalArgumentException("El evento debe tener un ID");
+        Long externalId = eventoDTO.getId();
+        Object lock = new Object();
+        Object existing = processingLocks.putIfAbsent(externalId, lock);
+        if (existing != null) {
+            log.warn("Evento {} ya está siendo procesado por otra tarea, se omite ejecución concurrente", externalId);
+            return;
         }
+        try {
+            if (eventoDTO.getId() == null) {
+                log.error("EventoDTO sin ID, no se puede procesar: {}", eventoDTO);
+                throw new IllegalArgumentException("El evento debe tener un ID");
+            }
 
-        // Buscar si ya existe en BD local
-        Evento evento = eventoRepository.findById(eventoDTO.getId()).orElse(new Evento());
-
-        // Mapear datos básicos
-        evento.setId(eventoDTO.getId());
-        evento.setTitulo(eventoDTO.getTitulo());
-        evento.setResumen(eventoDTO.getResumen());
-        evento.setDescripcion(eventoDTO.getDescripcion());
-        evento.setFecha(eventoDTO.getFecha());
-        evento.setDireccion(eventoDTO.getDireccion());
-        evento.setImagen(eventoDTO.getImagen());
-        evento.setFilaAsientos(eventoDTO.getFilaAsientos());
-        evento.setColumnAsientos(eventoDTO.getColumnAsientos());
-        evento.setPrecioEntrada(eventoDTO.getPrecioEntrada());
-
-        // Procesar EventoTipo
-        if (eventoDTO.getEventoTipo() != null && eventoDTO.getEventoTipo().getNombre() != null) {
-            EventoTipo eventoTipo;
-
-            // Si tiene ID, intentar buscar por ID primero
-            if (eventoDTO.getEventoTipo().getId() != null) {
-                eventoTipo = eventoTipoRepository
-                    .findById(eventoDTO.getEventoTipo().getId())
-                    .orElseGet(() -> crearNuevoEventoTipo(eventoDTO.getEventoTipo()));
+            // Buscar por externalId
+            Evento evento;
+            Optional<Evento> found = eventoRepository.findOneByExternalId(externalId);
+            boolean exists = found.isPresent();
+            if (exists) {
+                evento = found.get();
             } else {
-                // Si no tiene ID, buscar por nombre
-                eventoTipo = eventoTipoRepository
-                    .findAll()
-                    .stream()
-                    .filter(et -> et.getNombre().equals(eventoDTO.getEventoTipo().getNombre()))
-                    .findFirst()
-                    .orElseGet(() -> crearNuevoEventoTipo(eventoDTO.getEventoTipo()));
+                evento = new Evento();
+                evento.setExternalId(externalId);
             }
-            evento.setEventoTipo(eventoTipo);
-        } else {
-            log.warn("Evento {} no tiene tipo de evento asignado o nombre de tipo es nulo", eventoDTO.getId());
-        }
 
-        // Procesar integrantes
-        if (eventoDTO.getIntegrantes() != null && !eventoDTO.getIntegrantes().isEmpty()) {
-            Set<Integrante> integrantes = new HashSet<>();
-            for (IntegranteDTO integranteDTO : eventoDTO.getIntegrantes()) {
-                if (integranteDTO.getId() == null) {
-                    log.warn("Integrante sin ID en evento {}, se omitirá", eventoDTO.getId());
-                    continue;
+            // Mapear datos básicos
+            // NOTA: No tocar la PK `id` (GeneratedValue). Usamos externalId para correlación.
+            // evento.setId(eventoDTO.getId()); // no asignamos PK manualmente
+            evento.setTitulo(eventoDTO.getTitulo());
+            evento.setResumen(eventoDTO.getResumen());
+            evento.setDescripcion(eventoDTO.getDescripcion());
+            evento.setFecha(eventoDTO.getFecha());
+            evento.setDireccion(eventoDTO.getDireccion());
+            evento.setImagen(eventoDTO.getImagen());
+            evento.setFilaAsientos(eventoDTO.getFilaAsientos());
+            evento.setColumnAsientos(eventoDTO.getColumnAsientos());
+            evento.setPrecioEntrada(eventoDTO.getPrecioEntrada());
+
+            // Procesar EventoTipo
+            if (eventoDTO.getEventoTipo() != null && eventoDTO.getEventoTipo().getNombre() != null) {
+                EventoTipo eventoTipo;
+
+                // Si tiene ID, intentar buscar por ID primero
+                if (eventoDTO.getEventoTipo().getId() != null) {
+                    eventoTipo = eventoTipoRepository
+                        .findById(eventoDTO.getEventoTipo().getId())
+                        .orElseGet(() -> crearNuevoEventoTipo(eventoDTO.getEventoTipo()));
+                } else {
+                    // Si no tiene ID, buscar por nombre
+                    eventoTipo = eventoTipoRepository
+                        .findAll()
+                        .stream()
+                        .filter(et -> et.getNombre().equals(eventoDTO.getEventoTipo().getNombre()))
+                        .findFirst()
+                        .orElseGet(() -> crearNuevoEventoTipo(eventoDTO.getEventoTipo()));
                 }
-
-                Integrante integrante = integranteRepository
-                    .findById(integranteDTO.getId())
-                    .orElseGet(() -> {
-                        Integrante nuevoIntegrante = new Integrante();
-                        nuevoIntegrante.setId(integranteDTO.getId());
-                        nuevoIntegrante.setNombre(integranteDTO.getNombre());
-                        nuevoIntegrante.setApellido(integranteDTO.getApellido());
-                        nuevoIntegrante.setIdentificacion(integranteDTO.getIdentificacion());
-                        return integranteRepository.save(nuevoIntegrante);
-                    });
-                integrantes.add(integrante);
+                evento.setEventoTipo(eventoTipo);
+            } else {
+                log.warn("Evento {} no tiene tipo de evento asignado o nombre de tipo es nulo", eventoDTO.getId());
             }
-            evento.setIntegrantes(integrantes);
-        }
 
-        // Guardar en BD local
-        eventoRepository.save(evento);
-        log.debug("Evento {} guardado/actualizado en BD local", evento.getId());
+            // Procesar integrantes
+            if (eventoDTO.getIntegrantes() != null && !eventoDTO.getIntegrantes().isEmpty()) {
+                Set<Integrante> integrantes = new HashSet<>();
+                for (IntegranteDTO integranteDTO : eventoDTO.getIntegrantes()) {
+                    if (integranteDTO.getId() == null) {
+                        log.warn("Integrante sin ID en evento {}, se omitirá", eventoDTO.getId());
+                        continue;
+                    }
+
+                    Integrante integrante = integranteRepository
+                        .findById(integranteDTO.getId())
+                        .orElseGet(() -> {
+                            Integrante nuevoIntegrante = new Integrante();
+                            nuevoIntegrante.setId(integranteDTO.getId());
+                            nuevoIntegrante.setNombre(integranteDTO.getNombre());
+                            nuevoIntegrante.setApellido(integranteDTO.getApellido());
+                            nuevoIntegrante.setIdentificacion(integranteDTO.getIdentificacion());
+                            return integranteRepository.save(nuevoIntegrante);
+                        });
+                    integrantes.add(integrante);
+                }
+                evento.setIntegrantes(integrantes);
+            }
+
+            // Guardar en BD local
+            try {
+                if (exists) {
+                    eventoRepository.save(evento);
+                } else {
+                    // persist explicitamente para insertar un nuevo registro; externalId ya seteado
+                    entityManager.persist(evento);
+                }
+                log.debug("Evento {} guardado/actualizado en BD local", evento.getId());
+            } catch (Exception e) {
+                log.error("Error guardando evento {}: {}", eventoId, e.getMessage(), e);
+                // rethrow to be caught by outer caller and avoid silent data inconsistency
+                throw e;
+            } finally {
+                // asegurar liberar lock
+                processingLocks.remove(eventoId);
+            }
+        } catch (RuntimeException ex) {
+            // asegurar liberar lock en caso de excepcion previa a la finally interno
+            processingLocks.remove(eventoId);
+            throw ex;
+        }
     }
 
     private EventoTipo crearNuevoEventoTipo(EventoTipoDTO eventoTipoDTO) {
@@ -218,7 +262,15 @@ public class EventoSyncService {
         }
 
         // Similar a processAndSaveEvento pero con más detalle
-        Evento evento = eventoRepository.findById(eventoDetalleDTO.getId()).orElse(new Evento());
+        Evento evento;
+        Long id = eventoDetalleDTO.getId();
+        boolean exists = eventoRepository.existsById(id);
+        if (exists) {
+            evento = eventoRepository.findById(id).orElse(new Evento());
+        } else {
+            evento = new Evento();
+            evento.setId(id);
+        }
 
         evento.setId(eventoDetalleDTO.getId());
         evento.setTitulo(eventoDetalleDTO.getTitulo());
@@ -284,7 +336,11 @@ public class EventoSyncService {
             evento.setIntegrantes(integrantes);
         }
 
-        eventoRepository.save(evento);
+        if (exists) {
+            eventoRepository.save(evento);
+        } else {
+            entityManager.persist(evento);
+        }
         log.debug("Evento detallado {} guardado/actualizado en BD local", evento.getId());
     }
 

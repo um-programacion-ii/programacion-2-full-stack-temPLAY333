@@ -28,6 +28,10 @@ public class Evento implements Serializable {
     @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
+    // ID provisto por la cátedra/proxy. Lo usamos para sincronización sin tocar la PK.
+    @Column(name = "external_id", unique = true)
+    private Long externalId;
+
     @NotNull
     @Size(max = 200)
     @Column(name = "titulo", length = 200, nullable = false)
@@ -99,6 +103,14 @@ public class Evento implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getExternalId() {
+        return this.externalId;
+    }
+
+    public void setExternalId(Long externalId) {
+        this.externalId = externalId;
     }
 
     public String getTitulo() {

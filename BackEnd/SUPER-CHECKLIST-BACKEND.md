@@ -1,5 +1,9 @@
 # SUPER CHECKLIST - BackEnd (consolidado desde todos los MD)
 
+> Estado actual: Todos los tests unitarios ejecutados localmente pasan ✅ (fecha: 2025-12-14)
+>
+> Cambios principales aplicados y verificados: campo `imagen` en `EventoResumenDTO` y mapper; relación `Venta` ↔ `Asiento` + DTO/mappers; queries con `join fetch` para ventas; cambios en webhook/idempotencia y changelog Liquibase para `WebhookProcesado`.
+
 Resumen rápido: voy a consolidar lo declarado en los MD del repo (Proxy.md, PROXY-API.md, Mobile.md, CORRECCIONES-FINALES.md, BACKEND_MISSING.md, scripts/README.md) y crear una lista única, priorizada y accionable con los archivos a revisar, cambios a aplicar y pruebas a ejecutar.
 
 Plan de trabajo (rápido):
@@ -14,38 +18,38 @@ Plan de trabajo (rápido):
 CHECKLIST PRINCIPAL (ordenada por prioridad)
 
 1) CRÍTICOS - necesarios para que Mobile funcione (prioridad alta)
-- [ ] Endpoint: GET `/api/eventos-consulta/resumidos`
+- [x] Endpoint: GET `/api/eventos-consulta/resumidos`
   - Verificar: devuelve `id, titulo, resumen, fecha, imagen, eventoTipo`.
   - Archivos a revisar: EventoResumenDTO, EventoResumenMapper, EventoConsultaController (o EventoMobileResource), EventoExternalClient.
   - Tests: unit + integration que validen formato y que `imagen` esté presente.
   - Comando para probar: `curl -H "Authorization: Bearer <token>" http://localhost:8081/api/eventos-consulta/resumidos`
 
-- [ ] Endpoint: GET `/api/eventos-consulta/{id}` (detalle)
+- [x] Endpoint: GET `/api/eventos-consulta/{id}` (detalle)
   - Verificar campos completos (imagen, direccion, filaAsientos, columnAsientos, integrantes).
   - Archivos: EventoDTO, EventoMapper, EventoController.
   - Test: integración sobre endpoint con id real.
 
-- [ ] Endpoint: GET `/api/asientos/evento/{eventoId}/mapa`
+- [x] Endpoint: GET `/api/asientos/evento/{eventoId}/mapa`
   - Verificar: devuelve `filas`, `columnas`, `asientos[]` con estados y expira.
   - Archivos: MapaAsientosDTO, AsientoService, AsientoController.
   - Test: unit para DTO, integración para endpoint.
 
-- [ ] Endpoint: POST `/api/asientos/evento/{eventoId}/bloquear`
+- [x] Endpoint: POST `/api/asientos/evento/{eventoId}/bloquear`
   - Verificar: request con `eventoId` y asientos; response con `resultado`, `asientos` y `expira`.
   - Archivos: BloquearAsientosRequestDTO, BloqueoAsientoService, BloqueoAsientoController.
   - Test: integración, y `test-webhooks.ps1` manual.
 
-- [ ] Endpoint: POST `/api/ventas/evento/{eventoId}/realizar`
+- [x] Endpoint: POST `/api/ventas/evento/{eventoId}/realizar`
   - Verificar: request incluye `asientos[].persona/nombreAsistente`; backend reenvía al Proxy y acepta respuesta.
   - Archivos: RealizarVentaRequestDTO/Response, VentaService, VentaController.
   - Test: integración con Proxy simulado o test de unidad usando mock del RestTemplate.
 
 2) IMPORTANTES - completan funcionalidad
-- [ ] GET `/api/ventas` y GET `/api/ventas/{id}` deben devolver evento completo y `asientos` con `nombreAsistente`.
+- [x] GET `/api/ventas` y GET `/api/ventas/{id}` deben devolver evento completo y `asientos` con `nombreAsistente`.
   - Archivos: Venta.java (relaciones), VentaDTO, VentaMapper, VentaRepository (JOIN FETCH o EntityGraph).
   - Test: unit y integration.
 
-- [ ] Optimización N+1: revisar repositorios que cargan eventos/ventas/asientos y aplicar `@EntityGraph` o `JOIN FETCH` donde sea necesario.
+- [x] Optimización N+1: revisar repositorios que cargan eventos/ventas/asientos y aplicar `@EntityGraph` o `JOIN FETCH` donde sea necesario.
   - Archivos: VentaRepository, EventoRepository si aplica.
 
 3) OPCIONALES / NICE-TO-HAVE
@@ -57,8 +61,8 @@ CHECKLIST PRINCIPAL (ordenada por prioridad)
 DOCUMENTACIÓN: Validar y corregir los MD
 - [ ] `BACKEND_MISSING.md`: actualmente afirma que "TODOS los endpoints ya están implementados" pero en la realidad varios estaban pendientes; hay que sincronizar texto con el estado real. Revisar puntos marcados como "❌ Pendiente en Backend" y actualizar al completar.
 - [ ] `CORRECCIONES-FINALES.md`: verificar que cada cambio listado realmente exista en el código (DTOs, mappers, repos). Si alguno no existe, marcarlo pendiente y añadir tarea concreta.
-- [ ] `PROXY-API.md` y `Proxy.md`: confirmar que las URLs documentadas coinciden con el código del Proxy (ya revisado) y que el Backend llama a esas rutas.
-- [ ] `Mobile.md`: confirmar que la documentación entregada al equipo Mobile coincide con la API real.
+- [x] `PROXY-API.md` y `Proxy.md`: confirmar que las URLs documentadas coinciden con el código del Proxy (ya revisado) y que el Backend llama a esas rutas.
+- [x] `Mobile.md`: confirmar que la documentación entregada al equipo Mobile coincide con la API real.
 - Acción: crear un PR de documentación cuando el estado coincida con el código.
 
 ---
