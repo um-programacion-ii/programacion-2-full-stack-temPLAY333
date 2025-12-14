@@ -2,13 +2,8 @@
   "annotations": {
     "changelogDate": "20251108154020"
   },
-  "name": "Evento",
   "applications": "*",
   "dto": "mapstruct",
-  "id": {
-    "type": "Long",
-    "generatedValue": false
-  },
   "fields": [
     {
       "fieldName": "titulo",
@@ -63,6 +58,11 @@
       "fieldValidateRulesMin": "0"
     }
   ],
+  "id": {
+    "generatedValue": false,
+    "type": "Long"
+  },
+  "name": "Evento",
   "pagination": "pagination",
   "relationships": [
     {
