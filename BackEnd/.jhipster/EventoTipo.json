@@ -1,0 +1,25 @@
+{
+  "annotations": {
+    "changelogDate": "20251108154021"
+  },
+  "applications": "*",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "nombre",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "unique", "maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "descripcion",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    }
+  ],
+  "name": "EventoTipo",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}
