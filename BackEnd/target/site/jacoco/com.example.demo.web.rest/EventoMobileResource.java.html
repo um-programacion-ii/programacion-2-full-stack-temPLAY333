@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventoMobileResource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.web.rest</a> &gt; <span class="el_source">EventoMobileResource.java</span></div><h1>EventoMobileResource.java</h1><pre class="source lang-java linenums">package com.example.demo.web.rest;
+
+import com.example.demo.repository.EventoRepository;
+import com.example.demo.service.EventoService;
+import com.example.demo.service.EventoSyncService;
+import com.example.demo.service.dto.EventoDTO;
+import com.example.demo.service.dto.EventoResumenDTO;
+import com.example.demo.service.mapper.EventoResumenMapper;
+import java.util.List;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tech.jhipster.web.util.PaginationUtil;
+
+/**
+ * REST controller para servir eventos al móvil desde la base de datos local.
+ * NO usa el proxy, lee directamente de la BD sincronizada.
+ */
+@RestController
+@RequestMapping(&quot;/api/eventos-consulta&quot;)
+public class EventoMobileResource {
+
+<span class="nc" id="L33">    private static final Logger log = LoggerFactory.getLogger(EventoMobileResource.class);</span>
+
+    private final EventoService eventoService;
+    private final EventoRepository eventoRepository;
+    private final EventoResumenMapper eventoResumenMapper;
+    private final EventoSyncService eventoSyncService;
+
+    public EventoMobileResource(
+        EventoService eventoService,
+        EventoRepository eventoRepository,
+        EventoResumenMapper eventoResumenMapper,
+        EventoSyncService eventoSyncService
+<span class="nc" id="L45">    ) {</span>
+<span class="nc" id="L46">        this.eventoService = eventoService;</span>
+<span class="nc" id="L47">        this.eventoRepository = eventoRepository;</span>
+<span class="nc" id="L48">        this.eventoResumenMapper = eventoResumenMapper;</span>
+<span class="nc" id="L49">        this.eventoSyncService = eventoSyncService;</span>
+<span class="nc" id="L50">    }</span>
+
+    /**
+     * {@code GET  /api/eventos-consulta/resumidos} : Obtener todos los eventos resumidos desde BD local.
+     *
+     * @param pageable the pagination information.
+     * @return la lista de eventos resumidos con paginación.
+     */
+    @GetMapping(&quot;/resumidos&quot;)
+    public ResponseEntity&lt;List&lt;EventoResumenDTO&gt;&gt; getAllEventosResumidos(Pageable pageable) {
+<span class="nc" id="L60">        log.debug(&quot;REST request to get a page of Eventos resumidos from local DB&quot;);</span>
+
+<span class="nc" id="L62">        Page&lt;EventoResumenDTO&gt; page = eventoRepository</span>
+<span class="nc" id="L63">            .findAllWithEagerRelationships(pageable)</span>
+<span class="nc" id="L64">            .map(eventoResumenMapper::toDto);</span>
+
+<span class="nc" id="L66">        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);</span>
+<span class="nc" id="L67">        return ResponseEntity.ok().headers(headers).body(page.getContent());</span>
+    }
+
+    /**
+     * {@code GET  /api/eventos-consulta} : Obtener todos los eventos completos desde BD local.
+     *
+     * @param pageable the pagination information.
+     * @return la lista de eventos completos con paginación.
+     */
+    @GetMapping
+    public ResponseEntity&lt;List&lt;EventoDTO&gt;&gt; getAllEventos(Pageable pageable) {
+<span class="nc" id="L78">        log.debug(&quot;REST request to get a page of Eventos from local DB&quot;);</span>
+
+<span class="nc" id="L80">        Page&lt;EventoDTO&gt; page = eventoService.findAllWithEagerRelationships(pageable);</span>
+
+<span class="nc" id="L82">        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);</span>
+<span class="nc" id="L83">        return ResponseEntity.ok().headers(headers).body(page.getContent());</span>
+    }
+
+    /**
+     * {@code GET  /api/eventos-consulta/{id}} : Obtener un evento específico desde BD local.
+     *
+     * @param id el id del evento.
+     * @return el evento con status 200 (OK) o 404 (Not Found).
+     */
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;EventoDTO&gt; getEvento(@PathVariable(&quot;id&quot;) Long id) {
+<span class="nc" id="L94">        log.debug(&quot;REST request to get Evento {} from local DB&quot;, id);</span>
+
+<span class="nc" id="L96">        Optional&lt;EventoDTO&gt; eventoDTO = eventoService.findOne(id);</span>
+<span class="nc" id="L97">        return eventoDTO.map(ResponseEntity::ok).orElseGet(() -&gt; ResponseEntity.notFound().build());</span>
+    }
+
+    /**
+     * {@code POST  /api/eventos-consulta/sync} : Forzar sincronización manual de eventos.
+     *
+     * @return status 202 (Accepted).
+     */
+    @PostMapping(&quot;/sync&quot;)
+    public ResponseEntity&lt;Void&gt; syncEventos() {
+<span class="nc" id="L107">        log.debug(&quot;REST request to manually sync Eventos from Cátedra&quot;);</span>
+
+        // Ejecutar sincronización de forma asíncrona para no bloquear
+<span class="nc" id="L110">        new Thread(eventoSyncService::syncEventsFromCatedra).start();</span>
+
+<span class="nc" id="L112">        return ResponseEntity.accepted().build();</span>
+    }
+
+    /**
+     * {@code POST  /api/eventos-consulta/{id}/sync} : Forzar sincronización de un evento específico.
+     *
+     * @param id el id del evento a sincronizar.
+     * @return status 202 (Accepted).
+     */
+    @PostMapping(&quot;/{id}/sync&quot;)
+    public ResponseEntity&lt;Void&gt; syncEvento(@PathVariable(&quot;id&quot;) Long id) {
+<span class="nc" id="L123">        log.debug(&quot;REST request to manually sync Evento {} from Cátedra&quot;, id);</span>
+
+        // Ejecutar sincronización de forma asíncrona
+<span class="nc" id="L126">        new Thread(() -&gt; eventoSyncService.syncEventoById(id)).start();</span>
+
+<span class="nc" id="L128">        return ResponseEntity.accepted().build();</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -12,8 +12,8 @@ public class MapaAsientosDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long eventoId;
-    private Integer totalFilas;
-    private Integer totalColumnas;
+    private Integer filas;
+    private Integer columnas;
     private List<AsientoRedisDTO> asientos; // Solo bloqueados/vendidos
 
     public MapaAsientosDTO() {}
@@ -26,20 +26,20 @@ public class MapaAsientosDTO implements Serializable {
         this.eventoId = eventoId;
     }
 
-    public Integer getTotalFilas() {
-        return totalFilas;
+    public Integer getFilas() {
+        return filas;
     }
 
-    public void setTotalFilas(Integer totalFilas) {
-        this.totalFilas = totalFilas;
+    public void setFilas(Integer filas) {
+        this.filas = filas;
     }
 
-    public Integer getTotalColumnas() {
-        return totalColumnas;
+    public Integer getColumnas() {
+        return columnas;
     }
 
-    public void setTotalColumnas(Integer totalColumnas) {
-        this.totalColumnas = totalColumnas;
+    public void setColumnas(Integer columnas) {
+        this.columnas = columnas;
     }
 
     public List<AsientoRedisDTO> getAsientos() {
@@ -54,8 +54,8 @@ public class MapaAsientosDTO implements Serializable {
     public String toString() {
         return "MapaAsientosDTO{" +
             "eventoId=" + eventoId +
-            ", totalFilas=" + totalFilas +
-            ", totalColumnas=" + totalColumnas +
+            ", filas=" + filas +
+            ", columnas=" + columnas +
             ", asientos=" + (asientos != null ? asientos.size() : 0) + " asientos" +
             '}';
     }

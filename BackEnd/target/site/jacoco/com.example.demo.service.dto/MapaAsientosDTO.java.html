@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapaAsientosDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.dto</a> &gt; <span class="el_source">MapaAsientosDTO.java</span></div><h1>MapaAsientosDTO.java</h1><pre class="source lang-java linenums">package com.example.demo.service.dto;
+
+import java.io.Serializable;
+import java.util.List;
+
+/**
+ * DTO para el mapa de asientos de un evento.
+ * Incluye ID del evento y lista de asientos con estado.
+ */
+public class MapaAsientosDTO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private Long eventoId;
+    private Integer filas;
+    private Integer columnas;
+    private List&lt;AsientoRedisDTO&gt; asientos; // Solo bloqueados/vendidos
+
+<span class="nc" id="L19">    public MapaAsientosDTO() {}</span>
+
+    public Long getEventoId() {
+<span class="nc" id="L22">        return eventoId;</span>
+    }
+
+    public void setEventoId(Long eventoId) {
+<span class="nc" id="L26">        this.eventoId = eventoId;</span>
+<span class="nc" id="L27">    }</span>
+
+    public Integer getFilas() {
+<span class="nc" id="L30">        return filas;</span>
+    }
+
+    public void setFilas(Integer filas) {
+<span class="nc" id="L34">        this.filas = filas;</span>
+<span class="nc" id="L35">    }</span>
+
+    public Integer getColumnas() {
+<span class="nc" id="L38">        return columnas;</span>
+    }
+
+    public void setColumnas(Integer columnas) {
+<span class="nc" id="L42">        this.columnas = columnas;</span>
+<span class="nc" id="L43">    }</span>
+
+    public List&lt;AsientoRedisDTO&gt; getAsientos() {
+<span class="nc" id="L46">        return asientos;</span>
+    }
+
+    public void setAsientos(List&lt;AsientoRedisDTO&gt; asientos) {
+<span class="nc" id="L50">        this.asientos = asientos;</span>
+<span class="nc" id="L51">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L55">        return &quot;MapaAsientosDTO{&quot; +</span>
+            &quot;eventoId=&quot; + eventoId +
+            &quot;, filas=&quot; + filas +
+            &quot;, columnas=&quot; + columnas +
+<span class="nc bnc" id="L59" title="All 2 branches missed.">            &quot;, asientos=&quot; + (asientos != null ? asientos.size() : 0) + &quot; asientos&quot; +</span>
+            '}';
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

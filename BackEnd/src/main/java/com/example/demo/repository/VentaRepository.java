@@ -14,7 +14,11 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface VentaRepository extends JpaRepository<Venta, Long> {
-    @Query("select venta from Venta venta where venta.usuario.login = ?#{authentication.name}")
+    @Query("select distinct venta from Venta venta " +
+           "left join fetch venta.evento " +
+           "left join fetch venta.usuario " +
+           "left join fetch venta.asientos " +
+           "where venta.usuario.login = ?#{authentication.name}")
     List<Venta> findByUsuarioIsCurrentUser();
 
     default Optional<Venta> findOneWithEagerRelationships(Long id) {

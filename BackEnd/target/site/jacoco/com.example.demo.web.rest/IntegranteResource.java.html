@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntegranteResource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.web.rest</a> &gt; <span class="el_source">IntegranteResource.java</span></div><h1>IntegranteResource.java</h1><pre class="source lang-java linenums">package com.example.demo.web.rest;
+
+import com.example.demo.repository.IntegranteRepository;
+import com.example.demo.service.IntegranteService;
+import com.example.demo.service.dto.IntegranteDTO;
+import com.example.demo.web.rest.errors.BadRequestAlertException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.ResponseUtil;
+
+/**
+ * REST controller for managing {@link com.example.demo.domain.Integrante}.
+ */
+@RestController
+@RequestMapping(&quot;/api/integrantes&quot;)
+public class IntegranteResource {
+
+<span class="nc" id="L29">    private static final Logger LOG = LoggerFactory.getLogger(IntegranteResource.class);</span>
+
+    private static final String ENTITY_NAME = &quot;integrante&quot;;
+
+    @Value(&quot;${jhipster.clientApp.name}&quot;)
+    private String applicationName;
+
+    private final IntegranteService integranteService;
+
+    private final IntegranteRepository integranteRepository;
+
+<span class="nc" id="L40">    public IntegranteResource(IntegranteService integranteService, IntegranteRepository integranteRepository) {</span>
+<span class="nc" id="L41">        this.integranteService = integranteService;</span>
+<span class="nc" id="L42">        this.integranteRepository = integranteRepository;</span>
+<span class="nc" id="L43">    }</span>
+
+    /**
+     * {@code POST  /integrantes} : Create a new integrante.
+     *
+     * @param integranteDTO the integranteDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new integranteDTO, or with status {@code 400 (Bad Request)} if the integrante has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping(&quot;&quot;)
+    public ResponseEntity&lt;IntegranteDTO&gt; createIntegrante(@Valid @RequestBody IntegranteDTO integranteDTO) throws URISyntaxException {
+<span class="nc" id="L54">        LOG.debug(&quot;REST request to save Integrante : {}&quot;, integranteDTO);</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (integranteDTO.getId() != null) {</span>
+<span class="nc" id="L56">            throw new BadRequestAlertException(&quot;A new integrante cannot already have an ID&quot;, ENTITY_NAME, &quot;idexists&quot;);</span>
+        }
+<span class="nc" id="L58">        integranteDTO = integranteService.save(integranteDTO);</span>
+<span class="nc" id="L59">        return ResponseEntity.created(new URI(&quot;/api/integrantes/&quot; + integranteDTO.getId()))</span>
+<span class="nc" id="L60">            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, integranteDTO.getId().toString()))</span>
+<span class="nc" id="L61">            .body(integranteDTO);</span>
+    }
+
+    /**
+     * {@code PUT  /integrantes/:id} : Updates an existing integrante.
+     *
+     * @param id the id of the integranteDTO to save.
+     * @param integranteDTO the integranteDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated integranteDTO,
+     * or with status {@code 400 (Bad Request)} if the integranteDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the integranteDTO couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;IntegranteDTO&gt; updateIntegrante(
+        @PathVariable(value = &quot;id&quot;, required = false) final Long id,
+        @Valid @RequestBody IntegranteDTO integranteDTO
+    ) throws URISyntaxException {
+<span class="nc" id="L79">        LOG.debug(&quot;REST request to update Integrante : {}, {}&quot;, id, integranteDTO);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (integranteDTO.getId() == null) {</span>
+<span class="nc" id="L81">            throw new BadRequestAlertException(&quot;Invalid id&quot;, ENTITY_NAME, &quot;idnull&quot;);</span>
+        }
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (!Objects.equals(id, integranteDTO.getId())) {</span>
+<span class="nc" id="L84">            throw new BadRequestAlertException(&quot;Invalid ID&quot;, ENTITY_NAME, &quot;idinvalid&quot;);</span>
+        }
+
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (!integranteRepository.existsById(id)) {</span>
+<span class="nc" id="L88">            throw new BadRequestAlertException(&quot;Entity not found&quot;, ENTITY_NAME, &quot;idnotfound&quot;);</span>
+        }
+
+<span class="nc" id="L91">        integranteDTO = integranteService.update(integranteDTO);</span>
+<span class="nc" id="L92">        return ResponseEntity.ok()</span>
+<span class="nc" id="L93">            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, integranteDTO.getId().toString()))</span>
+<span class="nc" id="L94">            .body(integranteDTO);</span>
+    }
+
+    /**
+     * {@code PATCH  /integrantes/:id} : Partial updates given fields of an existing integrante, field will ignore if it is null
+     *
+     * @param id the id of the integranteDTO to save.
+     * @param integranteDTO the integranteDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated integranteDTO,
+     * or with status {@code 400 (Bad Request)} if the integranteDTO is not valid,
+     * or with status {@code 404 (Not Found)} if the integranteDTO is not found,
+     * or with status {@code 500 (Internal Server Error)} if the integranteDTO couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PatchMapping(value = &quot;/{id}&quot;, consumes = { &quot;application/json&quot;, &quot;application/merge-patch+json&quot; })
+    public ResponseEntity&lt;IntegranteDTO&gt; partialUpdateIntegrante(
+        @PathVariable(value = &quot;id&quot;, required = false) final Long id,
+        @NotNull @RequestBody IntegranteDTO integranteDTO
+    ) throws URISyntaxException {
+<span class="nc" id="L113">        LOG.debug(&quot;REST request to partial update Integrante partially : {}, {}&quot;, id, integranteDTO);</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        if (integranteDTO.getId() == null) {</span>
+<span class="nc" id="L115">            throw new BadRequestAlertException(&quot;Invalid id&quot;, ENTITY_NAME, &quot;idnull&quot;);</span>
+        }
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if (!Objects.equals(id, integranteDTO.getId())) {</span>
+<span class="nc" id="L118">            throw new BadRequestAlertException(&quot;Invalid ID&quot;, ENTITY_NAME, &quot;idinvalid&quot;);</span>
+        }
+
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (!integranteRepository.existsById(id)) {</span>
+<span class="nc" id="L122">            throw new BadRequestAlertException(&quot;Entity not found&quot;, ENTITY_NAME, &quot;idnotfound&quot;);</span>
+        }
+
+<span class="nc" id="L125">        Optional&lt;IntegranteDTO&gt; result = integranteService.partialUpdate(integranteDTO);</span>
+
+<span class="nc" id="L127">        return ResponseUtil.wrapOrNotFound(</span>
+            result,
+<span class="nc" id="L129">            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, integranteDTO.getId().toString())</span>
+        );
+    }
+
+    /**
+     * {@code GET  /integrantes} : get all the integrantes.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of integrantes in body.
+     */
+    @GetMapping(&quot;&quot;)
+    public List&lt;IntegranteDTO&gt; getAllIntegrantes() {
+<span class="nc" id="L140">        LOG.debug(&quot;REST request to get all Integrantes&quot;);</span>
+<span class="nc" id="L141">        return integranteService.findAll();</span>
+    }
+
+    /**
+     * {@code GET  /integrantes/:id} : get the &quot;id&quot; integrante.
+     *
+     * @param id the id of the integranteDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the integranteDTO, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;IntegranteDTO&gt; getIntegrante(@PathVariable(&quot;id&quot;) Long id) {
+<span class="nc" id="L152">        LOG.debug(&quot;REST request to get Integrante : {}&quot;, id);</span>
+<span class="nc" id="L153">        Optional&lt;IntegranteDTO&gt; integranteDTO = integranteService.findOne(id);</span>
+<span class="nc" id="L154">        return ResponseUtil.wrapOrNotFound(integranteDTO);</span>
+    }
+
+    /**
+     * {@code DELETE  /integrantes/:id} : delete the &quot;id&quot; integrante.
+     *
+     * @param id the id of the integranteDTO to delete.
+     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
+     */
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteIntegrante(@PathVariable(&quot;id&quot;) Long id) {
+<span class="nc" id="L165">        LOG.debug(&quot;REST request to delete Integrante : {}&quot;, id);</span>
+<span class="nc" id="L166">        integranteService.delete(id);</span>
+<span class="nc" id="L167">        return ResponseEntity.noContent()</span>
+<span class="nc" id="L168">            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))</span>
+<span class="nc" id="L169">            .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

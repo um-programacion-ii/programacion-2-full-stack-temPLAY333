@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
@@ -32,7 +33,6 @@ import org.springframework.web.client.RestTemplate;
  * Se ejecuta automáticamente cada hora.
  */
 @Service
-@Transactional
 public class EventoSyncService {
 
     private static final Logger log = LoggerFactory.getLogger(EventoSyncService.class);
@@ -79,6 +79,7 @@ public class EventoSyncService {
     /**
      * Sincroniza eventos manualmente (útil para testing o triggers manuales).
      */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.NEVER)
     public void syncEventsFromCatedra() {
         log.debug("Obteniendo lista completa de eventos desde el Proxy");
 
@@ -94,14 +95,23 @@ public class EventoSyncService {
 
         log.debug("Se obtuvieron {} eventos desde el Proxy", eventosFromCatedra.size());
 
-        // Procesar cada evento
+        // Procesar cada evento en su propia transacción
         for (EventoDTO eventoDTO : eventosFromCatedra) {
             try {
-                processAndSaveEvento(eventoDTO);
+                processAndSaveEventoInNewTransaction(eventoDTO);
             } catch (Exception e) {
                 log.error("Error al procesar evento con ID {}", eventoDTO.getId(), e);
             }
         }
+    }
+
+    /**
+     * Procesa y guarda un evento en una transacción nueva e independiente.
+     * Esto evita problemas de validación en cascade cuando se actualizan EventoTipos.
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void processAndSaveEventoInNewTransaction(EventoDTO eventoDTO) {
+        processAndSaveEvento(eventoDTO);
     }
 
     /**
@@ -131,6 +141,15 @@ public class EventoSyncService {
         if (eventoDTO.getId() == null) {
             log.error("EventoDTO sin ID, no se puede procesar: {}", eventoDTO);
             throw new IllegalArgumentException("El evento debe tener un ID");
+        }
+
+        // Validar campos requeridos
+        if (eventoDTO.getTitulo() == null || eventoDTO.getResumen() == null ||
+            eventoDTO.getFecha() == null || eventoDTO.getDireccion() == null ||
+            eventoDTO.getFilaAsientos() == null || eventoDTO.getColumnAsientos() == null ||
+            eventoDTO.getPrecioEntrada() == null) {
+            log.error("EventoDTO con campos requeridos faltantes: {}", eventoDTO);
+            throw new IllegalArgumentException("El evento tiene campos requeridos faltantes");
         }
 
         // Buscar si ya existe en BD local
@@ -215,6 +234,15 @@ public class EventoSyncService {
         if (eventoDetalleDTO.getId() == null) {
             log.error("EventoDetalleDTO sin ID, no se puede procesar: {}", eventoDetalleDTO);
             throw new IllegalArgumentException("El evento debe tener un ID");
+        }
+
+        // Validar campos requeridos
+        if (eventoDetalleDTO.getTitulo() == null || eventoDetalleDTO.getResumen() == null ||
+            eventoDetalleDTO.getFecha() == null || eventoDetalleDTO.getDireccion() == null ||
+            eventoDetalleDTO.getFilaAsientos() == null || eventoDetalleDTO.getColumnAsientos() == null ||
+            eventoDetalleDTO.getPrecioEntrada() == null) {
+            log.error("EventoDetalleDTO con campos requeridos faltantes: {}", eventoDetalleDTO);
+            throw new IllegalArgumentException("El evento tiene campos requeridos faltantes");
         }
 
         // Similar a processAndSaveEvento pero con más detalle

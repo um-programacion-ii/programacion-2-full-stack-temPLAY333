@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VentaService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service</a> &gt; <span class="el_source">VentaService.java</span></div><h1>VentaService.java</h1><pre class="source lang-java linenums">package com.example.demo.service;
+
+import com.example.demo.domain.Venta;
+import com.example.demo.repository.VentaRepository;
+import com.example.demo.service.dto.AsientoSeleccionDTO;
+import com.example.demo.service.dto.AsientoVentaDTO;
+import com.example.demo.service.dto.RealizarVentaRequestDTO;
+import com.example.demo.service.dto.RealizarVentaResponseDTO;
+import com.example.demo.service.dto.VentaDTO;
+import com.example.demo.service.mapper.VentaMapper;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+/**
+ * Servicio para realizar ventas de asientos a través del Proxy.
+ */
+@Service
+@Transactional
+public class VentaService {
+
+<span class="nc" id="L29">    private static final Logger log = LoggerFactory.getLogger(VentaService.class);</span>
+
+    private final RestTemplate restTemplate;
+    private final VentaRepository ventaRepository;
+    private final VentaMapper ventaMapper;
+
+    @Value(&quot;${app.proxy.base-url:http://localhost:8080}&quot;)
+    private String proxyBaseUrl;
+
+<span class="nc" id="L38">    public VentaService(VentaRepository ventaRepository, VentaMapper ventaMapper) {</span>
+<span class="nc" id="L39">        this.restTemplate = new RestTemplate();</span>
+<span class="nc" id="L40">        this.ventaRepository = ventaRepository;</span>
+<span class="nc" id="L41">        this.ventaMapper = ventaMapper;</span>
+<span class="nc" id="L42">    }</span>
+
+    /**
+     * Realiza una venta de asientos para un evento.
+     * Primero notifica a la Cátedra a través del Proxy.
+     * Luego persiste la venta localmente en la BD.
+     *
+     * @param request Request completo con eventoId, fecha, precioVenta y asientos con persona
+     * @param username Usuario que realiza la compra
+     * @return Respuesta de la venta
+     */
+    public RealizarVentaResponseDTO realizarVenta(RealizarVentaRequestDTO request, String username) {
+<span class="nc" id="L54">        log.info(&quot;Realizando venta de {} asientos para evento {} por usuario {}&quot;,</span>
+<span class="nc" id="L55">            request.getAsientos().size(), request.getEventoId(), username);</span>
+
+        try {
+            // Llamar al Proxy para notificar a la Cátedra
+<span class="nc" id="L59">            String url = proxyBaseUrl + &quot;/api/ventas/realizar&quot;;</span>
+<span class="nc" id="L60">            ResponseEntity&lt;RealizarVentaResponseDTO&gt; responseEntity = restTemplate.postForEntity(</span>
+                url,
+                request,
+                RealizarVentaResponseDTO.class
+            );
+
+<span class="nc" id="L66">            RealizarVentaResponseDTO response = responseEntity.getBody();</span>
+
+<span class="nc bnc" id="L68" title="All 4 branches missed.">            if (response != null &amp;&amp; Boolean.TRUE.equals(response.getResultado())) {</span>
+<span class="nc" id="L69">                log.info(&quot;Venta realizada exitosamente en la Cátedra para evento {} con ventaId {}&quot;,</span>
+<span class="nc" id="L70">                    request.getEventoId(), response.getVentaId());</span>
+
+                // La persistencia local se hará cuando llegue la confirmación vía webhook
+                // desde el Proxy (evento VENTA_COMPLETADA de Kafka)
+<span class="nc" id="L74">                log.debug(&quot;Venta aceptada. Se persistirá cuando llegue confirmación vía Kafka&quot;);</span>
+
+            } else {
+<span class="nc" id="L77">                log.warn(&quot;Venta para evento {} no fue exitosa: {}&quot;,</span>
+<span class="nc" id="L78">                    request.getEventoId(),</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">                    response != null ? response.getDescripcion() : &quot;Sin respuesta&quot;);</span>
+            }
+<span class="nc" id="L81">            return response;</span>
+
+<span class="nc" id="L83">        } catch (Exception e) {</span>
+<span class="nc" id="L84">            log.error(&quot;Error al realizar venta para evento {}&quot;, request.getEventoId(), e);</span>
+
+            // Retornar respuesta de error
+<span class="nc" id="L87">            RealizarVentaResponseDTO errorResponse = new RealizarVentaResponseDTO();</span>
+<span class="nc" id="L88">            errorResponse.setResultado(false);</span>
+<span class="nc" id="L89">            errorResponse.setDescripcion(&quot;Error al comunicarse con el servicio: &quot; + e.getMessage());</span>
+<span class="nc" id="L90">            return errorResponse;</span>
+        }
+    }
+
+
+
+    /**
+     * Obtiene todas las ventas de un usuario.
+     *
+     * @param username Usuario
+     * @return Lista de ventas
+     */
+    @Transactional(readOnly = true)
+    public List&lt;VentaDTO&gt; obtenerVentasUsuario(String username) {
+<span class="nc" id="L104">        log.debug(&quot;Obteniendo ventas para usuario {}&quot;, username);</span>
+
+        // Filtrar por usuario autenticado
+<span class="nc" id="L107">        List&lt;Venta&gt; ventas = ventaRepository.findByUsuarioIsCurrentUser();</span>
+
+<span class="nc" id="L109">        return ventas.stream()</span>
+<span class="nc" id="L110">            .map(ventaMapper::toDto)</span>
+<span class="nc" id="L111">            .toList();</span>
+    }
+
+    /**
+     * Obtiene los detalles de una venta específica.
+     * Valida que la venta pertenezca al usuario autenticado.
+     *
+     * @param ventaId ID de la venta
+     * @param username Usuario autenticado
+     * @return Detalles de la venta si pertenece al usuario
+     */
+    @Transactional(readOnly = true)
+    public Optional&lt;VentaDTO&gt; obtenerVenta(Long ventaId, String username) {
+<span class="nc" id="L124">        log.debug(&quot;Obteniendo venta con ID {} para usuario {}&quot;, ventaId, username);</span>
+
+<span class="nc" id="L126">        return ventaRepository.findById(ventaId)</span>
+<span class="nc" id="L127">            .filter(venta -&gt; venta.getUsuario().getLogin().equals(username))</span>
+<span class="nc" id="L128">            .map(ventaMapper::toDto);</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -35,6 +35,8 @@ public class VentaDTO implements Serializable {
     @NotNull
     private EventoDTO evento;
 
+    private java.util.Set<AsientoDTO> asientos;
+
     public Long getId() {
         return id;
     }
@@ -97,6 +99,14 @@ public class VentaDTO implements Serializable {
 
     public void setEvento(EventoDTO evento) {
         this.evento = evento;
+    }
+
+    public java.util.Set<AsientoDTO> getAsientos() {
+        return asientos;
+    }
+
+    public void setAsientos(java.util.Set<AsientoDTO> asientos) {
+        this.asientos = asientos;
     }
 
     @Override

@@ -1,0 +1,24 @@
+{
+  "groups": [
+    {
+      "name": "application",
+      "type": "com.example.demo.config.ApplicationProperties",
+      "sourceType": "com.example.demo.config.ApplicationProperties"
+    },
+    {
+      "name": "application.liquibase",
+      "type": "com.example.demo.config.ApplicationProperties$Liquibase",
+      "sourceType": "com.example.demo.config.ApplicationProperties",
+      "sourceMethod": "getLiquibase()"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.liquibase.async-start",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.example.demo.config.ApplicationProperties$Liquibase",
+      "defaultValue": true
+    }
+  ],
+  "hints": []
+}

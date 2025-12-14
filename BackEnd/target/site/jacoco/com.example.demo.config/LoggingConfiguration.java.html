@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoggingConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.config</a> &gt; <span class="el_source">LoggingConfiguration.java</span></div><h1>LoggingConfiguration.java</h1><pre class="source lang-java linenums">package com.example.demo.config;
+
+import static tech.jhipster.config.logging.LoggingUtils.*;
+
+import ch.qos.logback.classic.LoggerContext;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
+import java.util.Map;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import tech.jhipster.config.JHipsterProperties;
+
+/*
+ * Configures the console and Logstash log appenders from the app properties
+ */
+@Configuration
+public class LoggingConfiguration {
+
+    public LoggingConfiguration(
+        @Value(&quot;${spring.application.name}&quot;) String appName,
+        @Value(&quot;${server.port}&quot;) String serverPort,
+        JHipsterProperties jHipsterProperties,
+        ObjectMapper mapper
+<span class="nc" id="L26">    ) throws JsonProcessingException {</span>
+<span class="nc" id="L27">        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();</span>
+
+<span class="nc" id="L29">        Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L30">        map.put(&quot;app_name&quot;, appName);</span>
+<span class="nc" id="L31">        map.put(&quot;app_port&quot;, serverPort);</span>
+<span class="nc" id="L32">        String customFields = mapper.writeValueAsString(map);</span>
+
+<span class="nc" id="L34">        JHipsterProperties.Logging loggingProperties = jHipsterProperties.getLogging();</span>
+<span class="nc" id="L35">        JHipsterProperties.Logging.Logstash logstashProperties = loggingProperties.getLogstash();</span>
+
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        if (loggingProperties.isUseJsonFormat()) {</span>
+<span class="nc" id="L38">            addJsonConsoleAppender(context, customFields);</span>
+        }
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if (logstashProperties.isEnabled()) {</span>
+<span class="nc" id="L41">            addLogstashTcpSocketAppender(context, customFields, logstashProperties);</span>
+        }
+<span class="nc bnc" id="L43" title="All 4 branches missed.">        if (loggingProperties.isUseJsonFormat() || logstashProperties.isEnabled()) {</span>
+<span class="nc" id="L44">            addContextListener(context, customFields, loggingProperties);</span>
+        }
+<span class="nc" id="L46">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

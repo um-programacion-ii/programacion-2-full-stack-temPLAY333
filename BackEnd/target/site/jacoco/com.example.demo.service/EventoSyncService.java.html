@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventoSyncService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service</a> &gt; <span class="el_source">EventoSyncService.java</span></div><h1>EventoSyncService.java</h1><pre class="source lang-java linenums">package com.example.demo.service;
+
+import com.example.demo.domain.Evento;
+import com.example.demo.domain.EventoTipo;
+import com.example.demo.domain.Integrante;
+import com.example.demo.repository.EventoRepository;
+import com.example.demo.repository.EventoTipoRepository;
+import com.example.demo.repository.IntegranteRepository;
+import com.example.demo.service.dto.EventoDTO;
+import com.example.demo.service.dto.EventoDetalleDTO;
+import com.example.demo.service.dto.EventoResumenDTO;
+import com.example.demo.service.dto.EventoTipoDTO;
+import com.example.demo.service.dto.IntegranteBasicDTO;
+import com.example.demo.service.dto.IntegranteDTO;
+import com.example.demo.service.mapper.EventoMapper;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+/**
+ * Servicio para sincronizar eventos desde la Cátedra hacia la base de datos local.
+ * Se ejecuta automáticamente cada hora.
+ */
+@Service
+public class EventoSyncService {
+
+<span class="fc" id="L38">    private static final Logger log = LoggerFactory.getLogger(EventoSyncService.class);</span>
+
+    private final RestTemplate restTemplate;
+    private final EventoRepository eventoRepository;
+    private final EventoTipoRepository eventoTipoRepository;
+    private final IntegranteRepository integranteRepository;
+    private final EventoMapper eventoMapper;
+
+    @Value(&quot;${app.proxy.base-url:http://localhost:8080}&quot;)
+    private String proxyBaseUrl;
+
+    public EventoSyncService(
+        EventoRepository eventoRepository,
+        EventoTipoRepository eventoTipoRepository,
+        IntegranteRepository integranteRepository,
+        EventoMapper eventoMapper
+<span class="nc" id="L54">    ) {</span>
+<span class="nc" id="L55">        this.restTemplate = new RestTemplate();</span>
+<span class="nc" id="L56">        this.eventoRepository = eventoRepository;</span>
+<span class="nc" id="L57">        this.eventoTipoRepository = eventoTipoRepository;</span>
+<span class="nc" id="L58">        this.integranteRepository = integranteRepository;</span>
+<span class="nc" id="L59">        this.eventoMapper = eventoMapper;</span>
+<span class="nc" id="L60">    }</span>
+
+    /**
+     * Sincroniza todos los eventos desde la Cátedra.
+     * Se ejecuta cada hora: cron &quot;0 0 * * * *&quot; = segundo 0, minuto 0, cada hora
+     * Solo si app.sync.enabled=true
+     */
+    @Scheduled(cron = &quot;0 0 * * * *&quot;)
+    @ConditionalOnProperty(name = &quot;app.sync.enabled&quot;, havingValue = &quot;true&quot;, matchIfMissing = true)
+    public void syncAllEvents() {
+<span class="nc" id="L70">        log.info(&quot;Iniciando sincronización automática de eventos desde Cátedra&quot;);</span>
+        try {
+<span class="nc" id="L72">            syncEventsFromCatedra();</span>
+<span class="nc" id="L73">            log.info(&quot;Sincronización de eventos completada exitosamente&quot;);</span>
+<span class="nc" id="L74">        } catch (Exception e) {</span>
+<span class="nc" id="L75">            log.error(&quot;Error al sincronizar eventos desde Cátedra&quot;, e);</span>
+<span class="nc" id="L76">        }</span>
+<span class="nc" id="L77">    }</span>
+
+    /**
+     * Sincroniza eventos manualmente (útil para testing o triggers manuales).
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.NEVER)
+    public void syncEventsFromCatedra() {
+<span class="nc" id="L84">        log.debug(&quot;Obteniendo lista completa de eventos desde el Proxy&quot;);</span>
+
+        // Obtener eventos desde el Proxy
+<span class="nc" id="L87">        String url = proxyBaseUrl + &quot;/api/eventos&quot;;</span>
+<span class="nc" id="L88">        EventoDTO[] eventosArray = restTemplate.getForObject(url, EventoDTO[].class);</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        List&lt;EventoDTO&gt; eventosFromCatedra = eventosArray != null ? List.of(eventosArray) : List.of();</span>
+
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        if (eventosFromCatedra.isEmpty()) {</span>
+<span class="nc" id="L92">            log.warn(&quot;No se obtuvieron eventos desde el Proxy&quot;);</span>
+<span class="nc" id="L93">            return;</span>
+        }
+
+<span class="nc" id="L96">        log.debug(&quot;Se obtuvieron {} eventos desde el Proxy&quot;, eventosFromCatedra.size());</span>
+
+        // Procesar cada evento en su propia transacción
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        for (EventoDTO eventoDTO : eventosFromCatedra) {</span>
+            try {
+<span class="nc" id="L101">                processAndSaveEventoInNewTransaction(eventoDTO);</span>
+<span class="nc" id="L102">            } catch (Exception e) {</span>
+<span class="nc" id="L103">                log.error(&quot;Error al procesar evento con ID {}&quot;, eventoDTO.getId(), e);</span>
+<span class="nc" id="L104">            }</span>
+<span class="nc" id="L105">        }</span>
+<span class="nc" id="L106">    }</span>
+
+    /**
+     * Procesa y guarda un evento en una transacción nueva e independiente.
+     * Esto evita problemas de validación en cascade cuando se actualizan EventoTipos.
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void processAndSaveEventoInNewTransaction(EventoDTO eventoDTO) {
+<span class="nc" id="L114">        processAndSaveEvento(eventoDTO);</span>
+<span class="nc" id="L115">    }</span>
+
+    /**
+     * Sincroniza un evento específico desde el Proxy.
+     */
+    public void syncEventoById(Long eventoId) {
+<span class="nc" id="L121">        log.debug(&quot;Sincronizando evento específico con ID {} desde el Proxy&quot;, eventoId);</span>
+
+        try {
+<span class="nc" id="L124">            String url = proxyBaseUrl + &quot;/api/eventos/&quot; + eventoId;</span>
+<span class="nc" id="L125">            EventoDetalleDTO eventoDetalle = restTemplate.getForObject(url, EventoDetalleDTO.class);</span>
+
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            if (eventoDetalle == null) {</span>
+<span class="nc" id="L128">                log.warn(&quot;No se encontró evento con ID {} en el Proxy&quot;, eventoId);</span>
+<span class="nc" id="L129">                return;</span>
+            }
+
+<span class="nc" id="L132">            processAndSaveEventoDetalle(eventoDetalle);</span>
+<span class="nc" id="L133">            log.info(&quot;Evento {} sincronizado exitosamente&quot;, eventoId);</span>
+<span class="nc" id="L134">        } catch (Exception e) {</span>
+<span class="nc" id="L135">            log.error(&quot;Error al sincronizar evento con ID {}&quot;, eventoId, e);</span>
+<span class="nc" id="L136">        }</span>
+<span class="nc" id="L137">    }</span>
+
+    private void processAndSaveEvento(EventoDTO eventoDTO) {
+        // Validar que el evento tenga ID
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (eventoDTO.getId() == null) {</span>
+<span class="nc" id="L142">            log.error(&quot;EventoDTO sin ID, no se puede procesar: {}&quot;, eventoDTO);</span>
+<span class="nc" id="L143">            throw new IllegalArgumentException(&quot;El evento debe tener un ID&quot;);</span>
+        }
+
+        // Validar campos requeridos
+<span class="nc bnc" id="L147" title="All 4 branches missed.">        if (eventoDTO.getTitulo() == null || eventoDTO.getResumen() == null ||</span>
+<span class="nc bnc" id="L148" title="All 4 branches missed.">            eventoDTO.getFecha() == null || eventoDTO.getDireccion() == null ||</span>
+<span class="nc bnc" id="L149" title="All 4 branches missed.">            eventoDTO.getFilaAsientos() == null || eventoDTO.getColumnAsientos() == null ||</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">            eventoDTO.getPrecioEntrada() == null) {</span>
+<span class="nc" id="L151">            log.error(&quot;EventoDTO con campos requeridos faltantes: {}&quot;, eventoDTO);</span>
+<span class="nc" id="L152">            throw new IllegalArgumentException(&quot;El evento tiene campos requeridos faltantes&quot;);</span>
+        }
+
+        // Buscar si ya existe en BD local
+<span class="nc" id="L156">        Evento evento = eventoRepository.findById(eventoDTO.getId()).orElse(new Evento());</span>
+
+        // Mapear datos básicos
+<span class="nc" id="L159">        evento.setId(eventoDTO.getId());</span>
+<span class="nc" id="L160">        evento.setTitulo(eventoDTO.getTitulo());</span>
+<span class="nc" id="L161">        evento.setResumen(eventoDTO.getResumen());</span>
+<span class="nc" id="L162">        evento.setDescripcion(eventoDTO.getDescripcion());</span>
+<span class="nc" id="L163">        evento.setFecha(eventoDTO.getFecha());</span>
+<span class="nc" id="L164">        evento.setDireccion(eventoDTO.getDireccion());</span>
+<span class="nc" id="L165">        evento.setImagen(eventoDTO.getImagen());</span>
+<span class="nc" id="L166">        evento.setFilaAsientos(eventoDTO.getFilaAsientos());</span>
+<span class="nc" id="L167">        evento.setColumnAsientos(eventoDTO.getColumnAsientos());</span>
+<span class="nc" id="L168">        evento.setPrecioEntrada(eventoDTO.getPrecioEntrada());</span>
+
+        // Procesar EventoTipo
+<span class="nc bnc" id="L171" title="All 4 branches missed.">        if (eventoDTO.getEventoTipo() != null &amp;&amp; eventoDTO.getEventoTipo().getNombre() != null) {</span>
+            EventoTipo eventoTipo;
+
+            // Si tiene ID, intentar buscar por ID primero
+<span class="nc bnc" id="L175" title="All 2 branches missed.">            if (eventoDTO.getEventoTipo().getId() != null) {</span>
+<span class="nc" id="L176">                eventoTipo = eventoTipoRepository</span>
+<span class="nc" id="L177">                    .findById(eventoDTO.getEventoTipo().getId())</span>
+<span class="nc" id="L178">                    .orElseGet(() -&gt; crearNuevoEventoTipo(eventoDTO.getEventoTipo()));</span>
+            } else {
+                // Si no tiene ID, buscar por nombre
+<span class="nc" id="L181">                eventoTipo = eventoTipoRepository</span>
+<span class="nc" id="L182">                    .findAll()</span>
+<span class="nc" id="L183">                    .stream()</span>
+<span class="nc" id="L184">                    .filter(et -&gt; et.getNombre().equals(eventoDTO.getEventoTipo().getNombre()))</span>
+<span class="nc" id="L185">                    .findFirst()</span>
+<span class="nc" id="L186">                    .orElseGet(() -&gt; crearNuevoEventoTipo(eventoDTO.getEventoTipo()));</span>
+            }
+<span class="nc" id="L188">            evento.setEventoTipo(eventoTipo);</span>
+<span class="nc" id="L189">        } else {</span>
+<span class="nc" id="L190">            log.warn(&quot;Evento {} no tiene tipo de evento asignado o nombre de tipo es nulo&quot;, eventoDTO.getId());</span>
+        }
+
+        // Procesar integrantes
+<span class="nc bnc" id="L194" title="All 4 branches missed.">        if (eventoDTO.getIntegrantes() != null &amp;&amp; !eventoDTO.getIntegrantes().isEmpty()) {</span>
+<span class="nc" id="L195">            Set&lt;Integrante&gt; integrantes = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">            for (IntegranteDTO integranteDTO : eventoDTO.getIntegrantes()) {</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">                if (integranteDTO.getId() == null) {</span>
+<span class="nc" id="L198">                    log.warn(&quot;Integrante sin ID en evento {}, se omitirá&quot;, eventoDTO.getId());</span>
+<span class="nc" id="L199">                    continue;</span>
+                }
+
+<span class="nc" id="L202">                Integrante integrante = integranteRepository</span>
+<span class="nc" id="L203">                    .findById(integranteDTO.getId())</span>
+<span class="nc" id="L204">                    .orElseGet(() -&gt; {</span>
+<span class="nc" id="L205">                        Integrante nuevoIntegrante = new Integrante();</span>
+<span class="nc" id="L206">                        nuevoIntegrante.setId(integranteDTO.getId());</span>
+<span class="nc" id="L207">                        nuevoIntegrante.setNombre(integranteDTO.getNombre());</span>
+<span class="nc" id="L208">                        nuevoIntegrante.setApellido(integranteDTO.getApellido());</span>
+<span class="nc" id="L209">                        nuevoIntegrante.setIdentificacion(integranteDTO.getIdentificacion());</span>
+<span class="nc" id="L210">                        return integranteRepository.save(nuevoIntegrante);</span>
+                    });
+<span class="nc" id="L212">                integrantes.add(integrante);</span>
+<span class="nc" id="L213">            }</span>
+<span class="nc" id="L214">            evento.setIntegrantes(integrantes);</span>
+        }
+
+        // Guardar en BD local
+<span class="nc" id="L218">        eventoRepository.save(evento);</span>
+<span class="nc" id="L219">        log.debug(&quot;Evento {} guardado/actualizado en BD local&quot;, evento.getId());</span>
+<span class="nc" id="L220">    }</span>
+
+    private EventoTipo crearNuevoEventoTipo(EventoTipoDTO eventoTipoDTO) {
+<span class="nc" id="L223">        EventoTipo nuevoTipo = new EventoTipo();</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">        if (eventoTipoDTO.getId() != null) {</span>
+<span class="nc" id="L225">            nuevoTipo.setId(eventoTipoDTO.getId());</span>
+        }
+<span class="nc" id="L227">        nuevoTipo.setNombre(eventoTipoDTO.getNombre());</span>
+<span class="nc" id="L228">        nuevoTipo.setDescripcion(eventoTipoDTO.getDescripcion());</span>
+<span class="nc" id="L229">        return eventoTipoRepository.save(nuevoTipo);</span>
+    }
+
+    private void processAndSaveEventoDetalle(EventoDetalleDTO eventoDetalleDTO) {
+        // Validar que el evento tenga ID
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        if (eventoDetalleDTO.getId() == null) {</span>
+<span class="nc" id="L235">            log.error(&quot;EventoDetalleDTO sin ID, no se puede procesar: {}&quot;, eventoDetalleDTO);</span>
+<span class="nc" id="L236">            throw new IllegalArgumentException(&quot;El evento debe tener un ID&quot;);</span>
+        }
+
+        // Validar campos requeridos
+<span class="nc bnc" id="L240" title="All 4 branches missed.">        if (eventoDetalleDTO.getTitulo() == null || eventoDetalleDTO.getResumen() == null ||</span>
+<span class="nc bnc" id="L241" title="All 4 branches missed.">            eventoDetalleDTO.getFecha() == null || eventoDetalleDTO.getDireccion() == null ||</span>
+<span class="nc bnc" id="L242" title="All 4 branches missed.">            eventoDetalleDTO.getFilaAsientos() == null || eventoDetalleDTO.getColumnAsientos() == null ||</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">            eventoDetalleDTO.getPrecioEntrada() == null) {</span>
+<span class="nc" id="L244">            log.error(&quot;EventoDetalleDTO con campos requeridos faltantes: {}&quot;, eventoDetalleDTO);</span>
+<span class="nc" id="L245">            throw new IllegalArgumentException(&quot;El evento tiene campos requeridos faltantes&quot;);</span>
+        }
+
+        // Similar a processAndSaveEvento pero con más detalle
+<span class="nc" id="L249">        Evento evento = eventoRepository.findById(eventoDetalleDTO.getId()).orElse(new Evento());</span>
+
+<span class="nc" id="L251">        evento.setId(eventoDetalleDTO.getId());</span>
+<span class="nc" id="L252">        evento.setTitulo(eventoDetalleDTO.getTitulo());</span>
+<span class="nc" id="L253">        evento.setResumen(eventoDetalleDTO.getResumen());</span>
+<span class="nc" id="L254">        evento.setDescripcion(eventoDetalleDTO.getDescripcion());</span>
+<span class="nc" id="L255">        evento.setFecha(eventoDetalleDTO.getFecha());</span>
+<span class="nc" id="L256">        evento.setDireccion(eventoDetalleDTO.getDireccion());</span>
+<span class="nc" id="L257">        evento.setImagen(eventoDetalleDTO.getImagen());</span>
+<span class="nc" id="L258">        evento.setFilaAsientos(eventoDetalleDTO.getFilaAsientos());</span>
+<span class="nc" id="L259">        evento.setColumnAsientos(eventoDetalleDTO.getColumnAsientos());</span>
+<span class="nc" id="L260">        evento.setPrecioEntrada(eventoDetalleDTO.getPrecioEntrada());</span>
+
+        // EventoTipo - buscar por nombre ya que BasicDTO no tiene ID
+<span class="nc bnc" id="L263" title="All 4 branches missed.">        if (eventoDetalleDTO.getEventoTipo() != null &amp;&amp; eventoDetalleDTO.getEventoTipo().getNombre() != null) {</span>
+            // Buscar por nombre o crear nuevo
+<span class="nc" id="L265">            EventoTipo eventoTipo = eventoTipoRepository</span>
+<span class="nc" id="L266">                .findAll()</span>
+<span class="nc" id="L267">                .stream()</span>
+<span class="nc" id="L268">                .filter(et -&gt; et.getNombre().equals(eventoDetalleDTO.getEventoTipo().getNombre()))</span>
+<span class="nc" id="L269">                .findFirst()</span>
+<span class="nc" id="L270">                .orElseGet(() -&gt; {</span>
+<span class="nc" id="L271">                    EventoTipo nuevoTipo = new EventoTipo();</span>
+<span class="nc" id="L272">                    nuevoTipo.setNombre(eventoDetalleDTO.getEventoTipo().getNombre());</span>
+<span class="nc" id="L273">                    nuevoTipo.setDescripcion(eventoDetalleDTO.getEventoTipo().getDescripcion());</span>
+<span class="nc" id="L274">                    return eventoTipoRepository.save(nuevoTipo);</span>
+                });
+<span class="nc" id="L276">            evento.setEventoTipo(eventoTipo);</span>
+<span class="nc" id="L277">        } else {</span>
+<span class="nc" id="L278">            log.warn(&quot;Evento detallado {} no tiene tipo de evento asignado o nombre es nulo&quot;, eventoDetalleDTO.getId());</span>
+        }
+
+        // Integrantes - BasicDTO no tiene ID, buscar por nombre/apellido/identificación
+<span class="nc bnc" id="L282" title="All 4 branches missed.">        if (eventoDetalleDTO.getIntegrantes() != null &amp;&amp; !eventoDetalleDTO.getIntegrantes().isEmpty()) {</span>
+<span class="nc" id="L283">            Set&lt;Integrante&gt; integrantes = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">            for (IntegranteBasicDTO integranteBasicDTO : eventoDetalleDTO.getIntegrantes()) {</span>
+                // Validar que tenga los datos mínimos necesarios
+<span class="nc bnc" id="L286" title="All 2 branches missed.">                if (integranteBasicDTO.getNombre() == null ||</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">                    integranteBasicDTO.getApellido() == null ||</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">                    integranteBasicDTO.getIdentificacion() == null) {</span>
+<span class="nc" id="L289">                    log.warn(&quot;Integrante con datos incompletos en evento {}, se omitirá&quot;, eventoDetalleDTO.getId());</span>
+<span class="nc" id="L290">                    continue;</span>
+                }
+
+                // Buscar por nombre y apellido o crear nuevo
+<span class="nc" id="L294">                Integrante integrante = integranteRepository</span>
+<span class="nc" id="L295">                    .findAll()</span>
+<span class="nc" id="L296">                    .stream()</span>
+<span class="nc" id="L297">                    .filter(i -&gt;</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">                        i.getNombre().equals(integranteBasicDTO.getNombre()) &amp;&amp;</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">                        i.getApellido().equals(integranteBasicDTO.getApellido()) &amp;&amp;</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">                        i.getIdentificacion().equals(integranteBasicDTO.getIdentificacion())</span>
+                    )
+<span class="nc" id="L302">                    .findFirst()</span>
+<span class="nc" id="L303">                    .orElseGet(() -&gt; {</span>
+<span class="nc" id="L304">                        Integrante nuevoIntegrante = new Integrante();</span>
+<span class="nc" id="L305">                        nuevoIntegrante.setNombre(integranteBasicDTO.getNombre());</span>
+<span class="nc" id="L306">                        nuevoIntegrante.setApellido(integranteBasicDTO.getApellido());</span>
+<span class="nc" id="L307">                        nuevoIntegrante.setIdentificacion(integranteBasicDTO.getIdentificacion());</span>
+<span class="nc" id="L308">                        return integranteRepository.save(nuevoIntegrante);</span>
+                    });
+<span class="nc" id="L310">                integrantes.add(integrante);</span>
+<span class="nc" id="L311">            }</span>
+<span class="nc" id="L312">            evento.setIntegrantes(integrantes);</span>
+        }
+
+<span class="nc" id="L315">        eventoRepository.save(evento);</span>
+<span class="nc" id="L316">        log.debug(&quot;Evento detallado {} guardado/actualizado en BD local&quot;, evento.getId());</span>
+<span class="nc" id="L317">    }</span>
+
+    /**
+     * Obtiene todos los eventos resumidos desde la BD local.
+     * No consulta la Cátedra, solo lee la BD sincronizada.
+     */
+    public List&lt;EventoResumenDTO&gt; obtenerEventosResumidos() {
+<span class="nc" id="L324">        log.debug(&quot;Obteniendo eventos resumidos desde BD local&quot;);</span>
+
+<span class="nc" id="L326">        List&lt;Evento&gt; eventos = eventoRepository.findAll();</span>
+
+<span class="nc" id="L328">        return eventos</span>
+<span class="nc" id="L329">            .stream()</span>
+<span class="nc" id="L330">            .map(evento -&gt; {</span>
+<span class="nc" id="L331">                EventoResumenDTO dto = new EventoResumenDTO();</span>
+<span class="nc" id="L332">                dto.setId(evento.getId());</span>
+<span class="nc" id="L333">                dto.setTitulo(evento.getTitulo());</span>
+<span class="nc" id="L334">                dto.setResumen(evento.getResumen());</span>
+<span class="nc" id="L335">                dto.setDescripcion(evento.getDescripcion());</span>
+<span class="nc" id="L336">                dto.setFecha(evento.getFecha());</span>
+<span class="nc" id="L337">                dto.setPrecioEntrada(evento.getPrecioEntrada());</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">                if (evento.getEventoTipo() != null) {</span>
+<span class="nc" id="L339">                    EventoTipoDTO eventoTipoDTO = new EventoTipoDTO();</span>
+<span class="nc" id="L340">                    eventoTipoDTO.setId(evento.getEventoTipo().getId());</span>
+<span class="nc" id="L341">                    eventoTipoDTO.setNombre(evento.getEventoTipo().getNombre());</span>
+<span class="nc" id="L342">                    dto.setEventoTipo(eventoTipoDTO);</span>
+                }
+<span class="nc" id="L344">                return dto;</span>
+            })
+<span class="nc" id="L346">            .collect(Collectors.toList());</span>
+    }
+
+    /**
+     * Obtiene todos los eventos completos desde la BD local.
+     * No consulta la Cátedra, solo lee la BD sincronizada.
+     */
+    public List&lt;EventoDTO&gt; obtenerEventosCompletos() {
+<span class="nc" id="L354">        log.debug(&quot;Obteniendo eventos completos desde BD local&quot;);</span>
+
+<span class="nc" id="L356">        List&lt;Evento&gt; eventos = eventoRepository.findAll();</span>
+
+<span class="nc" id="L358">        return eventos.stream().map(eventoMapper::toDto).collect(Collectors.toList());</span>
+    }
+
+    /**
+     * Obtiene un evento específico por ID desde la BD local.
+     * No consulta la Cátedra, solo lee la BD sincronizada.
+     */
+    public Optional&lt;EventoDTO&gt; obtenerEventoPorId(Long id) {
+<span class="nc" id="L366">        log.debug(&quot;Obteniendo evento {} desde BD local&quot;, id);</span>
+
+<span class="nc" id="L368">        return eventoRepository.findById(id).map(eventoMapper::toDto);</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

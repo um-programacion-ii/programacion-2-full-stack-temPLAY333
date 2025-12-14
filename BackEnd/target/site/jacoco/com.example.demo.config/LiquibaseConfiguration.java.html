@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LiquibaseConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.config</a> &gt; <span class="el_source">LiquibaseConfiguration.java</span></div><h1>LiquibaseConfiguration.java</h1><pre class="source lang-java linenums">package com.example.demo.config;
+
+import java.util.concurrent.Executor;
+import javax.sql.DataSource;
+import liquibase.integration.spring.SpringLiquibase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.autoconfigure.liquibase.LiquibaseDataSource;
+import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import tech.jhipster.config.JHipsterConstants;
+import tech.jhipster.config.liquibase.SpringLiquibaseUtil;
+
+@Configuration
+public class LiquibaseConfiguration {
+
+<span class="nc" id="L24">    private static final Logger LOG = LoggerFactory.getLogger(LiquibaseConfiguration.class);</span>
+
+    private final Environment env;
+
+<span class="nc" id="L28">    public LiquibaseConfiguration(Environment env) {</span>
+<span class="nc" id="L29">        this.env = env;</span>
+<span class="nc" id="L30">    }</span>
+
+    @Bean
+    public SpringLiquibase liquibase(
+        @Qualifier(&quot;taskExecutor&quot;) Executor executor,
+        LiquibaseProperties liquibaseProperties,
+        @LiquibaseDataSource ObjectProvider&lt;DataSource&gt; liquibaseDataSource,
+        ObjectProvider&lt;DataSource&gt; dataSource,
+        ApplicationProperties applicationProperties,
+        DataSourceProperties dataSourceProperties
+    ) {
+        SpringLiquibase liquibase;
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        if (Boolean.TRUE.equals(applicationProperties.getLiquibase().getAsyncStart())) {</span>
+<span class="nc" id="L43">            liquibase = SpringLiquibaseUtil.createAsyncSpringLiquibase(</span>
+                this.env,
+                executor,
+<span class="nc" id="L46">                liquibaseDataSource.getIfAvailable(),</span>
+                liquibaseProperties,
+<span class="nc" id="L48">                dataSource.getIfUnique(),</span>
+                dataSourceProperties
+            );
+        } else {
+<span class="nc" id="L52">            liquibase = SpringLiquibaseUtil.createSpringLiquibase(</span>
+<span class="nc" id="L53">                liquibaseDataSource.getIfAvailable(),</span>
+                liquibaseProperties,
+<span class="nc" id="L55">                dataSource.getIfUnique(),</span>
+                dataSourceProperties
+            );
+        }
+<span class="nc" id="L59">        liquibase.setChangeLog(&quot;classpath:config/liquibase/master.xml&quot;);</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (!CollectionUtils.isEmpty(liquibaseProperties.getContexts())) {</span>
+<span class="nc" id="L61">            liquibase.setContexts(StringUtils.collectionToCommaDelimitedString(liquibaseProperties.getContexts()));</span>
+        }
+<span class="nc" id="L63">        liquibase.setDefaultSchema(liquibaseProperties.getDefaultSchema());</span>
+<span class="nc" id="L64">        liquibase.setLiquibaseSchema(liquibaseProperties.getLiquibaseSchema());</span>
+<span class="nc" id="L65">        liquibase.setLiquibaseTablespace(liquibaseProperties.getLiquibaseTablespace());</span>
+<span class="nc" id="L66">        liquibase.setDatabaseChangeLogLockTable(liquibaseProperties.getDatabaseChangeLogLockTable());</span>
+<span class="nc" id="L67">        liquibase.setDatabaseChangeLogTable(liquibaseProperties.getDatabaseChangeLogTable());</span>
+<span class="nc" id="L68">        liquibase.setDropFirst(liquibaseProperties.isDropFirst());</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (!CollectionUtils.isEmpty(liquibaseProperties.getLabelFilter())) {</span>
+<span class="nc" id="L70">            liquibase.setLabelFilter(StringUtils.collectionToCommaDelimitedString(liquibaseProperties.getLabelFilter()));</span>
+        }
+<span class="nc" id="L72">        liquibase.setChangeLogParameters(liquibaseProperties.getParameters());</span>
+<span class="nc" id="L73">        liquibase.setRollbackFile(liquibaseProperties.getRollbackFile());</span>
+<span class="nc" id="L74">        liquibase.setTestRollbackOnUpdate(liquibaseProperties.isTestRollbackOnUpdate());</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (env.matchesProfiles(JHipsterConstants.SPRING_PROFILE_NO_LIQUIBASE)) {</span>
+<span class="nc" id="L76">            liquibase.setShouldRun(false);</span>
+        } else {
+<span class="nc" id="L78">            liquibase.setShouldRun(liquibaseProperties.isEnabled());</span>
+<span class="nc" id="L79">            LOG.debug(&quot;Configuring Liquibase&quot;);</span>
+        }
+<span class="nc" id="L81">        return liquibase;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

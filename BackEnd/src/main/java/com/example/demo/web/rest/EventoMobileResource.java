@@ -5,7 +5,6 @@ import com.example.demo.service.EventoService;
 import com.example.demo.service.EventoSyncService;
 import com.example.demo.service.dto.EventoDTO;
 import com.example.demo.service.dto.EventoResumenDTO;
-import com.example.demo.service.mapper.EventoMapper;
 import com.example.demo.service.mapper.EventoResumenMapper;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +27,7 @@ import tech.jhipster.web.util.PaginationUtil;
  * NO usa el proxy, lee directamente de la BD sincronizada.
  */
 @RestController
-@RequestMapping("/api/mobile")
+@RequestMapping("/api/eventos-consulta")
 public class EventoMobileResource {
 
     private static final Logger log = LoggerFactory.getLogger(EventoMobileResource.class);
@@ -51,12 +50,12 @@ public class EventoMobileResource {
     }
 
     /**
-     * {@code GET  /mobile/eventos/resumidos} : Obtener todos los eventos resumidos desde BD local.
+     * {@code GET  /api/eventos-consulta/resumidos} : Obtener todos los eventos resumidos desde BD local.
      *
      * @param pageable the pagination information.
      * @return la lista de eventos resumidos con paginación.
      */
-    @GetMapping("/eventos/resumidos")
+    @GetMapping("/resumidos")
     public ResponseEntity<List<EventoResumenDTO>> getAllEventosResumidos(Pageable pageable) {
         log.debug("REST request to get a page of Eventos resumidos from local DB");
 
@@ -69,12 +68,12 @@ public class EventoMobileResource {
     }
 
     /**
-     * {@code GET  /mobile/eventos} : Obtener todos los eventos completos desde BD local.
+     * {@code GET  /api/eventos-consulta} : Obtener todos los eventos completos desde BD local.
      *
      * @param pageable the pagination information.
      * @return la lista de eventos completos con paginación.
      */
-    @GetMapping("/eventos")
+    @GetMapping
     public ResponseEntity<List<EventoDTO>> getAllEventos(Pageable pageable) {
         log.debug("REST request to get a page of Eventos from local DB");
 
@@ -85,12 +84,12 @@ public class EventoMobileResource {
     }
 
     /**
-     * {@code GET  /mobile/eventos/:id} : Obtener un evento específico desde BD local.
+     * {@code GET  /api/eventos-consulta/{id}} : Obtener un evento específico desde BD local.
      *
      * @param id el id del evento.
      * @return el evento con status 200 (OK) o 404 (Not Found).
      */
-    @GetMapping("/eventos/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<EventoDTO> getEvento(@PathVariable("id") Long id) {
         log.debug("REST request to get Evento {} from local DB", id);
 
@@ -99,27 +98,27 @@ public class EventoMobileResource {
     }
 
     /**
-     * {@code POST  /mobile/eventos/sync} : Forzar sincronización manual de eventos.
+     * {@code POST  /api/eventos-consulta/sync} : Forzar sincronización manual de eventos.
      *
      * @return status 202 (Accepted).
      */
-    @PostMapping("/eventos/sync")
+    @PostMapping("/sync")
     public ResponseEntity<Void> syncEventos() {
         log.debug("REST request to manually sync Eventos from Cátedra");
 
         // Ejecutar sincronización de forma asíncrona para no bloquear
-        new Thread(() -> eventoSyncService.syncEventsFromCatedra()).start();
+        new Thread(eventoSyncService::syncEventsFromCatedra).start();
 
         return ResponseEntity.accepted().build();
     }
 
     /**
-     * {@code POST  /mobile/eventos/{id}/sync} : Forzar sincronización de un evento específico.
+     * {@code POST  /api/eventos-consulta/{id}/sync} : Forzar sincronización de un evento específico.
      *
      * @param id el id del evento a sincronizar.
      * @return status 202 (Accepted).
      */
-    @PostMapping("/eventos/{id}/sync")
+    @PostMapping("/{id}/sync")
     public ResponseEntity<Void> syncEvento(@PathVariable("id") Long id) {
         log.debug("REST request to manually sync Evento {} from Cátedra", id);
 

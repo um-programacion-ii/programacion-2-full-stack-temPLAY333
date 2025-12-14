@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BloquearAsientosRequestDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.service.dto</a> &gt; <span class="el_source">BloquearAsientosRequestDTO.java</span></div><h1>BloquearAsientosRequestDTO.java</h1><pre class="source lang-java linenums">package com.example.demo.service.dto;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * DTO de solicitud para bloquear asientos.
+ * JSON ejemplo:
+ * {
+ *   &quot;eventoId&quot;: 1,
+ *   &quot;asientos&quot;: [ { &quot;fila&quot;: 2, &quot;columna&quot;: 1 }, { &quot;fila&quot;: 2, &quot;columna&quot;: 2 } ]
+ * }
+ */
+@SuppressWarnings(&quot;common-java:DuplicatedBlocks&quot;)
+<span class="nc" id="L18">public class BloquearAsientosRequestDTO implements Serializable {</span>
+
+    @NotNull
+    private Long eventoId;
+
+    @NotNull
+    @Size(min = 1)
+    private List&lt;AsientoPosicionDTO&gt; asientos;
+
+<span class="nc" id="L27">    public Long getEventoId() { return eventoId; }</span>
+<span class="nc" id="L28">    public void setEventoId(Long eventoId) { this.eventoId = eventoId; }</span>
+<span class="nc" id="L29">    public List&lt;AsientoPosicionDTO&gt; getAsientos() { return asientos; }</span>
+<span class="nc" id="L30">    public void setAsientos(List&lt;AsientoPosicionDTO&gt; asientos) { this.asientos = asientos; }</span>
+
+    @Override
+<span class="nc bnc" id="L33" title="All 8 branches missed.">    public boolean equals(Object o) { if (this == o) return true; if (!(o instanceof BloquearAsientosRequestDTO)) return false; BloquearAsientosRequestDTO that = (BloquearAsientosRequestDTO) o; return Objects.equals(eventoId, that.eventoId) &amp;&amp; Objects.equals(asientos, that.asientos); }</span>
+    @Override
+<span class="nc" id="L35">    public int hashCode() { return Objects.hash(eventoId, asientos); }</span>
+    @Override
+<span class="nc" id="L37">    public String toString() { return &quot;BloquearAsientosRequestDTO{&quot; + &quot;eventoId=&quot; + eventoId + &quot;, asientos=&quot; + asientos + '}'; }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WebhookController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.web.rest</a> &gt; <span class="el_source">WebhookController.java</span></div><h1>WebhookController.java</h1><pre class="source lang-java linenums">package com.example.demo.web.rest;
+
+import com.example.demo.service.WebhookService;
+import com.example.demo.service.dto.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Controlador REST para recibir webhooks del Proxy.
+ * El Proxy envía UN SOLO webhook genérico para todos los tipos de eventos.
+ */
+@RestController
+@RequestMapping(&quot;/api/webhooks&quot;)
+public class WebhookController {
+
+<span class="nc" id="L20">    private static final Logger log = LoggerFactory.getLogger(WebhookController.class);</span>
+
+    private final WebhookService webhookService;
+    private final ObjectMapper objectMapper;
+
+<span class="nc" id="L25">    public WebhookController(WebhookService webhookService, ObjectMapper objectMapper) {</span>
+<span class="nc" id="L26">        this.webhookService = webhookService;</span>
+<span class="nc" id="L27">        this.objectMapper = objectMapper;</span>
+<span class="nc" id="L28">    }</span>
+
+    /**
+     * POST /api/webhooks/evento-cambio : Recibe notificaciones del Proxy.
+     *
+     * El Proxy envía todos los eventos a este único endpoint.
+     * El tipo de evento se discrimina por el campo 'topic'.
+     *
+     * @param notificacion Notificación del Proxy con topic, payload, etc.
+     * @return 200 OK si se procesó correctamente, 500 si hubo error
+     */
+    @PostMapping(&quot;/evento-cambio&quot;)
+    public ResponseEntity&lt;Void&gt; recibirEvento(@RequestBody BackendNotificacionDTO notificacion) {
+
+<span class="nc" id="L42">        log.info(&quot;Webhook recibido - Topic: {}, Partition: {}, Offset: {}&quot;,</span>
+<span class="nc" id="L43">            notificacion.getTopic(), notificacion.getPartition(), notificacion.getOffset());</span>
+
+        try {
+            // 1. Verificar idempotencia (solo para eventos de Kafka)
+<span class="nc bnc" id="L47" title="All 4 branches missed.">            if (notificacion.getPartition() != null &amp;&amp; notificacion.getOffset() != null) {</span>
+<span class="nc" id="L48">                String idempotencyKey = String.format(&quot;kafka-%d-%d&quot;,</span>
+<span class="nc" id="L49">                    notificacion.getPartition(), notificacion.getOffset());</span>
+
+<span class="nc bnc" id="L51" title="All 2 branches missed.">                if (webhookService.yaFueProcesado(idempotencyKey)) {</span>
+<span class="nc" id="L52">                    log.info(&quot;Evento ya procesado, ignorando: {}&quot;, idempotencyKey);</span>
+<span class="nc" id="L53">                    return ResponseEntity.ok().build();</span>
+                }
+
+                // Marcar como procesado ANTES de procesar (evita duplicados en caso de retry)
+<span class="nc" id="L57">                webhookService.marcarProcesado(</span>
+                    idempotencyKey,
+<span class="nc" id="L59">                    notificacion.getTopic(),</span>
+<span class="nc" id="L60">                    notificacion.getPartition(),</span>
+<span class="nc" id="L61">                    notificacion.getOffset()</span>
+                );
+            }
+
+            // 2. Discriminar por topic y procesar
+<span class="nc" id="L66">            String topic = notificacion.getTopic();</span>
+<span class="nc" id="L67">            String payloadJson = notificacion.getPayload();</span>
+
+<span class="nc bnc" id="L69" title="All 4 branches missed.">            if (payloadJson == null || payloadJson.isEmpty()) {</span>
+<span class="nc" id="L70">                log.warn(&quot;Payload vacío para topic: {}&quot;, topic);</span>
+<span class="nc" id="L71">                return ResponseEntity.badRequest().build();</span>
+            }
+
+<span class="nc bnc" id="L74" title="All 6 branches missed.">            switch (topic) {</span>
+                case &quot;VENTA_COMPLETADA&quot;:
+<span class="nc" id="L76">                    RealizarVentaResponseDTO venta = objectMapper.readValue(</span>
+                        payloadJson, RealizarVentaResponseDTO.class);
+<span class="nc" id="L78">                    webhookService.procesarVentaCompletada(venta);</span>
+<span class="nc" id="L79">                    break;</span>
+
+                case &quot;ASIENTOS_BLOQUEADOS&quot;:
+<span class="nc" id="L82">                    BloquearAsientosResponseDTO bloqueo = objectMapper.readValue(</span>
+                        payloadJson, BloquearAsientosResponseDTO.class);
+<span class="nc" id="L84">                    webhookService.procesarAsientosBloqueados(bloqueo);</span>
+<span class="nc" id="L85">                    break;</span>
+
+                case &quot;EVENTO_CAMBIADO&quot;:
+                    // Parsear para obtener el eventoId
+<span class="nc" id="L89">                    JsonNode cambio = objectMapper.readTree(payloadJson);</span>
+<span class="nc" id="L90">                    Long eventoId = cambio.get(&quot;eventoId&quot;).asLong();</span>
+<span class="nc" id="L91">                    webhookService.procesarEventoCambiado(eventoId);</span>
+<span class="nc" id="L92">                    break;</span>
+
+                case &quot;http:bloquear-asientos&quot;:
+                case &quot;http:realizar-venta&quot;:
+                case &quot;http:login&quot;:
+                    // Eventos HTTP síncronos - posiblemente duplicados, ignorar
+<span class="nc" id="L98">                    log.debug(&quot;Evento HTTP recibido: {}, ignorando (ya procesado síncronamente)&quot;, topic);</span>
+<span class="nc" id="L99">                    break;</span>
+
+                case &quot;EVENTO_GENERICO&quot;:
+<span class="nc" id="L102">                    log.warn(&quot;Evento genérico no reconocido: {}&quot;, payloadJson);</span>
+<span class="nc" id="L103">                    break;</span>
+
+                default:
+<span class="nc" id="L106">                    log.warn(&quot;Tipo de evento desconocido: {}&quot;, topic);</span>
+            }
+
+<span class="nc" id="L109">            return ResponseEntity.ok().build();</span>
+
+<span class="nc" id="L111">        } catch (Exception e) {</span>
+<span class="nc" id="L112">            log.error(&quot;Error procesando webhook - Topic: {}, Error: {}&quot;,</span>
+<span class="nc" id="L113">                notificacion.getTopic(), e.getMessage(), e);</span>
+<span class="nc" id="L114">            return ResponseEntity.status(500).build();</span>
+        }
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

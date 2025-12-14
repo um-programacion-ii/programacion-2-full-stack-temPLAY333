@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventoSyncApplicationStartup.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.config</a> &gt; <span class="el_source">EventoSyncApplicationStartup.java</span></div><h1>EventoSyncApplicationStartup.java</h1><pre class="source lang-java linenums">package com.example.demo.config;
+
+import com.example.demo.service.EventoSyncService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
+
+/**
+ * Ejecuta sincronización inicial de eventos al iniciar la aplicación.
+ *
+ * Controlado por la propiedad: app.sync.on-startup=true/false
+ * Para activarlo, agrega en application.yml o application-dev.yml:
+ * app:
+ *   sync:
+ *     on-startup: true
+ */
+@Component
+@ConditionalOnProperty(name = &quot;app.sync.on-startup&quot;, havingValue = &quot;true&quot;, matchIfMissing = false)
+public class EventoSyncApplicationStartup implements CommandLineRunner {
+
+<span class="nc" id="L23">    private static final Logger log = LoggerFactory.getLogger(EventoSyncApplicationStartup.class);</span>
+
+    private final EventoSyncService eventoSyncService;
+
+<span class="nc" id="L27">    public EventoSyncApplicationStartup(EventoSyncService eventoSyncService) {</span>
+<span class="nc" id="L28">        this.eventoSyncService = eventoSyncService;</span>
+<span class="nc" id="L29">    }</span>
+
+    @Override
+    public void run(String... args) throws Exception {
+<span class="nc" id="L33">        log.info(&quot;========================================&quot;);</span>
+<span class="nc" id="L34">        log.info(&quot;Iniciando sincronización de eventos desde la Cátedra al arranque de la aplicación&quot;);</span>
+<span class="nc" id="L35">        log.info(&quot;========================================&quot;);</span>
+
+        try {
+<span class="nc" id="L38">            eventoSyncService.syncEventsFromCatedra();</span>
+<span class="nc" id="L39">            log.info(&quot;Sincronización inicial completada exitosamente&quot;);</span>
+<span class="nc" id="L40">        } catch (Exception e) {</span>
+<span class="nc" id="L41">            log.error(&quot;Error durante sincronización inicial de eventos&quot;, e);</span>
+            // No lanzamos la excepción para que no impida el arranque de la aplicación
+<span class="nc" id="L43">        }</span>
+
+<span class="nc" id="L45">        log.info(&quot;========================================&quot;);</span>
+<span class="nc" id="L46">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

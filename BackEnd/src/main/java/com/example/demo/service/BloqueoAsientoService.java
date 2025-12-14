@@ -61,7 +61,8 @@ public class BloqueoAsientoService {
             request.setAsientos(asientosPosicion);
 
             // Llamar al Proxy
-            String url = proxyBaseUrl + "/api/eventos/" + eventoId + "/bloquear-asientos";
+            // Nota: El eventoId va en el body (request.setEventoId), NO en la URL
+            String url = proxyBaseUrl + "/api/eventos/bloquear-asientos";
             ResponseEntity<BloquearAsientosResponseDTO> responseEntity = restTemplate.postForEntity(
                 url,
                 request,

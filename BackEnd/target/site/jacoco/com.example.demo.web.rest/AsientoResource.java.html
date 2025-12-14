@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AsientoResource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Microservices Final</a> &gt; <a href="index.source.html" class="el_package">com.example.demo.web.rest</a> &gt; <span class="el_source">AsientoResource.java</span></div><h1>AsientoResource.java</h1><pre class="source lang-java linenums">package com.example.demo.web.rest;
+
+import com.example.demo.domain.Evento;
+import com.example.demo.repository.EventoRepository;
+import com.example.demo.service.AsientoService;
+import com.example.demo.service.BloqueoAsientoService;
+import com.example.demo.service.dto.AsientoSeleccionDTO;
+import com.example.demo.service.dto.BloquearAsientosResponseDTO;
+import com.example.demo.service.dto.MapaAsientosDTO;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * REST controller para operaciones con asientos.
+ */
+@RestController
+@RequestMapping(&quot;/api/asientos&quot;)
+public class AsientoResource {
+
+<span class="nc" id="L23">    private static final Logger log = LoggerFactory.getLogger(AsientoResource.class);</span>
+
+    private final AsientoService asientoService;
+    private final BloqueoAsientoService bloqueoAsientoService;
+    private final EventoRepository eventoRepository;
+
+    public AsientoResource(
+        AsientoService asientoService,
+        BloqueoAsientoService bloqueoAsientoService,
+        EventoRepository eventoRepository
+<span class="nc" id="L33">    ) {</span>
+<span class="nc" id="L34">        this.asientoService = asientoService;</span>
+<span class="nc" id="L35">        this.bloqueoAsientoService = bloqueoAsientoService;</span>
+<span class="nc" id="L36">        this.eventoRepository = eventoRepository;</span>
+<span class="nc" id="L37">    }</span>
+
+    /**
+     * GET /api/asientos/evento/{eventoId}/mapa : Obtiene el mapa de asientos de un evento.
+     * Solo devuelve asientos bloqueados o vendidos.
+     * Los asientos NO presentes se consideran disponibles.
+     *
+     * @param eventoId ID del evento
+     * @return Mapa de asientos con estado
+     */
+    @GetMapping(&quot;/evento/{eventoId}/mapa&quot;)
+    public ResponseEntity&lt;MapaAsientosDTO&gt; obtenerMapaAsientos(@PathVariable Long eventoId) {
+<span class="nc" id="L49">        log.debug(&quot;REST request para obtener mapa de asientos del evento {}&quot;, eventoId);</span>
+
+        // Obtener información del evento desde la BD local
+<span class="nc" id="L52">        Evento evento = eventoRepository.findById(eventoId)</span>
+<span class="nc" id="L53">            .orElseThrow(() -&gt; new RuntimeException(&quot;Evento no encontrado: &quot; + eventoId));</span>
+
+        // Obtener estado de asientos desde el Proxy (que lee Redis de la Cátedra)
+<span class="nc" id="L56">        MapaAsientosDTO mapa = asientoService.obtenerEstadoAsientos(</span>
+            eventoId,
+<span class="nc" id="L58">            evento.getFilaAsientos(),</span>
+<span class="nc" id="L59">            evento.getColumnAsientos()</span>
+        );
+
+<span class="nc" id="L62">        return ResponseEntity.ok(mapa);</span>
+    }
+
+    /**
+     * POST /api/asientos/evento/{eventoId}/bloquear : Bloquea asientos temporalmente (5 minutos).
+     *
+     * @param eventoId ID del evento
+     * @param asientos Lista de asientos a bloquear (máximo 4)
+     * @return Respuesta del bloqueo
+     */
+    @PostMapping(&quot;/evento/{eventoId}/bloquear&quot;)
+    public ResponseEntity&lt;BloquearAsientosResponseDTO&gt; bloquearAsientos(
+        @PathVariable Long eventoId,
+        @RequestBody List&lt;AsientoSeleccionDTO&gt; asientos
+    ) {
+<span class="nc" id="L77">        log.debug(&quot;REST request para bloquear {} asientos del evento {}&quot;, asientos.size(), eventoId);</span>
+
+        // Validar que el evento exista
+<span class="nc" id="L80">        Evento evento = eventoRepository.findById(eventoId)</span>
+<span class="nc" id="L81">            .orElseThrow(() -&gt; new RuntimeException(&quot;Evento no encontrado: &quot; + eventoId));</span>
+
+        // Validar asientos
+<span class="nc" id="L84">        boolean validos = bloqueoAsientoService.validarAsientos(</span>
+            asientos,
+<span class="nc" id="L86">            evento.getFilaAsientos(),</span>
+<span class="nc" id="L87">            evento.getColumnAsientos()</span>
+        );
+
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (!validos) {</span>
+<span class="nc" id="L91">            BloquearAsientosResponseDTO errorResponse = new BloquearAsientosResponseDTO();</span>
+<span class="nc" id="L92">            errorResponse.setResultado(false);</span>
+<span class="nc" id="L93">            errorResponse.setDescripcion(&quot;Asientos inválidos. Verifica fila/columna y que no excedan el límite (máx 4).&quot;);</span>
+<span class="nc" id="L94">            return ResponseEntity.badRequest().body(errorResponse);</span>
+        }
+
+        // Bloquear asientos a través del Proxy
+<span class="nc" id="L98">        BloquearAsientosResponseDTO response = bloqueoAsientoService.bloquearAsientos(eventoId, asientos);</span>
+
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (Boolean.TRUE.equals(response.getResultado())) {</span>
+<span class="nc" id="L101">            return ResponseEntity.ok(response);</span>
+        } else {
+<span class="nc" id="L103">            return ResponseEntity.status(500).body(response);</span>
+        }
+    }
+
+    /**
+     * GET /api/asientos/evento/{eventoId}/disponible : Verifica si un asiento está disponible.
+     *
+     * @param eventoId ID del evento
+     * @param fila Fila del asiento
+     * @param columna Columna del asiento
+     * @return true si está disponible
+     */
+    @GetMapping(&quot;/evento/{eventoId}/disponible&quot;)
+    public ResponseEntity&lt;Boolean&gt; verificarDisponibilidad(
+        @PathVariable Long eventoId,
+        @RequestParam Integer fila,
+        @RequestParam Integer columna
+    ) {
+<span class="nc" id="L121">        log.debug(&quot;REST request para verificar disponibilidad del asiento ({},{}) del evento {}&quot;, fila, columna, eventoId);</span>
+
+<span class="nc" id="L123">        Evento evento = eventoRepository.findById(eventoId)</span>
+<span class="nc" id="L124">            .orElseThrow(() -&gt; new RuntimeException(&quot;Evento no encontrado: &quot; + eventoId));</span>
+
+<span class="nc" id="L126">        MapaAsientosDTO mapa = asientoService.obtenerEstadoAsientos(</span>
+            eventoId,
+<span class="nc" id="L128">            evento.getFilaAsientos(),</span>
+<span class="nc" id="L129">            evento.getColumnAsientos()</span>
+        );
+
+<span class="nc" id="L132">        boolean disponible = asientoService.isAsientoDisponible(mapa, fila, columna);</span>
+
+<span class="nc" id="L134">        return ResponseEntity.ok(disponible);</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

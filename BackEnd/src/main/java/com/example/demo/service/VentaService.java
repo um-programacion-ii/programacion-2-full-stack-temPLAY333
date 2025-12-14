@@ -46,33 +46,16 @@ public class VentaService {
      * Primero notifica a la Cátedra a través del Proxy.
      * Luego persiste la venta localmente en la BD.
      *
-     * @param eventoId ID del evento
-     * @param asientos Lista de asientos a vender (deben estar bloqueados)
+     * @param request Request completo con eventoId, fecha, precioVenta y asientos con persona
      * @param username Usuario que realiza la compra
      * @return Respuesta de la venta
      */
-    public RealizarVentaResponseDTO realizarVenta(Long eventoId, List<AsientoSeleccionDTO> asientos, String username) {
-        log.info("Realizando venta de {} asientos para evento {} por usuario {}", asientos.size(), eventoId, username);
+    public RealizarVentaResponseDTO realizarVenta(RealizarVentaRequestDTO request, String username) {
+        log.info("Realizando venta de {} asientos para evento {} por usuario {}",
+            request.getAsientos().size(), request.getEventoId(), username);
 
         try {
-            // 1. Crear request DTO
-            RealizarVentaRequestDTO request = new RealizarVentaRequestDTO();
-            request.setEventoId(eventoId);
-
-            // Convertir AsientoSeleccionDTO a AsientoVentaDTO
-            List<AsientoVentaDTO> asientosVenta = asientos.stream()
-                .map(a -> {
-                    AsientoVentaDTO dto = new AsientoVentaDTO();
-                    dto.setFila(a.getFila());
-                    dto.setColumna(a.getColumna());
-                    dto.setPersona(username); // Por defecto usar username, idealmente vendría del request
-                    return dto;
-                })
-                .collect(Collectors.toList());
-
-            request.setAsientos(asientosVenta);
-
-            // 2. Llamar al Proxy para notificar a la Cátedra
+            // Llamar al Proxy para notificar a la Cátedra
             String url = proxyBaseUrl + "/api/ventas/realizar";
             ResponseEntity<RealizarVentaResponseDTO> responseEntity = restTemplate.postForEntity(
                 url,
@@ -83,17 +66,22 @@ public class VentaService {
             RealizarVentaResponseDTO response = responseEntity.getBody();
 
             if (response != null && Boolean.TRUE.equals(response.getResultado())) {
-                log.info("Venta realizada exitosamente en la Cátedra para evento {}", eventoId);
+                log.info("Venta realizada exitosamente en la Cátedra para evento {} con ventaId {}",
+                    request.getEventoId(), response.getVentaId());
 
-                // 3. Persistir venta localmente
-                persistirVentaLocal(eventoId, asientos, username, response);
+                // La persistencia local se hará cuando llegue la confirmación vía webhook
+                // desde el Proxy (evento VENTA_COMPLETADA de Kafka)
+                log.debug("Venta aceptada. Se persistirá cuando llegue confirmación vía Kafka");
 
             } else {
-                log.warn("Venta para evento {} no fue exitosa: {}", eventoId, response != null ? response.getDescripcion() : "Sin respuesta");
+                log.warn("Venta para evento {} no fue exitosa: {}",
+                    request.getEventoId(),
+                    response != null ? response.getDescripcion() : "Sin respuesta");
             }
             return response;
+
         } catch (Exception e) {
-            log.error("Error al realizar venta para evento {}", eventoId, e);
+            log.error("Error al realizar venta para evento {}", request.getEventoId(), e);
 
             // Retornar respuesta de error
             RealizarVentaResponseDTO errorResponse = new RealizarVentaResponseDTO();
@@ -103,26 +91,7 @@ public class VentaService {
         }
     }
 
-    /**
-     * Persiste la venta localmente en la BD del Backend.
-     */
-    private void persistirVentaLocal(Long eventoId, List<AsientoSeleccionDTO> asientos, String username, RealizarVentaResponseDTO response) {
-        try {
-            log.debug("Persistiendo venta local para evento {}", eventoId);
 
-            // Nota: La persistencia completa se hará cuando se reciba la confirmación
-            // asíncrona vía webhook desde el Proxy (evento VENTA_COMPLETADA de Kafka)
-            // Por ahora solo registramos en log que la venta fue aceptada por la Cátedra
-
-            log.info("Venta aceptada por la Cátedra para evento {}. Se persistirá cuando llegue confirmación vía Kafka", eventoId);
-
-            // La persistencia real se hace en EventoWebhookService.procesarVentaCompletada()
-            // cuando llega el evento VENTA_COMPLETADA desde Kafka vía Proxy
-        } catch (Exception e) {
-            log.error("Error al procesar venta localmente para evento {}", eventoId, e);
-            // No lanzar excepción para no afectar la venta en la Cátedra
-        }
-    }
 
     /**
      * Obtiene todas las ventas de un usuario.
