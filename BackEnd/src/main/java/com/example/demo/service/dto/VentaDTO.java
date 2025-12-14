@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * A DTO for the {@link com.example.demo.domain.Venta} entity.
@@ -34,6 +36,16 @@ public class VentaDTO implements Serializable {
 
     @NotNull
     private EventoDTO evento;
+
+    private Set<AsientoDTO> asientos = new HashSet<>();
+
+    public Set<AsientoDTO> getAsientos() {
+        return asientos;
+    }
+
+    public void setAsientos(Set<AsientoDTO> asientos) {
+        this.asientos = asientos;
+    }
 
     public Long getId() {
         return id;
@@ -132,6 +144,7 @@ public class VentaDTO implements Serializable {
             ", precioVenta=" + getPrecioVenta() +
             ", usuario=" + getUsuario() +
             ", evento=" + getEvento() +
+            ", asientos=" + getAsientos() +
             "}";
     }
 }
