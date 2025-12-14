@@ -57,42 +57,62 @@ public class MockCatedraService {
     // ==================== EVENTOS ====================
 
     /**
-     * Devuelve 5 eventos con datos inventados y diferentes tamaños de sala.
+     * Devuelve 5 eventos con datos basados en MockData del mobile pero con variaciones.
+     * Datos modificados para diferenciar origen (Proxy mock vs Mobile mock).
      */
     public List<EventoResumenDTO> listarEventosResumidos() {
         log.debug("MockCatedraService: devolviendo eventos resumidos mock");
         return Arrays.asList(
-            crearEventoResumen(1L, "Conferencia Tech 2025", "La conferencia más nerd del año",
-                "2025-12-20T10:00:00Z", new BigDecimal("2500.00"), "Conferencia"),
-            crearEventoResumen(2L, "Concierto Rock Nacional", "Las mejores bandas del país",
-                "2025-12-22T20:00:00Z", new BigDecimal("4500.00"), "Concierto"),
-            crearEventoResumen(3L, "Obra de Teatro Clásica", "Shakespeare en la ciudad",
-                "2025-12-25T19:00:00Z", new BigDecimal("3000.00"), "Teatro"),
-            crearEventoResumen(4L, "Stand-Up Comedy Night", "Risas garantizadas",
-                "2025-12-28T21:00:00Z", new BigDecimal("1800.00"), "Comedia"),
-            crearEventoResumen(5L, "Festival de Cine Indie", "Lo mejor del cine independiente",
-                "2025-12-30T18:00:00Z", new BigDecimal("2000.00"), "Cine")
+            crearEventoResumen(1L, "Concierto Sinfónico de Rock Clásico", "Rock meets orchestra en una noche épica",
+                "2025-12-26T21:00:00Z", new BigDecimal("2800.00"), "Música"),
+            crearEventoResumen(2L, "Gran Final de Campeonato", "El partido que definirá al campeón absoluto",
+                "2025-12-28T19:30:00Z", new BigDecimal("5200.00"), "Deportes"),
+            crearEventoResumen(3L, "Teatro Clásico Moderno", "Clásicos reimaginados para hoy",
+                "2026-01-08T20:30:00Z", new BigDecimal("3500.00"), "Teatro"),
+            crearEventoResumen(4L, "Noche de Stand-Up", "Los mejores comediantes en vivo",
+                "2026-01-12T22:00:00Z", new BigDecimal("2100.00"), "Comedia"),
+            crearEventoResumen(5L, "Festival Internacional de Jazz", "3 días de jazz en vivo",
+                "2026-01-18T20:00:00Z", new BigDecimal("4000.00"), "Música")
         );
     }
 
     /**
      * Devuelve eventos completos (mismo listado pero con estructura EventoDTO).
+     * Usa los datos completos de cada evento con todos los campos requeridos.
      */
     public List<EventoDTO> listarEventosCompletos() {
         log.debug("MockCatedraService: devolviendo eventos completos mock");
-        List<EventoResumenDTO> resumidos = listarEventosResumidos();
         List<EventoDTO> completos = new ArrayList<>();
-        for (EventoResumenDTO resumido : resumidos) {
-            EventoDTO completo = new EventoDTO();
-            completo.setId(resumido.getId());
-            completo.setTitulo(resumido.getTitulo());
-            completo.setResumen(resumido.getResumen());
-            completo.setDescripcion(resumido.getDescripcion());
-            completo.setFecha(resumido.getFecha());
-            completo.setPrecioEntrada(resumido.getPrecioEntrada());
-            completo.setEventoTipo(resumido.getEventoTipo());
-            completos.add(completo);
+
+        // Obtener datos completos de cada evento (1 a 5)
+        for (Long id = 1L; id <= 5L; id++) {
+            EventoDetalleDTO detalle = obtenerEventoDetalle(id);
+            if (detalle != null) {
+                EventoDTO completo = new EventoDTO();
+                completo.setId(detalle.getId());
+                completo.setTitulo(detalle.getTitulo());
+                completo.setResumen(detalle.getResumen());
+                completo.setDescripcion(detalle.getDescripcion());
+                completo.setFecha(detalle.getFecha());
+                completo.setDireccion(detalle.getDireccion());
+                completo.setImagen(detalle.getImagen());
+                completo.setFilaAsientos(detalle.getFilaAsientos());
+                completo.setColumnAsientos(detalle.getColumnAsientos());
+                completo.setPrecioEntrada(detalle.getPrecioEntrada());
+
+                // Convertir EventoTipoBasicDTO a EventoTipoDTO
+                EventoTipoDTO tipo = new EventoTipoDTO();
+                tipo.setNombre(detalle.getEventoTipo().getNombre());
+                tipo.setDescripcion(detalle.getEventoTipo().getDescripcion());
+                completo.setEventoTipo(tipo);
+
+                // Convertir integrantes si es necesario (EventoDTO usa Set<IntegranteDTO>)
+                // Por ahora lo dejamos vacío ya que EventoDTO.integrantes es un Set
+
+                completos.add(completo);
+            }
         }
+
         return completos;
     }
 
@@ -108,59 +128,59 @@ public class MockCatedraService {
 
         switch (id.intValue()) {
             case 1:
-                detalle.setTitulo("Conferencia Tech 2025");
-                detalle.setResumen("La conferencia más nerd del año");
-                detalle.setDescripcion("Una conferencia épica con los mejores speakers del mundo tech. Charlas, talleres y networking.");
-                detalle.setFecha(Instant.parse("2025-12-20T10:00:00Z"));
-                detalle.setDireccion("Centro de Convenciones, Av. Libertador 1000");
-                detalle.setImagen("https://picsum.photos/seed/tech2025/800/600");
-                detalle.setFilaAsientos(10);
-                detalle.setColumnAsientos(8);
-                detalle.setPrecioEntrada(new BigDecimal("2500.00"));
+                detalle.setTitulo("Concierto Sinfónico de Rock Clásico");
+                detalle.setResumen("Rock meets orchestra en una noche épica");
+                detalle.setDescripcion("Una fusión extraordinaria donde la Orquesta Filarmónica Nacional interpreta los clásicos inmortales de Led Zeppelin, Pink Floyd y Queen. Eternal Echoes tributo oficial se une para una experiencia sonora única que combina la potencia del rock con la elegancia de la música clásica.");
+                detalle.setFecha(Instant.parse("2025-12-26T21:00:00Z"));
+                detalle.setDireccion("Teatro Colón, Cerrito 1234, Buenos Aires");
+                detalle.setImagen("https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=800&q=80");
+                detalle.setFilaAsientos(18);
+                detalle.setColumnAsientos(25);
+                detalle.setPrecioEntrada(new BigDecimal("2800.00"));
                 break;
             case 2:
-                detalle.setTitulo("Concierto Rock Nacional");
-                detalle.setResumen("Las mejores bandas del país");
-                detalle.setDescripcion("Un concierto inolvidable con los grupos más importantes del rock nacional. 4 horas de música en vivo.");
-                detalle.setFecha(Instant.parse("2025-12-22T20:00:00Z"));
-                detalle.setDireccion("Estadio Municipal, Ruta 40 Km 12");
-                detalle.setImagen("https://picsum.photos/seed/rock2025/800/600");
-                detalle.setFilaAsientos(15);
-                detalle.setColumnAsientos(12);
-                detalle.setPrecioEntrada(new BigDecimal("4500.00"));
+                detalle.setTitulo("Gran Final de Campeonato");
+                detalle.setResumen("El partido que definirá al campeón absoluto");
+                detalle.setDescripcion("La final más esperada del año. Dos equipos legendarios se enfrentan en un duelo épico que quedará en la historia. Emoción, adrenalina y gloria esperan en cada jugada de este encuentro definitivo.");
+                detalle.setFecha(Instant.parse("2025-12-28T19:30:00Z"));
+                detalle.setDireccion("Estadio Monumental, Av. Figueroa Alcorta 7597, Buenos Aires");
+                detalle.setImagen("https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80");
+                detalle.setFilaAsientos(20);
+                detalle.setColumnAsientos(30);
+                detalle.setPrecioEntrada(new BigDecimal("5200.00"));
                 break;
             case 3:
-                detalle.setTitulo("Obra de Teatro Clásica");
-                detalle.setResumen("Shakespeare en la ciudad");
-                detalle.setDescripcion("Romeo y Julieta interpretado por el elenco nacional. Una noche de teatro inolvidable.");
-                detalle.setFecha(Instant.parse("2025-12-25T19:00:00Z"));
-                detalle.setDireccion("Teatro Municipal, Calle San Martín 456");
-                detalle.setImagen("https://picsum.photos/seed/teatro2025/800/600");
-                detalle.setFilaAsientos(8);
-                detalle.setColumnAsientos(10);
-                detalle.setPrecioEntrada(new BigDecimal("3000.00"));
+                detalle.setTitulo("Teatro Clásico Moderno");
+                detalle.setResumen("Clásicos reimaginados para hoy");
+                detalle.setDescripcion("Una reinterpretación vanguardista de Hamlet con elementos multimedia y actuación contemporánea. El Teatro Nacional presenta esta obra maestra de Shakespeare en una versión que dialoga con nuestro presente, con un elenco de primer nivel.");
+                detalle.setFecha(Instant.parse("2026-01-08T20:30:00Z"));
+                detalle.setDireccion("Teatro San Martín, Av. Corrientes 1530, Buenos Aires");
+                detalle.setImagen("https://images.unsplash.com/photo-1503095396549-807759245b35?w=800&q=80");
+                detalle.setFilaAsientos(12);
+                detalle.setColumnAsientos(15);
+                detalle.setPrecioEntrada(new BigDecimal("3500.00"));
                 break;
             case 4:
-                detalle.setTitulo("Stand-Up Comedy Night");
-                detalle.setResumen("Risas garantizadas");
-                detalle.setDescripcion("Los mejores comediantes del país en una noche llena de humor y sorpresas.");
-                detalle.setFecha(Instant.parse("2025-12-28T21:00:00Z"));
-                detalle.setDireccion("Café Cultural, Paseo de la Plaza 123");
-                detalle.setImagen("https://picsum.photos/seed/comedy2025/800/600");
-                detalle.setFilaAsientos(6);
-                detalle.setColumnAsientos(6);
-                detalle.setPrecioEntrada(new BigDecimal("1800.00"));
+                detalle.setTitulo("Noche de Stand-Up");
+                detalle.setResumen("Los mejores comediantes en vivo");
+                detalle.setDescripcion("Una velada inolvidable con los comediantes más reconocidos del circuito nacional. Humor inteligente, observaciones agudas y carcajadas garantizadas en una noche que recordarás por mucho tiempo.");
+                detalle.setFecha(Instant.parse("2026-01-12T22:00:00Z"));
+                detalle.setDireccion("Teatro Broadway, Av. Corrientes 1155, Buenos Aires");
+                detalle.setImagen("https://images.unsplash.com/photo-1585699324551-f6c309eedeca?w=800&q=80");
+                detalle.setFilaAsientos(10);
+                detalle.setColumnAsientos(12);
+                detalle.setPrecioEntrada(new BigDecimal("2100.00"));
                 break;
             case 5:
-                detalle.setTitulo("Festival de Cine Indie");
-                detalle.setResumen("Lo mejor del cine independiente");
-                detalle.setDescripcion("Maratón de películas independientes de todo el mundo. 3 días de proyecciones.");
-                detalle.setFecha(Instant.parse("2025-12-30T18:00:00Z"));
-                detalle.setDireccion("Cine Arte, Boulevard Los Andes 789");
-                detalle.setImagen("https://picsum.photos/seed/cine2025/800/600");
-                detalle.setFilaAsientos(12);
-                detalle.setColumnAsientos(10);
-                detalle.setPrecioEntrada(new BigDecimal("2000.00"));
+                detalle.setTitulo("Festival Internacional de Jazz");
+                detalle.setResumen("3 días de jazz en vivo");
+                detalle.setDescripcion("El festival de jazz más importante de la región. Tres noches consecutivas con artistas internacionales de primer nivel. Desde bebop hasta jazz fusion, una celebración completa del género en todas sus expresiones.");
+                detalle.setFecha(Instant.parse("2026-01-18T20:00:00Z"));
+                detalle.setDireccion("Centro Cultural Kirchner, Sarmiento 151, Buenos Aires");
+                detalle.setImagen("https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=800&q=80");
+                detalle.setFilaAsientos(16);
+                detalle.setColumnAsientos(22);
+                detalle.setPrecioEntrada(new BigDecimal("4000.00"));
                 break;
             default:
                 log.warn("MockCatedraService: evento {} no encontrado", id);
@@ -394,11 +414,11 @@ public class MockCatedraService {
 
     private String obtenerTipoPorId(Long id) {
         switch (id.intValue()) {
-            case 1: return "Conferencia";
-            case 2: return "Concierto";
+            case 1: return "Música";
+            case 2: return "Deportes";
             case 3: return "Teatro";
             case 4: return "Comedia";
-            case 5: return "Cine";
+            case 5: return "Música";
             default: return "Evento";
         }
     }
@@ -406,19 +426,41 @@ public class MockCatedraService {
     private List<IntegranteBasicDTO> crearIntegrantesMock(Long eventoId) {
         List<IntegranteBasicDTO> integrantes = new ArrayList<>();
 
-        IntegranteBasicDTO int1 = new IntegranteBasicDTO();
-        int1.setNombre("Juan");
-        int1.setApellido("Pérez");
-        int1.setIdentificacion("Speaker Principal");
-        integrantes.add(int1);
-
-        IntegranteBasicDTO int2 = new IntegranteBasicDTO();
-        int2.setNombre("María");
-        int2.setApellido("González");
-        int2.setIdentificacion("Co-host");
-        integrantes.add(int2);
+        switch (eventoId.intValue()) {
+            case 1: // Rock Sinfónico
+                integrantes.add(crearIntegrante("Robert", "Plant", "Vocalista Principal"));
+                integrantes.add(crearIntegrante("Jimmy", "Page", "Guitarrista Líder"));
+                integrantes.add(crearIntegrante("John", "Bonham", "Baterista"));
+                break;
+            case 2: // Deportes
+                integrantes.add(crearIntegrante("Diego", "Martínez", "Capitán Equipo A"));
+                integrantes.add(crearIntegrante("Lucas", "Fernández", "Capitán Equipo B"));
+                break;
+            case 3: // Teatro
+                integrantes.add(crearIntegrante("Elena", "Rossi", "Protagonista"));
+                integrantes.add(crearIntegrante("Martín", "Soto", "Actor Principal"));
+                integrantes.add(crearIntegrante("Ana", "Belén", "Directora"));
+                break;
+            case 4: // Comedia
+                integrantes.add(crearIntegrante("Carlos", "López", "Comediante Estelar"));
+                integrantes.add(crearIntegrante("Laura", "Méndez", "Anfitriona"));
+                break;
+            case 5: // Jazz
+                integrantes.add(crearIntegrante("Miles", "Davis Jr", "Trompetista"));
+                integrantes.add(crearIntegrante("John", "Coltrane II", "Saxofonista"));
+                integrantes.add(crearIntegrante("Herbie", "Hancock III", "Pianista"));
+                break;
+        }
 
         return integrantes;
+    }
+
+    private IntegranteBasicDTO crearIntegrante(String nombre, String apellido, String rol) {
+        IntegranteBasicDTO integrante = new IntegranteBasicDTO();
+        integrante.setNombre(nombre);
+        integrante.setApellido(apellido);
+        integrante.setIdentificacion(rol);
+        return integrante;
     }
 
     private BigDecimal calcularMontoTotal(Long eventoId, int cantidadAsientos) {

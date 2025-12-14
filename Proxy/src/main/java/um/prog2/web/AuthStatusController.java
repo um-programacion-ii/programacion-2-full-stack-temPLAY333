@@ -1,6 +1,7 @@
 package um.prog2.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,9 +16,12 @@ import java.util.Optional;
 /**
  * Controlador de administración para verificar el estado del token JWT
  * y forzar su renovación si es necesario.
+ *
+ * NOTA: Solo se carga cuando AuthTokenService está disponible (no en modo mock)
  */
 @RestController
 @RequestMapping("/actuator/auth")
+@ConditionalOnBean(AuthTokenService.class)
 public class AuthStatusController {
 
     private final AuthTokenService authTokenService;

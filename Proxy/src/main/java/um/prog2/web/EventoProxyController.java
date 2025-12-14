@@ -65,7 +65,11 @@ public class EventoProxyController {
             .bodyToMono(new ParameterizedTypeReference<List<EventoResumenDTO>>() {})
             .map(ResponseEntity::ok)
             .doOnSuccess(resp -> log.debug("Eventos resumidos obtenidos: {} items", resp.getBody() != null ? resp.getBody().size() : 0))
-            .doOnError(err -> log.error("Error obteniendo eventos resumidos: {}", err.getMessage()));
+            .doOnError(err -> log.error("Error obteniendo eventos resumidos: {}", err.getMessage()))
+            .onErrorResume(err -> {
+                log.error("No se puede conectar a la cátedra para obtener eventos resumidos. Error: {}", err.getMessage());
+                return Mono.just(ResponseEntity.status(503).build());
+            });
     }
 
     /**
@@ -88,7 +92,11 @@ public class EventoProxyController {
             .bodyToMono(new ParameterizedTypeReference<List<EventoDTO>>() {})
             .map(ResponseEntity::ok)
             .doOnSuccess(resp -> log.debug("Eventos completos obtenidos: {} items", resp.getBody() != null ? resp.getBody().size() : 0))
-            .doOnError(err -> log.error("Error obteniendo eventos completos: {}", err.getMessage()));
+            .doOnError(err -> log.error("Error obteniendo eventos completos: {}", err.getMessage()))
+            .onErrorResume(err -> {
+                log.error("No se puede conectar a la cátedra para obtener eventos. Error: {}", err.getMessage());
+                return Mono.just(ResponseEntity.status(503).build());
+            });
     }
 
     /**

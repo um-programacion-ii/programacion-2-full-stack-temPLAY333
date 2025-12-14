@@ -48,7 +48,13 @@ if ($adapter) {
     Write-Host "    Nombre: $($adapter.Name)" -ForegroundColor Green
     Write-Host "    Estado: $($adapter.Status)" -ForegroundColor $(if($adapter.Status -eq 'Up'){'Green'}else{'Red'})
 
-    $ztIP = Get-NetIPAddress -InterfaceAlias $adapter.Name -AddressFamily IPv4 -ErrorAction SilentlyContinue
+    # Buscar IP por InterfaceIndex (mas confiable que InterfaceAlias)
+    $ztIP = Get-NetIPAddress -AddressFamily IPv4 | Where-Object {
+        $_.InterfaceIndex -eq $adapter.InterfaceIndex -and
+        $_.IPAddress -notlike "169.254.*" -and
+        $_.IPAddress -ne "127.0.0.1"
+    }
+
     if ($ztIP) {
         Write-Host "    IP: $($ztIP.IPAddress)" -ForegroundColor Green
     } else {
