@@ -8,14 +8,15 @@ import com.eventtickets.mobile.data.network.dto.*
  */
 class AuthRepository {
 
-    suspend fun register(username: String, email: String, password: String): Result<String> {
+    suspend fun register(username: String, email: String, password: String, phone: String? = null): Result<String> {
         return try {
             val response = RetrofitClient.apiService.register(
                 RegisterRequest(
                     login = username,    // Mapear username a login para JHipster
                     email = email,
                     password = password,
-                    langKey = "es"      // Requerido por JHipster
+                    langKey = "es",      // Requerido por JHipster
+                    phone = phone
                 )
             )
 
@@ -99,4 +100,3 @@ class AuthRepository {
         return RetrofitClient.getAuthToken() != null
     }
 }
-

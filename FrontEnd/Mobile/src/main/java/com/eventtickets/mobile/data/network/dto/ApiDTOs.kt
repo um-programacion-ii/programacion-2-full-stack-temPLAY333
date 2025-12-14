@@ -8,7 +8,8 @@ data class RegisterRequest(
     val login: String,      // JHipster usa 'login' no 'username'
     val email: String,
     val password: String,
-    val langKey: String = "es"  // Requerido por JHipster
+    val langKey: String = "es",  // Requerido por JHipster
+    val phone: String? = null     // Número de teléfono (opcional/según backend)
 )
 
 // JHipster retorna 201 sin body
@@ -32,7 +33,7 @@ data class EventoResumenDTO(
     val titulo: String,
     val resumen: String? = null,
     val fecha: String, // ISO-8601
-    // ⚠️ NO tiene campo "imagen" - solo disponible en EventoDetalleDTO
+o    // ⚠️ NO tiene campo "imagen" - solo disponible en EventoDetalleDTO
     @SerializedName("precio_entrada")
     val precioEntrada: Double? = null,
     @SerializedName("evento_tipo")

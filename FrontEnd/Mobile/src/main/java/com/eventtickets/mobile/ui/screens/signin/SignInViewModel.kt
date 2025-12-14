@@ -139,7 +139,8 @@ class SignInViewModel(
                 val result = authRepository.register(
                     username = username,
                     email = email,
-                    password = currentState.password
+                    password = currentState.password,
+                    phone = if (currentState.phone.isBlank()) null else currentState.phone
                 )
 
                 result.fold(
@@ -168,4 +169,3 @@ class SignInViewModel(
         _uiState.update { it.copy(signInSuccess = false) }
     }
 }
-

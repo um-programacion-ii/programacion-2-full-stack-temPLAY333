@@ -235,7 +235,7 @@ fun SignInScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    isError = uiState.errorMessage != null && uiState.password.length < 6,
+                    isError = uiState.errorMessage != null && uiState.password.length < 4,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF6A5AE0),
                         focusedLabelColor = Color(0xFF6A5AE0),
@@ -383,4 +383,3 @@ fun SignInScreen(
         }
     }
 }
-
