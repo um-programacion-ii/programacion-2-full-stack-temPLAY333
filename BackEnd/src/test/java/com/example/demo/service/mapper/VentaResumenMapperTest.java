@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 class VentaResumenMapperTest {
 
@@ -15,7 +16,11 @@ class VentaResumenMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new VentaResumenMapperImpl();
+        try {
+            mapper = Mappers.getMapper(VentaResumenMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize VentaResumenMapper", e);
+        }
     }
 
     @Test

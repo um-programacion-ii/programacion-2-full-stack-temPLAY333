@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 class EventoDetalleMapperTest {
 
@@ -19,7 +20,11 @@ class EventoDetalleMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new EventoDetalleMapperImpl();
+        try {
+            mapper = Mappers.getMapper(EventoDetalleMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize EventoDetalleMapper", e);
+        }
     }
 
     @Test

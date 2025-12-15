@@ -2,6 +2,21 @@
 
 Servicio proxy intermedio entre el **BackEnd** y los servicios externos de la cátedra (API HTTP, Kafka, Redis).
 
+## 📚 Documentación
+
+### Para Desarrolladores del Proxy:
+- **[README.md](./README.md)** - Este archivo (arquitectura, configuración, ejecución)
+- **[VERIFICACION-TOKEN.md](./VERIFICACION-TOKEN.md)** - Sistema de autenticación JWT automática
+
+### Para el Backend:
+- **[PROXY-API.md](./PROXY-API.md)** ⭐ - Documentación completa de la API del Proxy (request/response de cada endpoint)
+- **[RESUMEN-ACUERDO-Backend.md](../BackEnd/RESUMEN-ACUERDO-Backend.md)** ⭐ - Resumen ejecutivo de acuerdos y correcciones
+- **[Backend-INTEGRACION-Proxy.md](../BackEnd/Backend-INTEGRACION-Proxy.md)** - Documento de integración (corregido)
+- **[ANALISIS-INTEGRACION-Backend.md](../BackEnd/ANALISIS-INTEGRACION-Backend.md)** - Análisis detallado de discrepancias
+
+### Especificaciones de la Cátedra:
+- **[PayLoads Catedra](./PayLoads%20Catedra)** - Especificación de payloads de la cátedra (9 payloads)
+
 ## 🎯 Arquitectura: Híbrida Síncrona/Asíncrona
 
 El Proxy opera en **dos modos simultáneos**:
@@ -22,52 +37,21 @@ El Proxy opera en **dos modos simultáneos**:
 
 ## 🔌 Servicios Externos (Cátedra)
 
-Registro de sesión del alumno. http://SERVIDOR:PUERTO/api/v1/agregar_usuario .
-Ver payload 1.
-● Login de usuario. http://localhost:8080/api/authenticate . Ver payload 2.
-● Listado
-completo
-de
-eventos
-(datos
-resumidos).
-http://SERVIDOR:PUERTO/api/endpoints/v1/eventos-resumidos. Ver payload 3.
-● Listado
-completo
-de
-eventos
-(con
-todos
-http://SERVIDOR:PUERTO/api/endpoints/v1/eventos. Ver payload 4.
-● Datos
-completos
-de
-un
-los
-http://SERVIDOR:PUERTO/api/endpoints/v1/evento/{id} . Ver payload 5.
-● Bloqueo
-de
-asiento
-por
-datos).
-evento.
-evento.
-http://SERVIDOR:PUERTO/api/endpoints/v1/bloquear-asientos . Ver payload 6.
-● Venta
-de
-asientos
-por
-http://SERVIDOR:PUERTO/api/endpoints/v1/realizar-venta . Ver payload 7.
-evento.
-● Listado completo de ventas por cada alumno (datos resumidos).
-http://SERVIDOR:PUERTO/api/endpoints/v1/listar-ventas . Ver payload 8.
-● Ver
-datos
-de
-una
-venta
-particular.
-http://SERVIDOR:PUERTO/api/endpoints/v1/listar-venta/{id}. Ver payload 9.
+El Proxy se comunica con los siguientes servicios de la cátedra. Ver archivo **[PayLoads Catedra](./PayLoads%20Catedra)** para detalles completos.
+
+| Endpoint Cátedra | Método | Payload | Descripción |
+|-----------------|--------|---------|-------------|
+| `/api/v1/agregar_usuario` | POST | Payload 1 | ❌ No usado (registro manual) |
+| `/api/authenticate` | POST | Payload 2 | ✅ Login de usuario |
+| `/api/endpoints/v1/eventos-resumidos` | GET | Payload 3 | ✅ Listado de eventos (resumidos) |
+| `/api/endpoints/v1/eventos` | GET | Payload 4 | ✅ Listado de eventos (completos) |
+| `/api/endpoints/v1/evento/{id}` | GET | Payload 5 | ✅ Detalle de un evento |
+| `/api/endpoints/v1/bloquear-asientos` | POST | Payload 6 | ✅ Bloquear asientos |
+| `/api/endpoints/v1/realizar-venta` | POST | Payload 7 | ✅ Realizar venta |
+| `/api/endpoints/v1/listar-ventas` | GET | Payload 8 | ✅ Listar ventas del alumno |
+| `/api/endpoints/v1/listar-venta/{id}` | GET | Payload 9 | ✅ Detalle de una venta |
+
+**Documentación completa de la API del Proxy**: [PROXY-API.md](./PROXY-API.md)
 
 ### API HTTP
 - **Base URL**: `http://192.168.194.250:8080`
@@ -140,75 +124,34 @@ Ver documentación completa: **[VERIFICACION-TOKEN.md](VERIFICACION-TOKEN.md)**
 
 **Base URL del Proxy**: `http://localhost:8080`
 
-### UserProxyController (`/api/users`)
+Ver documentación completa con ejemplos de request/response: **[PROXY-API.md](./PROXY-API.md)**
 
-#### POST `/api/users/login`
-Login de usuario.
-- **URL Externa Cátedra**: `POST /api/authenticate`
-- **Entrada**: `LoginRequestDTO { username, password }`
-- **Salida**: `LoginResponseDTO { id_token }`
-- **Respuesta Síncrona**: ✅ Inmediata
+### Resumen de Endpoints
 
----
+| Endpoint Proxy | Método | Endpoint Cátedra | Payload | Respuesta |
+|----------------|--------|------------------|---------|-----------|
+| `/api/users/login` | POST | `/api/authenticate` | Payload 2 | Síncrona ✅ |
+| `/api/eventos/resumidos` | GET | `/api/endpoints/v1/eventos-resumidos` | Payload 3 | Síncrona ✅ |
+| `/api/eventos` | GET | `/api/endpoints/v1/eventos` | Payload 4 | Síncrona ✅ |
+| `/api/eventos/{id}` | GET | `/api/endpoints/v1/evento/{id}` | Payload 5 | Síncrona ✅ |
+| `/api/eventos/bloquear-asientos` | POST | `/api/endpoints/v1/bloquear-asientos` | Payload 6 | Síncrona ✅ + Kafka ⚡ |
+| `/api/eventos/{id}/asientos-estado` | GET | Redis (`evento:{id}:asientos`) | N/A | Síncrona ✅ |
+| `/api/ventas/realizar` | POST | `/api/endpoints/v1/realizar-venta` | Payload 7 | Síncrona ✅ + Kafka ⚡ |
+| `/api/ventas` | GET | `/api/endpoints/v1/listar-ventas` | Payload 8 | Síncrona ✅ |
+| `/api/ventas/{id}` | GET | `/api/endpoints/v1/listar-venta/{id}` | Payload 9 | Síncrona ✅ |
 
-### EventoProxyController (`/api/eventos`)
+**Leyenda**:
+- ✅ Respuesta síncrona inmediata
+- ⚡ Puede generar evento asíncrono vía Kafka
 
-#### GET `/api/eventos/resumidos`
-Listado de eventos (datos resumidos).
-- **URL Externa Cátedra**: `GET /api/endpoints/v1/eventos-resumidos`
-- **Salida**: `List<EventoResumenDTO>`
-- **Respuesta Síncrona**: ✅ Inmediata
+### Endpoints Exclusivos del Proxy
 
-#### GET `/api/eventos`
-Listado completo de eventos (con todos los datos).
-- **URL Externa Cátedra**: `GET /api/endpoints/v1/eventos`
-- **Salida**: `List<EventoDTO>`
-- **Respuesta Síncrona**: ✅ Inmediata
+Estos endpoints NO existen en la cátedra:
 
-#### GET `/api/eventos/{id}`
-Datos completos de un evento específico.
-- **URL Externa Cátedra**: `GET /api/endpoints/v1/evento/{id}`
-- **Salida**: `EventoDetalleDTO`
-- **Respuesta Síncrona**: ✅ Inmediata
-
-#### POST `/api/eventos/{id}/bloquear-asientos`
-Bloqueo de asientos por evento.
-- **URL Externa Cátedra**: `POST /api/endpoints/v1/bloquear-asientos`
-- **Entrada**: `BloquearAsientosRequestDTO { eventoId, asientos[] }`
-- **Salida**: `BloquearAsientosResponseDTO { resultado, mensaje }`
-- **Respuesta Síncrona**: ✅ Inmediata
-- **Notificación Asíncrona**: ⚡ Puede llegar evento `ASIENTOS_BLOQUEADOS` vía Kafka después
-
-#### GET `/api/eventos/{id}/asientos-estado`
-Estado actual de los asientos de un evento (desde Redis).
-- **Origen**: Redis cátedra (key `evento_{id}`)
-- **Salida**: `List<AsientoEstadoDTO> { fila, columna, estado }`
-- **Respuesta Síncrona**: ✅ Inmediata
-- **Nota**: Solo retorna asientos bloqueados/vendidos (el resto se asume disponible)
-
----
-
-### VentaProxyController (`/api/ventas`)
-
-#### POST `/api/ventas/realizar`
-Venta de asientos por un evento.
-- **URL Externa Cátedra**: `POST /api/endpoints/v1/realizar-venta`
-- **Entrada**: `RealizarVentaRequestDTO { eventoId, asientos[], username }`
-- **Salida**: `RealizarVentaResponseDTO { resultado, mensaje }`
-- **Respuesta Síncrona**: ✅ Inmediata (éxito/fallo del request)
-- **Notificación Asíncrona**: ⚡ Cuando la venta se completa, llega evento `VENTA_COMPLETADA` vía Kafka
-
-#### GET `/api/ventas`
-Listado completo de ventas por alumno (datos resumidos).
-- **URL Externa Cátedra**: `GET /api/endpoints/v1/listar-ventas`
-- **Salida**: `List<VentaResumenDTO>`
-- **Respuesta Síncrona**: ✅ Inmediata
-
-#### GET `/api/ventas/{id}`
-Ver datos de una venta particular.
-- **URL Externa Cátedra**: `GET /api/endpoints/v1/listar-venta/{id}`
-- **Salida**: `VentaDTO`
-- **Respuesta Síncrona**: ✅ Inmediata
+- **`GET /api/eventos/{id}/asientos-estado`**: Consulta estado de asientos desde Redis
+- **`GET /actuator/health`**: Health check del servicio
+- **`GET /actuator/auth/status`**: Estado del token JWT
+- **`POST /actuator/auth/refresh`**: Renovar token JWT manualmente
 
 ---
 
@@ -409,7 +352,7 @@ APP_REDIS_PORT=6379
 
 - **default**: Producción (todos los servicios habilitados)
 - **dev**: Desarrollo local (Kafka y Redis deshabilitados)
-- **mock**: Simulación completa sin servicios externos (ver [PROFILE-MOCK.md](PROFILE-MOCK.md)) ✨
+- **mock**: Simulación completa sin servicios externos (AuthTokenService, Kafka y Redis deshabilitados, MockCatedraService activo) ✨
 - **integration**: Tests de integración (servicios reales)
 - **test**: Tests unitarios (todo mockeado)
 
@@ -437,9 +380,37 @@ O usar el script:
 mvn spring-boot:run "-Dspring-boot.run.profiles=mock"
 ```
 
-**Ideal para**: Desarrollo sin servicios de la cátedra, demos, testing del flujo completo Mobile→Backend→Proxy.
+**Qué hace**:
+- ✅ Deshabilita AuthTokenService (no intenta conectarse a la cátedra)
+- ✅ Deshabilita Kafka consumer
+- ✅ Deshabilita Redis
+- ✅ Activa MockCatedraService con datos inventados (5 eventos, ventas simuladas)
+- ✅ Simula webhooks asíncronos al Backend con delay random
 
-Ver documentación completa: **[PROFILE-MOCK.md](PROFILE-MOCK.md)**
+**Ideal para**: Desarrollo cuando los servicios de la cátedra están caídos, demos, testing del flujo completo Mobile→Backend→Proxy.
+
+#### 📊 Datos Mock del Proxy vs Mobile
+
+Los datos mock están **inspirados** en el MockData del mobile pero con **variaciones intencionales** para facilitar el debugging:
+
+| Campo | Mobile Mock | Proxy Mock | Diferencia |
+|-------|-------------|------------|------------|
+| **Evento 1** | "Concierto de Rock Sinfónico" | "Concierto Sinfónico de Rock Clásico" | Título invertido |
+| **Fecha 1** | 2024-10-26 | 2025-12-26 | Año diferente |
+| **Precio 1** | Sin precio explícito | $2800 | Precio agregado |
+| **Sala 1** | 15x20 asientos | 18x25 asientos | Sala más grande |
+| **Evento 2** | "Final de Conferencia" | "Gran Final de Campeonato" | Título extendido |
+| **Precio 2** | Sin precio | $5200 | Precio agregado |
+| **Sala 2** | Sin dimensiones | 20x30 asientos | Dimensiones agregadas |
+| **Evento 3** | "Obra de Teatro Clásico" | "Teatro Clásico Moderno" | Énfasis diferente |
+| **Integrantes 1** | Alex Turner, Miles Kane, Matt Helders | Robert Plant, Jimmy Page, John Bonham | Nombres de Led Zeppelin |
+
+**¿Por qué estas diferencias?**
+- 🔍 **Debugging**: Al ver datos distintos, sabes inmediatamente de dónde viene la información
+- 🧪 **Testing**: Puedes verificar que el flujo Mobile→Backend→Proxy funciona correctamente
+- 🚀 **Demo**: Demostrar que el Proxy puede funcionar independientemente de la cátedra
+
+**Ver código**: `src/main/java/um/prog2/service/MockCatedraService.java`
 
 ### Deshabilitar solo Kafka
 ```powershell
@@ -555,6 +526,42 @@ Invoke-RestMethod -Uri "http://localhost:8080/actuator/auth/refresh" -Method Pos
 ```
 
 **Nota**: El Proxy renueva automáticamente el token cada 30 minutos, por lo que este error no debería ocurrir en producción.
+
+---
+
+## ✅ Cumplimiento con Payloads de la Cátedra
+
+El Proxy implementa **8 de 9** payloads especificados en el documento de la cátedra:
+
+| Payload | Descripción | Estado | Endpoint Proxy |
+|---------|-------------|--------|----------------|
+| **Payload 1** | Registro de usuario | ❌ No implementado | N/A |
+| **Payload 2** | Login de usuario | ✅ Implementado | `POST /api/users/login` |
+| **Payload 3** | Eventos resumidos | ✅ Implementado | `GET /api/eventos/resumidos` |
+| **Payload 4** | Eventos completos | ✅ Implementado | `GET /api/eventos` |
+| **Payload 5** | Detalle de evento | ✅ Implementado | `GET /api/eventos/{id}` |
+| **Payload 6** | Bloquear asientos | ✅ Implementado | `POST /api/eventos/bloquear-asientos` |
+| **Payload 7** | Realizar venta | ✅ Implementado | `POST /api/ventas/realizar` |
+| **Payload 8** | Listar ventas | ✅ Implementado | `GET /api/ventas` |
+| **Payload 9** | Detalle de venta | ✅ Implementado | `GET /api/ventas/{id}` |
+
+**Nota sobre Payload 1**: El registro de usuario (`/api/v1/agregar_usuario`) no está implementado porque:
+1. Es una operación de una sola vez por alumno (ya realizada manualmente)
+2. El Proxy ya tiene credenciales configuradas (`APP_CATEDRA_USERNAME`, `APP_CATEDRA_PASSWORD`)
+3. Si se necesitara, puede agregarse fácilmente siguiendo el patrón de `UserProxyController`
+
+### Verificación de Estructura de DTOs
+
+Los DTOs del Proxy coinciden **exactamente** con los ejemplos JSON de la cátedra:
+
+- ✅ **EventoResumenDTO** (Payload 3): `id`, `titulo`, `resumen`, `descripcion`, `fecha`, `precioEntrada`, `eventoTipo`
+- ✅ **EventoDTO** (Payload 4): Incluye además `direccion`, `imagen`, `filaAsientos`, `columnAsientos`, `integrantes[]`
+- ✅ **BloquearAsientosRequestDTO/ResponseDTO** (Payload 6): `eventoId`, `asientos[]` con `fila`, `columna`, `estado`
+- ✅ **RealizarVentaRequestDTO/ResponseDTO** (Payload 7): `eventoId`, `fecha`, `precioVenta`, `asientos[]` con `persona`
+- ✅ **VentaResumenDTO** (Payload 8): `eventoId`, `ventaId`, `fechaVenta`, `resultado`, `cantidadAsientos`
+- ✅ **VentaDTO** (Payload 9): Incluye además lista completa de `asientos[]` vendidos
+
+Ver documentación completa: **[PROXY-API.md](./PROXY-API.md)**
 
 ---
 

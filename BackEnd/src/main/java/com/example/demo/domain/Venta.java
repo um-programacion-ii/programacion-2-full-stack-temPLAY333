@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A Venta.
@@ -53,6 +55,10 @@ public class Venta implements Serializable {
     @NotNull
     @JsonIgnoreProperties(value = { "eventoTipo", "integrantes" }, allowSetters = true)
     private Evento evento;
+
+    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties(value = { "venta" }, allowSetters = true)
+    private Set<Asiento> asientos = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -157,6 +163,26 @@ public class Venta implements Serializable {
 
     public Venta evento(Evento evento) {
         this.setEvento(evento);
+        return this;
+    }
+
+    public Set<Asiento> getAsientos() {
+        return this.asientos;
+    }
+
+    public void setAsientos(Set<Asiento> asientos) {
+        this.asientos = asientos;
+    }
+
+    public Venta addAsiento(Asiento asiento) {
+        this.asientos.add(asiento);
+        asiento.setVenta(this);
+        return this;
+    }
+
+    public Venta removeAsiento(Asiento asiento) {
+        this.asientos.remove(asiento);
+        asiento.setVenta(null);
         return this;
     }
 

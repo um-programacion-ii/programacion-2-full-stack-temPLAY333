@@ -1,0 +1,495 @@
+{
+	"info": {
+		"_postman_id": "backend-mobile-collection",
+		"name": "3. Backend → Mobile",
+		"description": "Endpoints que Mobile consume del Backend (localhost:8081). El Backend lee de su BD local y consume el Proxy cuando es necesario.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Autenticación",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id_token) {",
+									"        pm.environment.set(\"jwt_token\", jsonData.id_token);",
+									"        console.log(\"Token JWT guardado en variable de entorno\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\",\n    \"rememberMe\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/authenticate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "authenticate"]
+						},
+						"description": "Autentica un usuario y obtiene un token JWT. El token se guarda automáticamente en la variable `jwt_token`."
+					},
+					"response": []
+				},
+				{
+					"name": "Registro de Usuario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"login\": \"nuevo_usuario\",\n    \"email\": \"nuevo@ejemplo.com\",\n    \"password\": \"Password123!\",\n    \"firstName\": \"Nombre\",\n    \"lastName\": \"Apellido\",\n    \"langKey\": \"es\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "register"]
+						},
+						"description": "Registra un nuevo usuario en el sistema."
+					},
+					"response": []
+				},
+				{
+					"name": "Verificar Autenticación",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/authenticate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "authenticate"]
+						},
+						"description": "Verifica si el token JWT es válido. Retorna 204 si está autenticado, 401 si no."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints relacionados con autenticación y registro de usuarios"
+		},
+		{
+			"name": "2. Cuenta de Usuario",
+			"item": [
+				{
+					"name": "Obtener Cuenta Actual",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/account",
+							"host": ["{{base_url}}"],
+							"path": ["api", "account"]
+						},
+						"description": "Obtiene los datos del usuario autenticado actual. Requiere token JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Cuenta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Nombre Actualizado\",\n    \"lastName\": \"Apellido Actualizado\",\n    \"email\": \"nuevoemail@ejemplo.com\",\n    \"langKey\": \"es\",\n    \"imageUrl\": null\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/account",
+							"host": ["{{base_url}}"],
+							"path": ["api", "account"]
+						},
+						"description": "Actualiza la información del usuario autenticado."
+					},
+					"response": []
+				},
+				{
+					"name": "Cambiar Contraseña",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"currentPassword\": \"Password123!\",\n    \"newPassword\": \"NuevaPassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/account/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "account", "change-password"]
+						},
+						"description": "Cambia la contraseña del usuario autenticado."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestionar la cuenta del usuario autenticado"
+		},
+		{
+			"name": "3. Eventos",
+			"item": [
+				{
+					"name": "Listar Eventos Resumidos (Todos)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/eventos/resumidos",
+							"host": ["{{base_url}}"],
+							"path": ["api", "eventos", "resumidos"]
+						},
+						"description": "Obtiene todos los eventos resumidos sin paginación. No requiere autenticación."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Eventos Resumidos (Paginado)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/eventos/resumidos?page=0&size=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "eventos", "resumidos"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Número de página (0-indexed)"
+								},
+								{
+									"key": "size",
+									"value": "20",
+									"description": "Tamaño de página"
+								}
+							]
+						},
+						"description": "Obtiene eventos resumidos con paginación. Paginación opcional: omitir ?page=&size= para obtener todos."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Eventos Completos (Todos)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/eventos",
+							"host": ["{{base_url}}"],
+							"path": ["api", "eventos"]
+						},
+						"description": "Obtiene todos los eventos completos sin paginación. No requiere autenticación."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Eventos Completos (Paginado)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/eventos?page=0&size=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "eventos"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Número de página (0-indexed)"
+								},
+								{
+									"key": "size",
+									"value": "20",
+									"description": "Tamaño de página"
+								}
+							]
+						},
+						"description": "Obtiene eventos completos con paginación. Paginación opcional: omitir ?page=&size= para obtener todos."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Detalle de Evento",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/eventos/{{evento_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "eventos", "{{evento_id}}"]
+						},
+						"description": "Obtiene los detalles completos de un evento específico por su ID. No requiere autenticación."
+					},
+					"response": []
+				},
+				{
+					"name": "Sincronizar Todos los Eventos",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/eventos/sync",
+							"host": ["{{base_url}}"],
+							"path": ["api", "eventos", "sync"]
+						},
+						"description": "Fuerza una sincronización manual de todos los eventos desde la cátedra. Ejecuta de forma asíncrona."
+					},
+					"response": []
+				},
+				{
+					"name": "Sincronizar Evento Específico",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/eventos/{{evento_id}}/sync",
+							"host": ["{{base_url}}"],
+							"path": ["api", "eventos", "{{evento_id}}", "sync"]
+						},
+						"description": "Fuerza una sincronización manual de un evento específico desde la cátedra. Ejecuta de forma asíncrona."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints públicos de consulta de eventos. Paginación opcional: agregar ?page=0&size=20 para paginar, o omitir para obtener todos."
+		},
+		{
+			"name": "4. Asientos",
+			"item": [
+				{
+					"name": "Obtener Mapa de Asientos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/asientos/evento/{{evento_id}}/mapa",
+							"host": ["{{base_url}}"],
+							"path": ["api", "asientos", "evento", "{{evento_id}}", "mapa"]
+						},
+						"description": "Obtiene el mapa de asientos de un evento, mostrando cuáles están bloqueados o vendidos. Los asientos no presentes se consideran disponibles."
+					},
+					"response": []
+				},
+				{
+					"name": "Bloquear Asientos",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"fila\": 1,\n        \"columna\": 1\n    },\n    {\n        \"fila\": 1,\n        \"columna\": 2\n    }\n]"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/asientos/evento/{{evento_id}}/bloquear",
+							"host": ["{{base_url}}"],
+							"path": ["api", "asientos", "evento", "{{evento_id}}", "bloquear"]
+						},
+						"description": "Bloquea temporalmente (5 minutos) hasta 4 asientos de un evento. Los asientos deben estar disponibles."
+					},
+					"response": []
+				},
+				{
+					"name": "Verificar Disponibilidad de Asiento",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/asientos/evento/{{evento_id}}/disponible?fila=1&columna=1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "asientos", "evento", "{{evento_id}}", "disponible"],
+							"query": [
+								{
+									"key": "fila",
+									"value": "1"
+								},
+								{
+									"key": "columna",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Verifica si un asiento específico está disponible (no bloqueado ni vendido)."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestionar asientos de eventos"
+		},
+		{
+			"name": "5. Ventas",
+			"item": [
+				{
+					"name": "Realizar Venta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"fila\": 1,\n        \"columna\": 1\n    },\n    {\n        \"fila\": 1,\n        \"columna\": 2\n    }\n]"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ventas/evento/{{evento_id}}/realizar",
+							"host": ["{{base_url}}"],
+							"path": ["api", "ventas", "evento", "{{evento_id}}", "realizar"]
+						},
+						"description": "Realiza una venta de asientos previamente bloqueados. Máximo 4 asientos por compra. Requiere autenticación."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Mis Ventas",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ventas",
+							"host": ["{{base_url}}"],
+							"path": ["api", "ventas"]
+						},
+						"description": "Obtiene todas las ventas del usuario autenticado. Requiere autenticación."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Detalle de Venta",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ventas/{{venta_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "ventas", "{{venta_id}}"]
+						},
+						"description": "Obtiene los detalles de una venta específica. Solo permite acceder a ventas del usuario autenticado. Requiere autenticación."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para realizar y consultar ventas"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "username",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"key": "password",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"key": "evento_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "venta_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}

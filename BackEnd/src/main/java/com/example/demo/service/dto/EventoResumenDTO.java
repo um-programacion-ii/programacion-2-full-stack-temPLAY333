@@ -46,6 +46,12 @@ public class EventoResumenDTO implements Serializable {
     @NotNull
     private EventoTipoDTO eventoTipo;
 
+    // URL de la imagen en miniatura (opcional en eventos resumidos)
+    private String imagen;
+
+    public String getImagen() { return imagen; }
+    public void setImagen(String imagen) { this.imagen = imagen; }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getTitulo() { return titulo; }
@@ -79,6 +85,7 @@ public class EventoResumenDTO implements Serializable {
             ", titulo='" + titulo + '\'' +
             ", fecha=" + fecha +
             ", precioEntrada=" + precioEntrada +
+            ", imagen='" + imagen + '\'' +
             '}';
     }
 }

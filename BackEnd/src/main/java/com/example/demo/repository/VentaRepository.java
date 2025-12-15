@@ -17,6 +17,7 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     @Query("select venta from Venta venta where venta.usuario.login = ?#{authentication.name}")
     List<Venta> findByUsuarioIsCurrentUser();
 
+    // Existing eager to-one relationships (usuario/evento)
     default Optional<Venta> findOneWithEagerRelationships(Long id) {
         return this.findOneWithToOneRelationships(id);
     }
@@ -37,4 +38,15 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
 
     @Query("select venta from Venta venta left join fetch venta.usuario where venta.id =:id")
     Optional<Venta> findOneWithToOneRelationships(@Param("id") Long id);
+
+    // New methods loading the collection 'asientos' as well (to avoid N+1 when needed)
+    @Query("select distinct venta from Venta venta left join fetch venta.usuario left join fetch venta.asientos")
+    List<Venta> findAllWithToOneAndAsientos();
+
+    @Query(value = "select distinct venta from Venta venta left join fetch venta.usuario left join fetch venta.asientos",
+        countQuery = "select count(venta) from Venta venta")
+    Page<Venta> findAllWithToOneAndAsientos(Pageable pageable);
+
+    @Query("select venta from Venta venta left join fetch venta.usuario left join fetch venta.asientos where venta.id =:id")
+    Optional<Venta> findOneWithToOneAndAsientos(@Param("id") Long id);
 }

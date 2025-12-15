@@ -10,6 +10,6 @@ data class Event(
     val titulo: String,
     val resumen: String,
     val fecha: String,
-    val imagen: String,
+    // ⚠️ NO tiene imagen - solo disponible en EventoDetalle
     val eventoTipo: EventoTipo
 )

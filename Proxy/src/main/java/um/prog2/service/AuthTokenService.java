@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -26,8 +27,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * - Permite refrescar manualmente y exponer el token actual a quien lo necesite.
  *
  * Este servicio NO toca archivos .env ni ejecuta scripts; solo usa HTTP.
+ *
+ * NOTA: Se deshabilita en modo mock usando ConditionalOnExpression
  */
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnExpression("'${spring.profiles.active:default}' != 'mock'")
 public class AuthTokenService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthTokenService.class);

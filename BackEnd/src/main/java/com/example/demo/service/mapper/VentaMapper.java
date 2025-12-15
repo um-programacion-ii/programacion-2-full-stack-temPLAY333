@@ -11,10 +11,12 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity {@link Venta} and its DTO {@link VentaDTO}.
  */
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {AsientoMapper.class, EventoMapper.class})
 public interface VentaMapper extends EntityMapper<VentaDTO, Venta> {
     @Mapping(target = "usuario", source = "usuario", qualifiedByName = "userLogin")
-    @Mapping(target = "evento", source = "evento", qualifiedByName = "eventoId")
+    // Map evento using EventoMapper to include event fields (titulo, resumen, imagen, etc.)
+    @Mapping(target = "evento", source = "evento")
+    @Mapping(target = "asientos", source = "asientos")
     VentaDTO toDto(Venta s);
 
     @Named("userLogin")

@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 class RealizarVentaMapperTest {
 
@@ -20,7 +21,11 @@ class RealizarVentaMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new RealizarVentaMapperImpl();
+        try {
+            mapper = Mappers.getMapper(RealizarVentaMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize RealizarVentaMapper", e);
+        }
     }
 
     @Test

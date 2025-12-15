@@ -2,9 +2,8 @@ package com.eventtickets.mobile.ui.screens.purchasedetail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eventtickets.mobile.data.MockData
 import com.eventtickets.mobile.data.model.PurchaseDetail
-import kotlinx.coroutines.delay
+import com.eventtickets.mobile.data.repository.EventRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,15 +20,16 @@ class PurchaseDetailViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<PurchaseDetailUiState>(PurchaseDetailUiState.Loading)
     val uiState: StateFlow<PurchaseDetailUiState> = _uiState.asStateFlow()
 
+    private val repository = EventRepository()
+
     fun loadPurchaseDetail(purchaseId: Long) {
         viewModelScope.launch {
             _uiState.value = PurchaseDetailUiState.Loading
-            delay(1000) // Simulate network delay
             try {
-                val purchase = MockData.getPurchaseDetailById(purchaseId)
-                if (purchase != null) {
+                val result = repository.getVentaDetalle(purchaseId)
+                result.onSuccess { purchase ->
                     _uiState.value = PurchaseDetailUiState.Success(purchase)
-                } else {
+                }.onFailure {
                     _uiState.value = PurchaseDetailUiState.Error
                 }
             } catch (e: Exception) {

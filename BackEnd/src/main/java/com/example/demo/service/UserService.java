@@ -122,10 +122,12 @@ public class UserService {
         }
         newUser.setImageUrl(userDTO.getImageUrl());
         newUser.setLangKey(userDTO.getLangKey());
-        // new user is not active
-        newUser.setActivated(false);
-        // new user gets registration key
-        newUser.setActivationKey(RandomUtil.generateActivationKey());
+
+        // new user is activated by default (skip email confirmation step)
+        newUser.setActivated(true);
+        // NOTE: comment out activation key generation to avoid explicit email-activation requirement
+        // new user would get registration key (unused when activation is automatic)
+        // newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Authority> authorities = new HashSet<>();
         authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);

@@ -85,13 +85,6 @@
             <releases><enabled>true</enabled></releases>
             <snapshots><enabled>false</enabled></snapshots>
         </repository>
-        <repository>
-            <id>spring-release</id>
-            <name>Spring Release Repository</name>
-            <url>https://repo.spring.io/release</url>
-            <releases><enabled>true</enabled></releases>
-            <snapshots><enabled>false</enabled></snapshots>
-        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -316,6 +309,14 @@
             <artifactId>redisson</artifactId>
             <version>${redisson.version}</version>
         </dependency>
+        <!-- JCache API and Redisson JCache provider -->
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <!-- redisson-jcache is included in redisson artifact since version 3.20+, loaded via reflection -->
+        <!-- If setDefaultConfiguration method is not available, the code will handle it gracefully with try-catch -->
         <!-- Kafka removido: El Backend NO consume Kafka, el Proxy lo hace -->
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -335,6 +336,19 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Explicit Mockito dependencies to ensure MockMaker plugin loads correctly during tests -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.5.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.5.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

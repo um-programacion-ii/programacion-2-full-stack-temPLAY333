@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthen
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import tech.jhipster.config.JHipsterProperties;
 
@@ -41,20 +42,28 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(authz ->
                 // prettier-ignore
                 authz
-                    .requestMatchers(mvc.pattern(HttpMethod.POST, "/api/authenticate")).permitAll()
-                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/authenticate")).permitAll()
-                    .requestMatchers(mvc.pattern("/api/register")).permitAll()
-                    .requestMatchers(mvc.pattern("/api/activate")).permitAll()
-                    .requestMatchers(mvc.pattern("/api/account/reset-password/init")).permitAll()
-                    .requestMatchers(mvc.pattern("/api/account/reset-password/finish")).permitAll()
-                    .requestMatchers(mvc.pattern("/api/admin/**")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(mvc.pattern("/api/**")).authenticated()
-                    .requestMatchers(mvc.pattern("/v3/api-docs/**")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(mvc.pattern("/management/health")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/health/**")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/info")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/prometheus")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/**")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(new AntPathRequestMatcher("/api/authenticate", "POST")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/authenticate", "GET")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/register")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/activate")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/account/reset-password/init")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/account/reset-password/finish")).permitAll()
+                    // Endpoints públicos de consulta de eventos (no requieren autenticación)
+                    .requestMatchers(new AntPathRequestMatcher("/api/eventos/resumidos")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/eventos/{id}", "GET")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/eventos", "GET")).permitAll()
+                    // Mapa de asientos y verificación de disponibilidad (públicos)
+                    .requestMatchers(new AntPathRequestMatcher("/api/asientos/evento/*/mapa", "GET")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/asientos/evento/*/disponible", "GET")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/admin/**")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    // Todos los demás endpoints bajo /api/** requieren autenticación
+                    .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+                    .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(new AntPathRequestMatcher("/management/health")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/management/health/**")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/management/info")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/management/prometheus")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/management/**")).hasAuthority(AuthoritiesConstants.ADMIN)
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exceptions ->

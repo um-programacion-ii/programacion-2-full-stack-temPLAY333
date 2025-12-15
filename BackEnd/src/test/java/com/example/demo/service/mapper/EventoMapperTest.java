@@ -5,6 +5,7 @@ import static com.example.demo.domain.EventoTestSamples.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 class EventoMapperTest {
 
@@ -12,7 +13,11 @@ class EventoMapperTest {
 
     @BeforeEach
     void setUp() {
-        eventoMapper = new EventoMapperImpl();
+        try {
+            eventoMapper = Mappers.getMapper(EventoMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize EventoMapper", e);
+        }
     }
 
     @Test

@@ -26,9 +26,13 @@ public class WebClientConfig {
 
     private final AuthTokenService authTokenService;
 
-    public WebClientConfig(AuthTokenService authTokenService) {
+    public WebClientConfig(@org.springframework.beans.factory.annotation.Autowired(required = false) AuthTokenService authTokenService) {
         this.authTokenService = authTokenService;
-        log.info("WebClientConfig: Inicializado con AuthTokenService");
+        if (authTokenService != null) {
+            log.info("WebClientConfig: Inicializado con AuthTokenService");
+        } else {
+            log.info("WebClientConfig: Inicializado SIN AuthTokenService (modo mock)");
+        }
     }
 
     /**
@@ -65,16 +69,27 @@ public class WebClientConfig {
         // Filtro que, en cada request, consulta al AuthTokenService; si no hay token dinámico,
         // usa el token estático (si existe). Si tampoco hay, no agrega Authorization.
         ExchangeFilterFunction authFilter = (request, next) -> {
-            String token = authTokenService.getCurrentToken().orElse(null);
-            String tokenSource = "AuthTokenService";
+            String token = null;
+            String tokenSource = null;
 
+            // Intentar obtener token dinámico si AuthTokenService está disponible
+            if (authTokenService != null) {
+                token = authTokenService.getCurrentToken().orElse(null);
+                tokenSource = "AuthTokenService";
+            }
+
+            // Fallback a token estático
             if (token == null && hasStaticToken) {
                 token = staticToken;
                 tokenSource = "static (.env)";
             }
 
+            // Sin token disponible
             if (token == null || token.isBlank()) {
-                log.warn("WebClient Filter: NO HAY TOKEN disponible para request a {}", request.url());
+                if (authTokenService != null) {
+                    log.warn("WebClient Filter: NO HAY TOKEN disponible para request a {}", request.url());
+                }
+                // En modo mock, esto es esperado y no se loggea como warning
                 return next.exchange(request);
             }
 

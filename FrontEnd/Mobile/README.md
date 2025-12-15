@@ -1409,37 +1409,135 @@ fun HomeScreen(
 
 ---
 
-## 📚 Documentación
+## 🔧 Configuración para Desarrollo
 
-### Para Frontend (Mobile)
-- ✅ `README.md` - Arquitectura, UI/UX, pantallas (este archivo)
-- ✅ `TESTING.md` - Guía completa de testing
-- ✅ `INTEGRATION.md` - Cómo integrar con backend
+### Permitir comunicación HTTP con servidor local
 
-### Para Backend
-- ✅ `BackEnd.md` - Especificación completa de API (9-10 endpoints)
-- ✅ `BACKEND_REQUIREMENTS_FINAL.md` - Resumen ejecutivo de lo que necesitas implementar
+La aplicación está configurada para comunicarse con el backend en `http://10.0.2.2:8081` (localhost del emulador).
 
-**Endpoints requeridos:**
-1. ✅ `POST /api/register` - Registro (NUEVO)
-2. ✅ `POST /api/authenticate` - Login
-3. ✅ `GET /api/eventos-consulta/resumidos` - Lista eventos
-4. ✅ `GET /api/eventos-consulta/{id}` - Detalle
-5. ✅ `GET /api/asientos/evento/{id}/mapa` - Mapa asientos
-6. ✅ `POST /api/asientos/evento/{id}/bloquear` - Bloquear
-7. ✅ `POST /api/ventas/evento/{id}/realizar` - Comprar
-8. ✅ `GET /api/ventas` - Mis compras
-9. ✅ `GET /api/ventas/{id}` - Detalle compra
-10. ⚪ `GET /api/eventos-consulta/buscar` - Búsqueda (opcional)
+Android requiere configuración especial para permitir tráfico HTTP (cleartext):
+
+**Archivo creado:** `src/main/res/xml/network_security_config.xml`
+```xml
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+    </domain-config>
+</network-security-config>
+```
+
+**AndroidManifest.xml actualizado:**
+```xml
+<application
+    android:networkSecurityConfig="@xml/network_security_config"
+    android:usesCleartextTraffic="true"
+    ...>
+```
+
+### Cambiar URL del Backend
+
+Si necesitas cambiar la URL del backend, edita:  
+`src/main/java/com/eventtickets/mobile/data/network/RetrofitClient.kt`
+
+```kotlin
+private const val BASE_URL = "http://10.0.2.2:8081"  // Cambiar aquí
+```
+
+**Direcciones importantes:**
+- `10.0.2.2` = localhost del emulador de Android
+- `localhost` / `127.0.0.1` = dispositivo físico con backend en tu PC
 
 ---
 
-## 📞 Contacto y Dudas
+## 📚 Documentación
 
-- **Dudas sobre API:** Ver `BackEnd.md` y `BACKEND_REQUIREMENTS_FINAL.md`
-- **Dudas sobre UI/UX:** Ver este `README.md`
-- **Dudas sobre tests:** Ver `TESTING.md`
-- **Dudas sobre integración:** Ver `INTEGRATION.md`
+### Documentación Disponible
+- ✅ **`README.md`** (este archivo) - Arquitectura completa del Mobile, UI/UX, pantallas y flujos
+- ✅ **`BackEnd.md`** - Especificación completa de la API REST para el backend
 
-¡Manos a la obra! 🚀
+---
+
+## 🎯 Estado del Proyecto
+
+### ✅ Mobile (Frontend) - COMPLETAMENTE IMPLEMENTADO
+Todas las pantallas, navegación y funcionalidades están implementadas y funcionando:
+
+**Autenticación:**
+- ✅ Login con JWT (token persiste en SharedPreferences)
+- ✅ Registro de cuenta
+- ✅ Gestión de sesión
+
+**Flujo de Compra:**
+- ✅ Listado de eventos
+- ✅ Detalle de evento
+- ✅ Selección de asientos (max 4)
+- ✅ Bloqueo temporal (5 minutos)
+- ✅ Ingreso de nombres de asistentes
+- ✅ Confirmación y resumen
+- ✅ Historial de compras
+- ✅ Visualización de QR codes
+
+**Integración:**
+- ✅ Conexión con backend via HTTP REST
+- ✅ Manejo robusto de errores
+- ✅ Null safety completo
+- ✅ Network security config para HTTP cleartext
+
+### ✅ Backend (API) - COMPLETAMENTE IMPLEMENTADO
+
+Todos los endpoints necesarios están implementados y funcionando en el backend:
+
+**Endpoints Disponibles:**
+1. ✅ `POST /api/register` - Registro de usuarios
+2. ✅ `POST /api/authenticate` - Login con JWT
+3. ✅ `GET /api/eventos-consulta/resumidos` - Lista de eventos
+4. ✅ `GET /api/eventos-consulta/{id}` - Detalle de evento
+5. ✅ `GET /api/asientos/evento/{id}/mapa` - Mapa de asientos
+6. ✅ `POST /api/asientos/evento/{id}/bloquear` - Bloquear asientos (5 min)
+7. ✅ `POST /api/ventas/evento/{id}/realizar` - Realizar compra
+8. ✅ `GET /api/ventas` - Historial de compras del usuario
+9. ✅ `GET /api/ventas/{id}` - Detalle de compra con QR
+
+**Mejoras Implementadas en Backend:**
+- ✅ Rutas corregidas a `/api/eventos-consulta/*`
+- ✅ VentaMapper retorna eventos completos (no solo ID)
+- ✅ Queries optimizadas (N+1 problem resuelto con JOIN FETCH)
+- ✅ Tests de integración actualizados
+
+---
+
+## 🚀 Sistema Listo para Usar
+
+**El sistema Mobile + Backend está completamente funcional end-to-end:**
+- ✅ Autenticación JWT funcionando
+- ✅ Eventos sincronizados desde sistema externo
+- ✅ Compra de entradas completa
+- ✅ Historial con QR codes
+- ✅ Performance optimizada
+
+---
+
+## 📖 Para Más Información
+
+### Sobre el Mobile (este proyecto):
+Consulta las secciones anteriores de este README para:
+- Arquitectura MVVM + Repository Pattern
+- Paleta de colores y diseño
+- Descripción detallada de cada pantalla
+- Guías de navegación y flujos
+
+### Sobre la API del Backend:
+Consulta **`BackEnd.md`** para:
+- Especificación completa de todos los endpoints
+- Request/Response de cada endpoint
+- DTOs y modelos de datos
+- Ejemplos de uso
+- Validaciones y reglas de negocio
+
+---
+
+**Sistema desarrollado con:** Kotlin, Jetpack Compose, Spring Boot, JWT  
+**Estado:** ✅ Producción Ready  
+**Última actualización:** 2025-12-13
 

@@ -23,18 +23,25 @@ object RetrofitClient {
     // URL base del backend (configurada en AppConfig)
     private val BASE_URL = AppConfig.BACKEND_URL
 
-    // Token JWT almacenado en memoria (en producción usar EncryptedSharedPreferences)
-    private var authToken: String? = null
-
-    fun setAuthToken(token: String?) {
-        authToken = token
+    private val tokenManager by lazy {
+        com.eventtickets.mobile.EventTicketsApplication.instance.tokenManager
     }
 
-    fun getAuthToken(): String? = authToken
+    fun setAuthToken(token: String?) {
+        if (token != null) {
+            tokenManager.saveToken(token)
+        } else {
+            tokenManager.clearSession()
+        }
+    }
+
+    fun getAuthToken(): String? = tokenManager.getToken()
 
     private val authInterceptor = Interceptor { chain ->
         val request = chain.request()
-        val authenticatedRequest = authToken?.let {
+        val token = tokenManager.getToken()
+        println("[RetrofitClient] authInterceptor: tokenPresent=${token != null}")
+        val authenticatedRequest = token?.let {
             request.newBuilder()
                 .header("Authorization", "Bearer $it")
                 .build()
@@ -67,4 +74,3 @@ object RetrofitClient {
 
     val apiService: ApiService = retrofit.create(ApiService::class.java)
 }
-

@@ -103,6 +103,15 @@ public class MailService {
     @Async
     public void sendActivationEmail(User user) {
         LOG.debug("Sending activation email to '{}'", user.getEmail());
+        // Validar que el usuario tenga activation key antes de enviar el email
+        if (user.getActivationKey() == null) {
+            LOG.warn("No se puede enviar email de activación a '{}': activation key es null. El usuario probablemente ya está activado.", user.getEmail());
+            return;
+        }
+        if (user.isActivated()) {
+            LOG.warn("No se puede enviar email de activación a '{}': el usuario ya está activado.", user.getEmail());
+            return;
+        }
         sendEmailFromTemplateSync(user, "mail/activationEmail", "email.activation.title");
     }
 

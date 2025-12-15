@@ -18,7 +18,8 @@ public interface EventoResumenMapper {
     @Mapping(target = "descripcion", source = "descripcion")
     @Mapping(target = "fecha", source = "fecha")
     @Mapping(target = "precioEntrada", source = "precioEntrada")
-    @Mapping(target = "eventoTipo", source = "eventoTipo", qualifiedByName = "eventoTipoNombreDescripcion")
+    @Mapping(target = "imagen", source = "imagen")
+    @Mapping(target = "eventoTipo", source = "eventoTipo", qualifiedByName = "eventoTipoNombreDescripcion", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     EventoResumenDTO toDto(Evento evento);
 
     @Named("eventoTipoNombreDescripcion")
@@ -26,6 +27,19 @@ public interface EventoResumenMapper {
     @Mapping(target = "id", source = "id")
     @Mapping(target = "nombre", source = "nombre")
     @Mapping(target = "descripcion", source = "descripcion")
-    EventoTipoDTO toDtoEventoTipoNombreDescripcion(EventoTipo eventoTipo);
+    default EventoTipoDTO toDtoEventoTipoNombreDescripcion(EventoTipo eventoTipo) {
+        if (eventoTipo == null) {
+            return null;
+        }
+        try {
+            EventoTipoDTO dto = new EventoTipoDTO();
+            dto.setId(eventoTipo.getId());
+            dto.setNombre(eventoTipo.getNombre());
+            dto.setDescripcion(eventoTipo.getDescripcion());
+            return dto;
+        } catch (org.hibernate.LazyInitializationException e) {
+            // Si el EventoTipo es un proxy lazy que no se puede inicializar, retornar null
+            return null;
+        }
+    }
 }
-

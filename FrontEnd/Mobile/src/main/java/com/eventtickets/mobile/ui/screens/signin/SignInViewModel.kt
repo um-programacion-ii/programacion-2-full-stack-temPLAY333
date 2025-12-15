@@ -11,7 +11,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class SignInUiState(
-    val name: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
     val email: String = "",
     val phone: String = "",
     val password: String = "",
@@ -28,8 +29,12 @@ class SignInViewModel(
     private val _uiState = MutableStateFlow(SignInUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun onNameChange(name: String) {
-        _uiState.update { it.copy(name = name, errorMessage = null) }
+    fun onFirstNameChange(firstName: String) {
+        _uiState.update { it.copy(firstName = firstName, errorMessage = null) }
+    }
+
+    fun onLastNameChange(lastName: String) {
+        _uiState.update { it.copy(lastName = lastName, errorMessage = null) }
     }
 
     fun onEmailChange(email: String) {
@@ -56,11 +61,31 @@ class SignInViewModel(
             val currentState = _uiState.value
 
             when {
-                currentState.name.isBlank() -> {
+                currentState.firstName.isBlank() -> {
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             errorMessage = "El nombre es obligatorio"
+                        )
+                    }
+                    return@launch
+                }
+
+                currentState.lastName.isBlank() -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "El apellido es obligatorio"
+                        )
+                    }
+                    return@launch
+                }
+
+                currentState.firstName.replace(" ", "_").length !in 1..50 || currentState.lastName.replace(" ", "_").length !in 1..50 -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Nombre y apellido deben tener entre 1 y 50 caracteres"
                         )
                     }
                     return@launch
@@ -86,11 +111,11 @@ class SignInViewModel(
                     return@launch
                 }
 
-                currentState.password.length < 6 -> {
+                currentState.password.length < 4 -> {
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = "La contraseña debe tener al menos 6 caracteres"
+                            errorMessage = "La contraseña debe tener al menos 4 caracteres"
                         )
                     }
                     return@launch
@@ -107,8 +132,8 @@ class SignInViewModel(
                 }
             }
 
-            // Usar username como email si no tiene @
-            val username = currentState.name.replace(" ", "_").lowercase()
+            // Construir login a partir de nombre y apellido
+            val username = "${currentState.firstName}_${currentState.lastName}".replace(" ", "_").lowercase()
             val email = if (currentState.email.contains("@")) {
                 currentState.email
             } else {
@@ -126,30 +151,47 @@ class SignInViewModel(
                 }
             } else {
                 // Modo Backend: Llamada real
-                val result = authRepository.register(
-                    username = username,
-                    email = email,
-                    password = currentState.password
-                )
+                try {
+                    val result = authRepository.register(
+                        username = username,
+                        email = email,
+                        password = currentState.password,
+                        firstName = currentState.firstName,
+                        lastName = currentState.lastName,
+                        phone = if (currentState.phone.isBlank()) null else currentState.phone
+                    )
 
-                result.fold(
-                    onSuccess = { response ->
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                signInSuccess = true
-                            )
+                    println("[SignInViewModel] register: result=$result")
+
+                    result.fold(
+                        onSuccess = { response ->
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    signInSuccess = true
+                                )
+                            }
+                        },
+                        onFailure = { error ->
+                            println("[SignInViewModel] register failed: ${error::class.simpleName}: ${error.message}")
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    errorMessage = error.message ?: "Error al crear cuenta"
+                                )
+                            }
                         }
-                    },
-                    onFailure = { error ->
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                errorMessage = error.message ?: "Error al crear cuenta"
-                            )
-                        }
+                    )
+                } catch (e: Exception) {
+                    // Captura cualquier excepción inesperada (p.e. parsing) para evitar crash
+                    println("[SignInViewModel] register: excepción inesperada -> ${e::class.simpleName}: ${e.message}")
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Error inesperado al crear la cuenta. Intenta de nuevo."
+                        )
                     }
-                )
+                }
             }
         }
     }
@@ -158,4 +200,3 @@ class SignInViewModel(
         _uiState.update { it.copy(signInSuccess = false) }
     }
 }
-

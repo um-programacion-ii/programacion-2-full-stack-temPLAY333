@@ -6,3 +6,4 @@ mipmap final_app
 mipmap final_app_round
 string app_name
 style Theme.EventTickets
+xml network_security_config

@@ -5,6 +5,7 @@ import static com.example.demo.domain.AlumnoProfileTestSamples.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 class AlumnoProfileMapperTest {
 
@@ -12,7 +13,11 @@ class AlumnoProfileMapperTest {
 
     @BeforeEach
     void setUp() {
-        alumnoProfileMapper = new AlumnoProfileMapperImpl();
+        try {
+            alumnoProfileMapper = Mappers.getMapper(AlumnoProfileMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize AlumnoProfileMapper", e);
+        }
     }
 
     @Test

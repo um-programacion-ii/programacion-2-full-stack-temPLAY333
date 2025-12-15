@@ -1,0 +1,256 @@
+{
+	"info": {
+		"_postman_id": "proxy-backend-collection",
+		"name": "2. Proxy → Backend",
+		"description": "Endpoints que el Backend consume del Proxy (localhost:8080). El Proxy actúa como intermediario entre Backend y Cátedra.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Eventos",
+			"item": [
+				{
+					"name": "Listar Eventos Resumidos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{proxy_base_url}}/api/eventos/resumidos",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["api", "eventos", "resumidos"]
+						},
+						"description": "Obtiene lista resumida de eventos desde el Proxy. El Proxy consume de la Cátedra."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Eventos Completos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{proxy_base_url}}/api/eventos",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["api", "eventos"]
+						},
+						"description": "Obtiene lista completa de eventos desde el Proxy. El Proxy consume de la Cátedra."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Detalle de Evento",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{proxy_base_url}}/api/eventos/{{evento_id}}",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["api", "eventos", "{{evento_id}}"]
+						},
+						"description": "Obtiene detalle de un evento específico desde el Proxy."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Estado de Asientos (Redis)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{proxy_base_url}}/api/eventos/{{evento_id}}/asientos-estado",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["api", "eventos", "{{evento_id}}", "asientos-estado"]
+						},
+						"description": "Obtiene estado de asientos desde Redis. Endpoint exclusivo del Proxy, no existe en la Cátedra."
+					},
+					"response": []
+				},
+				{
+					"name": "Bloquear Asientos",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eventoId\": {{evento_id}},\n    \"asientos\": [\n        {\n            \"fila\": 1,\n            \"columna\": 1\n        },\n        {\n            \"fila\": 1,\n            \"columna\": 2\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{proxy_base_url}}/api/eventos/bloquear-asientos",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["api", "eventos", "bloquear-asientos"]
+						},
+						"description": "Bloquea asientos a través del Proxy. El Proxy consume de la Cátedra."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de eventos del Proxy"
+		},
+		{
+			"name": "Ventas",
+			"item": [
+				{
+					"name": "Realizar Venta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eventoId\": {{evento_id}},\n    \"fecha\": \"2025-08-17T20:00:00.000Z\",\n    \"precioVenta\": 1400.10,\n    \"asientos\": [\n        {\n            \"fila\": 2,\n            \"columna\": 3,\n            \"persona\": \"Fernando Galvez\"\n        },\n        {\n            \"fila\": 2,\n            \"columna\": 4,\n            \"persona\": \"Carlos Perez\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{proxy_base_url}}/api/ventas/realizar",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["api", "ventas", "realizar"]
+						},
+						"description": "Realiza una venta a través del Proxy. El Proxy consume de la Cátedra."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Ventas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{proxy_base_url}}/api/ventas",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["api", "ventas"]
+						},
+						"description": "Lista todas las ventas a través del Proxy. El Proxy consume de la Cátedra."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Venta por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{proxy_base_url}}/api/ventas/{{venta_id}}",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["api", "ventas", "{{venta_id}}"]
+						},
+						"description": "Obtiene detalle de una venta específica a través del Proxy."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de ventas del Proxy"
+		},
+		{
+			"name": "Autenticación",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{proxy_username}}\",\n    \"password\": \"{{proxy_password}}\",\n    \"rememberMe\": false\n}"
+						},
+						"url": {
+							"raw": "{{proxy_base_url}}/api/users/login",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["api", "users", "login"]
+						},
+						"description": "Login a través del Proxy. El Proxy consume de la Cátedra."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de autenticación del Proxy"
+		},
+		{
+			"name": "Administración",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{proxy_base_url}}/actuator/health",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["actuator", "health"]
+						},
+						"description": "Verifica el estado del Proxy y conectividad con Redis."
+					},
+					"response": []
+				},
+				{
+					"name": "Estado del Token JWT",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{proxy_base_url}}/actuator/auth/status",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["actuator", "auth", "status"]
+						},
+						"description": "Muestra si el Proxy tiene un token JWT válido para la Cátedra."
+					},
+					"response": []
+				},
+				{
+					"name": "Refrescar Token JWT",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{proxy_base_url}}/actuator/auth/refresh",
+							"host": ["{{proxy_base_url}}"],
+							"path": ["actuator", "auth", "refresh"]
+						},
+						"description": "Fuerza la renovación del token JWT del Proxy."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de administración del Proxy"
+		}
+	],
+	"variable": [
+		{
+			"key": "proxy_base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "proxy_username",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "proxy_password",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "evento_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "venta_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}

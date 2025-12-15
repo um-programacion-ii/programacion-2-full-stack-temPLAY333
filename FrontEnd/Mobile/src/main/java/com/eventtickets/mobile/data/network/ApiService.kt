@@ -13,7 +13,7 @@ interface ApiService {
     // ==================== AUTENTICACIÓN ====================
 
     @POST("/api/register")
-    suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>
+    suspend fun register(@Body request: RegisterRequest): Response<Unit>  // JHipster retorna 201 sin body
 
     @POST("/api/authenticate")
     suspend fun authenticate(@Body credentials: LoginRequest): Response<LoginResponse>
@@ -48,7 +48,7 @@ interface ApiService {
     @POST("/api/ventas/evento/{eventoId}/realizar")
     suspend fun realizarVenta(
         @Path("eventoId") eventoId: Long,
-        @Body request: RealizarVentaRequest
+        @Body asientos: List<AsientoVentaDTO>  // Backend espera array directo, no objeto wrapper
     ): Response<RealizarVentaResponse>
 
     @GET("/api/ventas")
@@ -56,5 +56,19 @@ interface ApiService {
 
     @GET("/api/ventas/{id}")
     suspend fun getVentaDetalle(@Path("id") id: Long): Response<VentaDetalleDTO>
+
+    // ==================== CUENTA ====================
+
+    @GET("/api/account")
+    suspend fun getAccount(): Response<AccountDTO>
 }
 
+// DTO para la respuesta de la cuenta
+data class AccountDTO(
+    val id: Long?,
+    val login: String?,
+    val firstName: String?,
+    val lastName: String?,
+    val email: String?,
+    val authorities: List<String>?
+)

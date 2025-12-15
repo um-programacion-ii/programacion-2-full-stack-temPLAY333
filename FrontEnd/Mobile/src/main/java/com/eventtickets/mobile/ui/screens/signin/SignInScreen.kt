@@ -122,31 +122,59 @@ fun SignInScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // Campo Nombre
-                OutlinedTextField(
-                    value = uiState.name,
-                    onValueChange = { signInViewModel.onNameChange(it) },
-                    label = { Text("Nombre completo") },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Person,
-                            "Nombre",
-                            tint = Color(0xFF6A5AE0)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = uiState.firstName,
+                        onValueChange = { signInViewModel.onFirstNameChange(it) },
+                        label = { Text("Nombre") },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Person,
+                                "Nombre",
+                                tint = Color(0xFF6A5AE0)
+                            )
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        isError = uiState.errorMessage != null && uiState.firstName.isBlank(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF6A5AE0),
+                            focusedLabelColor = Color(0xFF6A5AE0),
+                            cursorColor = Color(0xFF6A5AE0),
+                            unfocusedBorderColor = Color(0xFFBDBDBD),
+                            unfocusedLabelColor = Color(0xFF757575),
+                            focusedTextColor = Color(0xFF212121),
+                            unfocusedTextColor = Color(0xFF212121)
                         )
-                    },
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    isError = uiState.errorMessage != null && uiState.name.isBlank(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF6A5AE0),
-                        focusedLabelColor = Color(0xFF6A5AE0),
-                        cursorColor = Color(0xFF6A5AE0),
-                        unfocusedBorderColor = Color(0xFFBDBDBD),
-                        unfocusedLabelColor = Color(0xFF757575),
-                        focusedTextColor = Color(0xFF212121),
-                        unfocusedTextColor = Color(0xFF212121)
                     )
-                )
+
+                    OutlinedTextField(
+                        value = uiState.lastName,
+                        onValueChange = { signInViewModel.onLastNameChange(it) },
+                        label = { Text("Apellido") },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Person,
+                                "Apellido",
+                                tint = Color(0xFF6A5AE0)
+                            )
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        isError = uiState.errorMessage != null && uiState.lastName.isBlank(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF6A5AE0),
+                            focusedLabelColor = Color(0xFF6A5AE0),
+                            cursorColor = Color(0xFF6A5AE0),
+                            unfocusedBorderColor = Color(0xFFBDBDBD),
+                            unfocusedLabelColor = Color(0xFF757575),
+                            focusedTextColor = Color(0xFF212121),
+                            unfocusedTextColor = Color(0xFF212121)
+                        )
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -235,7 +263,7 @@ fun SignInScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    isError = uiState.errorMessage != null && uiState.password.length < 6,
+                    isError = uiState.errorMessage != null && uiState.password.length < 4,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF6A5AE0),
                         focusedLabelColor = Color(0xFF6A5AE0),
@@ -295,7 +323,8 @@ fun SignInScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
-                    enabled = uiState.name.isNotEmpty() &&
+                    enabled = uiState.firstName.isNotEmpty() &&
+                              uiState.lastName.isNotEmpty() &&
                               uiState.email.isNotEmpty() &&
                               uiState.password.isNotEmpty() &&
                               uiState.confirmPassword.isNotEmpty() &&
@@ -383,4 +412,3 @@ fun SignInScreen(
         }
     }
 }
-

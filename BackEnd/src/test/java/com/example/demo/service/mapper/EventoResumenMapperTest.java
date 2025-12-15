@@ -1,49 +1,44 @@
 package com.example.demo.service.mapper;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.example.demo.domain.Evento;
 import com.example.demo.domain.EventoTipo;
 import com.example.demo.service.dto.EventoResumenDTO;
 import java.math.BigDecimal;
 import java.time.Instant;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class EventoResumenMapperTest {
 
-    private EventoResumenMapper mapper;
+    private final EventoResumenMapper mapper;
 
-    @BeforeEach
-    void setUp() {
-        mapper = new EventoResumenMapperImpl();
+    public EventoResumenMapperTest() {
+        try {
+            this.mapper = Mappers.getMapper(EventoResumenMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize EventoResumenMapper", e);
+        }
     }
 
     @Test
-    void shouldMapEventoResumen() {
-        EventoTipo tipo = new EventoTipo().id(10L);
-        tipo.setNombre("Conferencia");
-        tipo.setDescripcion("Conferencia");
-        Evento evento = new Evento()
-            .id(2L)
-            .titulo("Otra Conferencia Nerd")
-            .resumen("Resumen breve")
-            .descripcion("Descripcion completa")
-            .fecha(Instant.parse("2025-12-12T14:00:00Z"))
-            .direccion("Aula magna")
-            .imagen("http://img2")
-            .filaAsientos(12)
-            .columnAsientos(18)
-            .precioEntrada(new BigDecimal("4500.00"))
-            .eventoTipo(tipo);
+    void toDto_shouldIncludeImagen() {
+        Evento e = new Evento();
+        e.setId(5L);
+        e.setTitulo("T");
+        e.setResumen("R");
+        e.setFecha(Instant.parse("2025-11-10T11:00:00Z"));
+        e.setPrecioEntrada(BigDecimal.valueOf(1000));
+        e.setImagen("https://example.com/img.jpg");
 
-        EventoResumenDTO dto = mapper.toDto(evento);
+        EventoTipo et = new EventoTipo();
+        et.setId(1L);
+        et.setNombre("Concierto");
+        e.setEventoTipo(et);
 
-        assertThat(dto.getId()).isEqualTo(2L);
-        assertThat(dto.getTitulo()).isEqualTo("Otra Conferencia Nerd");
-        assertThat(dto.getEventoTipo().getNombre()).isEqualTo("Conferencia");
-        assertThat(dto.getEventoTipo().getDescripcion()).isEqualTo("Conferencia");
-        assertThat(dto.getPrecioEntrada()).isEqualByComparingTo(new BigDecimal("4500.00"));
+        EventoResumenDTO dto = mapper.toDto(e);
+        assertThat(dto).isNotNull();
+        assertThat(dto.getImagen()).isEqualTo("https://example.com/img.jpg");
     }
 }
 

@@ -5,6 +5,7 @@ import static com.example.demo.domain.AsientoTestSamples.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 class AsientoMapperTest {
 
@@ -12,7 +13,11 @@ class AsientoMapperTest {
 
     @BeforeEach
     void setUp() {
-        asientoMapper = new AsientoMapperImpl();
+        try {
+            asientoMapper = Mappers.getMapper(AsientoMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize AsientoMapper", e);
+        }
     }
 
     @Test

@@ -5,6 +5,7 @@ import static com.example.demo.domain.IntegranteTestSamples.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 class IntegranteMapperTest {
 
@@ -12,7 +13,11 @@ class IntegranteMapperTest {
 
     @BeforeEach
     void setUp() {
-        integranteMapper = new IntegranteMapperImpl();
+        try {
+            integranteMapper = Mappers.getMapper(IntegranteMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize IntegranteMapper", e);
+        }
     }
 
     @Test

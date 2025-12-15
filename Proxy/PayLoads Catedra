@@ -1,0 +1,437 @@
+7. Payloads del Servicio de la Catedra.
+Aquí se encontrarán ejemplos de payloads de los mensajes que maneja el servicio de la
+cátedra.
+Payload 1 - Registro de sesión del alumno
+Este endpoint se utiliza para registrar un usuario en el sistema de la cátedra. Durante el
+registro se obtiene el token de conexión. Si no se anotó el token se puede hacer inicio de
+sesión y obtener el token.
+URL: http://SERVIDOR:PUERTO/api/v1/agregar_usuario
+Método: POST
+JSON entrada:
+{
+"username": "juan",
+"password": "juan123",
+"firstName": "Juan",
+"lastName": "Perez",
+"email": "juan@perez.com.ar",
+"nombreAlumno": "Juan Perez",
+"descripcionProyecto": "Proyecto de Juan Perez"
+}
+JSON salida:
+{
+"creado": true,
+"resultado": "Usuario creado",
+"token":
+"eyJhbGciOiJITzUxMiJ9.eyJzdWIiOiJmZXJuYW5kbyIsImV4cCI6MTc1ODIyMTY5
+MSwiYXV0aCI6IlJPTEVfVVNFUiIsImlhdCI6MTc1NTYyOTY5MX0.DtQ5-CqQj_tysA
+KeqS6OS6IcdWkPgdjbNjjT-GROHkymvTxRmz1NKlf89awBnsyoODQPXBbXmqfBuHut
+vmLX5w"
+}
+Payload 2 - Login de usuario
+Este endpoint sirve para iniciar sesión con un usuario ya creado. El resultado es un mensaje
+con el token
+URL: http://SERVIDOR:PUERTO/api/v1/agregar_usuario
+Método: POST
+JSON entrada:
+{
+"username": "juan",
+"password": "juan123",
+"rememberMe": false
+}
+JSON salida:
+{
+"id_token":
+"eyJhbGciOiJITzUxMiJ9.eyJzdWIiOiJmZXJuYW5kbyIsImV4cCI6MTc1ODIyMTY5
+MSwiYXV0aCI6IlJPTEVfVVNFUiIsImlhdCI6MTc1NTYyOTY5MX0.DtQ5-CqQj_tysA
+KeqS6OS6IcdWkPgdjbNjjT-GROHkymvTxRmz1NKlf89awBnsyoODQPXBbXmqfBuHut
+vmLX5w"
+}
+Payload 3 - Listado completo de eventos (datos resumidos)
+Este endpoint devuelve una lista completa de eventos activos pero con datos resumidos
+para utilizar en una lista simple de eventos.
+URL: http://SERVIDOR:PUERTO/api/endpoints/v1/eventos-resumidos
+Método: GET
+
+JSON salida:
+[
+  {
+    "titulo": "Conferencia Nerd",
+    "resumen": "Esta es una conferencia de Nerds",
+    "descripcion": "Esta es una conferencia de prueba para
+verificar que los datos están correctos",
+    "fecha": "2025-11-10T11:00:00Z",
+    "precioEntrada": 2500.00,
+    "eventoTipo": {
+      "nombre": "Conferencia",
+      "descripcion": "Conferencia"
+    },
+    "id": 1
+  },
+  {
+    "titulo": "Otra Conferencia Nerd",
+    "resumen": "Esta es otra conferencia de Nerds",
+    "descripcion": "Esta es una conferencia de prueba para
+verificar que los datos están correctos version 2",
+    "fecha": "2025-12-12T14:00:00Z",
+    "precioEntrada": 4500.00,
+    "eventoTipo": {
+      "nombre": "Obra de teatro",
+      "descripcion": "Obra de teatro"
+    },
+    "id": 2
+  }
+]
+Payload 4 - Listado completo de eventos (con todos los datos)
+Este endpoint devuelve una lista completa de eventos activos.
+URL: http://SERVIDOR:PUERTO/api/endpoints/v1/eventos
+Método: GET
+
+JSON salida:
+[
+  {
+    "titulo": "Conferencia Nerd",
+    "resumen": "Esta es una conferencia de Nerds",
+    "descripcion": "Esta es una conferencia de prueba para
+verificar que los datos están correctos",
+    "fecha": "2025-11-10T11:00:00Z",
+    "direccion": "Aula magna de la Universidad de Mendoza",
+    "imagen":
+"https://scontent-scl2-1.xx.fbcdn.net/v/t1.6435-9/78167441_1316997
+891841734_2833734909829316608_n.jpg?stp=dst-jpg_p960x960_tt6&_nc_c
+at=105&ccb=1-7&_nc_sid=127cfc&_nc_ohc=1EcS_p0lVGUQ7kNvwE1jrdM&_nc_
+oc=AdnCq7-RyHdhVpcPvW46Wehv10cjB9rcujwllkpiPP4H0OWUdbvCG0ygHh4zuXM
+QuIY&_nc_zt=23&_nc_ht=scontent-scl2-1.xx&_nc_gid=_fzHXJUwDiUHBphj9
+6cIcw&oh=00_AfUm0lIje5462zK3WbGACoar67RKotbEXLqM6MeGpJdPoA&oe=68B9
+E878",
+    "filaAsientos": 10,
+    "columnAsientos": 20,
+    "precioEntrada": 2500.00,
+    "eventoTipo": {
+      "nombre": "Conferencia",
+      "descripcion": "Conferencia"
+    },
+    "integrantes": [
+      {
+        "nombre": "María",
+        "apellido": "Corvalán",
+        "identificacion": "Dra."
+      }
+    ],
+    "id": 1
+  },
+  {
+    "titulo": "Otra Conferencia Nerd",
+    "resumen": "Esta es otra conferencia de Nerds",
+    "descripcion": "Esta es una conferencia de prueba para
+verificar que los datos están correctos version 2",
+    "fecha": "2025-12-12T14:00:00Z",
+    "direccion": "Aula magna de la Universidad de Mendoza",
+    "imagen":
+"https://scontent-scl2-1.xx.fbcdn.net/v/t39.30808-6/498246488_1010
+495731278033_6589798781026206970_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid
+=127cfc&_nc_ohc=nNqMZ6Q01LwQ7kNvwFwn-Dp&_nc_oc=Adka8XbkxUljf0sqN4f
+az1zUFFIKEAD5XKS-gZEumNPJNcSkMTfB92azVHLQYnKxqeI&_nc_zt=23&_nc_ht=
+scontent-scl2-1.xx&_nc_gid=WzFrlM29lDxhAEfynHPxFQ&oh=00_AfVoCftNVc
+xpatawm7mG3mA-FqqiwqSa-66iHFYp9Hw65Q&oe=689863E1",
+    "filaAsientos": 12,
+    "columnAsientos": 18,
+    "precioEntrada": 4500.00,
+    "eventoTipo": {
+      "nombre": "Obra de teatro",
+      "descripcion": "Obra de teatro"
+    },
+    "integrantes": [
+      {
+        "nombre": "María",
+        "apellido": "Corvalán",
+        "identificacion": "Dra."
+      },
+      {
+        "nombre": "Ricardo",
+        "apellido": "Tapia",
+        "identificacion": "Profesor"
+      }
+    ],
+    "id": 2
+  }
+]
+
+Payload 5 - Datos completos de un evento
+Este endpoint devuelve el dato completo de un evento pasando como parámetro el Id del
+evento.
+URL: http://SERVIDOR:PUERTO/api/endpoints/v1/evento/{id}
+Método: GET
+
+JSON salida:
+{
+  "titulo": "Conferencia Nerd",
+  "resumen": "Esta es una conferencia de Nerds",
+  "descripcion": "Esta es una conferencia de prueba para verificar
+que los datos están correctos",
+  "fecha": "2025-11-10T11:00:00Z",
+  "direccion": "Aula magna de la Universidad de Mendoza",
+  "imagen":
+"https://scontent-scl2-1.xx.fbcdn.net/v/t1.6435-9/78167441_1316997
+891841734_2833734909829316608_n.jpg?stp=dst-jpg_p960x960_tt6&_nc_c
+at=105&ccb=1-7&_nc_sid=127cfc&_nc_ohc=1EcS_p0lVGUQ7kNvwE1jrdM&_nc_
+oc=AdnCq7-RyHdhVpcPvW46Wehv10cjB9rcujwllkpiPP4H0OWUdbvCG0ygHh4zuXM
+QuIY&_nc_zt=23&_nc_ht=scontent-scl2-1.xx&_nc_gid=_fzHXJUwDiUHBphj9
+6cIcw&oh=00_AfUm0lIje5462zK3WbGACoar67RKotbEXLqM6MeGpJdPoA&oe=68B9
+E878",
+  "filaAsientos": 10,
+  "columnAsientos": 20,
+  "precioEntrada": 2500.00,
+  "eventoTipo": {
+    "nombre": "Conferencia",
+    "descripcion": "Conferencia"
+  },
+  "integrantes": [
+    {
+      "nombre": "María",
+      "apellido": "Corvalán",
+      "identificacion": "Dra."
+    }
+  ],
+  "id": 1
+}
+
+Payload 6 - Bloqueo de asientos en un evento
+A este endpoint le tenemos que mandar los datos del evento y los asientos que queremos
+bloquear. El JSON respuesta puede tener “resultado” verdadero o falso si los asientos
+pudieron ser bloqueados o no.
+Si el bloqueo es falso puede deberse a tratar de reservar un asiento ya reservado
+(“Bloqueado”) o ya vendido (“Ocupado”)
+URL: http://SERVIDOR:PUERTO/api/endpoints/v1/bloquear-asientos
+Método: POST
+JSON entrada:
+{
+  "eventoId": 1,
+  "asientos": [
+    {
+      "fila": 2,
+      "columna": 1
+    },
+    {
+      "fila": 2,
+      "columna": 2
+    }
+  ]
+}
+
+JSON salida (ejemplo 1):
+{
+  "resultado": false,
+  "descripcion": "No todos los asientos pueden ser bloqueados",
+  "eventoId": 1,
+  "asientos": [
+    {
+      "estado": "Ocupado",
+      "fila": 2,
+      "columna": 1
+    },
+    {
+      "estado": "Ocupado",
+      "fila": 2,
+      "columna": 2
+    }
+  ]
+}
+
+JSON salida (ejemplo 2):
+{
+  "resultado": true,
+  "descripcion": "Asientos bloqueados con exito",
+  "eventoId": 1,
+  "asientos": [
+    {
+      "estado": "Bloqueo exitoso",
+      "fila": 2,
+      "columna": 3
+    },
+    {
+      "estado": "Bloqueo exitoso",
+      "fila": 2,
+      "columna": 4
+    }
+  ]
+}
+
+Payload 7 - Venta de asientos por evento
+A este endpoint le tenemos que mandar los datos del evento y los asientos que queremos
+vender. El JSON respuesta puede tener “resultado” verdadero o falso si la venta es exitosa
+o no.
+Si la venta es falsa puede deberse a tratar de vender un asiento no reservado (“Libre”) o ya
+vendido (“Ocupado”)
+Si la venta es verdadera el estado de los asientos es “Vendido”
+URL: http://SERVIDOR:PUERTO/api/endpoints/v1/realizar-venta
+Método: POST
+JSON entrada:
+{
+  "eventoId": 1,
+  "fecha": "2025-08-17T20:00:00.000Z",
+  "precioVenta": 1400.10,
+  "asientos": [
+    {
+      "fila": 2,
+      "columna": 3,
+      "persona": "Fernando Galvez"
+    },
+    {
+      "fila": 2,
+      "columna": 4,
+      "persona": "Carlos Perez"
+    }
+  ]
+}
+
+
+JSON salida (ejemplo 1):
+{
+  "eventoId": 1,
+  "ventaId": null,
+  "fechaVenta": "2025-08-24T23:18:07.541151Z",
+  "asientos": [
+    {
+      "fila": 2,
+      "columna": 3,
+      "persona": "Fernando Galvez",
+      "estado": "Libre"
+    },
+    {
+      "fila": 2,
+      "columna": 4,
+      "persona": "Carlos Perez",
+      "estado": "Libre"
+    }
+  ],
+  "resultado": false,
+  "descripcion": "Venta rechazada. Alguno de los asientos no se
+encontraban bloqueados para la venta.",
+  "precioVenta": 1400.0
+}
+
+
+JSON salida (ejemplo 2):
+{
+  "eventoId": 1,
+  "ventaId": 1506,
+  "fechaVenta": "2025-08-24T23:18:41.974720Z",
+  "asientos": [
+    {
+      "fila": 2,
+      "columna": 3,
+      "persona": "Fernando Galvez",
+      "estado": "Vendido"
+    },
+    {
+      "fila": 2,
+      "columna": 4,
+      "persona": "Carlos Perez",
+      "estado": "Vendido"
+    }
+  ],
+  "resultado": true,
+  "descripcion": "Venta realizada con exito",
+  "precioVenta": 1400.0
+}
+
+Payload 8 - Listado completo de ventas por cada alumno (datos resumidos)
+Este endpoint devuelve un listado con datos resumidos de las ventas (exitosas y fallidas)
+que ha realizado el alumno.
+
+URL: http://SERVIDOR:PUERTO/api/endpoints/v1/listar-ventas
+Método: GET
+
+JSON salida:
+[
+  {
+    "eventoId": 1,
+    "ventaId": 1503,
+    "fechaVenta": "2025-08-23T22:51:02.574851Z",
+    "resultado": false,
+    "descripcion": "Venta rechazada. Alguno de los asientos no se
+encontraban bloqueados para la venta.",
+    "precioVenta": 1200.1,
+    "cantidadAsientos": 0
+  },
+  {
+    "eventoId": 1,
+    "ventaId": 1504,
+    "fechaVenta": "2025-08-23T22:51:15.101553Z",
+    "resultado": true,
+    "descripcion": "Venta realizada con exito",
+    "precioVenta": 1200.1,
+    "cantidadAsientos": 2
+  },
+  {
+    "eventoId": 1,
+    "ventaId": 1505,
+    "fechaVenta": "2025-08-24T23:18:07.541151Z",
+    "resultado": false,
+    "descripcion": "Venta rechazada. Alguno de los asientos no se
+encontraban bloqueados para la venta.",
+    "precioVenta": 1400.1,
+    "cantidadAsientos": 0
+  },
+  {
+    "eventoId": 1,
+    "ventaId": 1506,
+    "fechaVenta": "2025-08-24T23:18:41.974720Z",
+    "resultado": true,
+    "descripcion": "Venta realizada con exito",
+    "precioVenta": 1400.1,
+    "cantidadAsientos": 2
+  },
+  {
+    "eventoId": 1,
+    "ventaId": 1507,
+    "fechaVenta": "2025-08-24T23:23:05.622646Z",
+    "resultado": false,
+    "descripcion": "Venta rechazada. Alguno de los asientos no se
+encontraban bloqueados para la venta.",
+    "precioVenta": 1400.1,
+    "cantidadAsientos": 0
+  }
+]
+
+Payload 9 - Ver datos de una venta en particular
+Este endpoint devuelve el dato detallado de una venta particular identificada por el Id.
+
+URL: http://SERVIDOR:PUERTO/api/endpoints/v1/listar-venta/{id}
+Método: GET
+
+JSON salida 1 (venta fallida):
+{
+  "eventoId": 1,
+  "ventaId": 1503,
+  "fechaVenta": "2025-08-23T22:51:02.574851Z",
+  "asientos": [],
+  "resultado": false,
+  "descripcion": "Venta rechazada. Alguno de los asientos no se
+encontraban bloqueados para la venta.",
+  "precioVenta": 1200.1
+}
+
+JSON salida 2 (venta exitosa):
+{
+  "eventoId": 1,
+  "ventaId": 1504,
+  "fechaVenta": "2025-08-23T22:51:15.101553Z",
+  "asientos": [
+    {
+      "fila": 2,
+      "columna": 1,
+      "persona": "Fernando Villarreal",
+      "estado": "Ocupado"
+    },
+    {
+      "fila": 2,
+      "columna": 2,
+      "persona": "Carlos Perez",
+      "estado": "Ocupado"
+    }
+  ],
+  "resultado": true,
+  "descripcion": "Venta realizada con exito",
+  "precioVenta": 1200.1
+}

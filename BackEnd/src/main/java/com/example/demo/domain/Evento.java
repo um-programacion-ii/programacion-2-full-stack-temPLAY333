@@ -24,7 +24,6 @@ public class Evento implements Serializable {
 
     @NotNull
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
@@ -70,10 +69,10 @@ public class Evento implements Serializable {
     @Column(name = "precio_entrada", precision = 21, scale = 2, nullable = false)
     private BigDecimal precioEntrada;
 
-    @JsonIgnoreProperties(value = { "evento" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JsonIgnoreProperties(value = { "eventos" }, allowSetters = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @NotNull
-    @JoinColumn(unique = true)
+    @JoinColumn(name = "evento_tipo_id", nullable = false)
     private EventoTipo eventoTipo;
 
     @ManyToMany(fetch = FetchType.LAZY)
