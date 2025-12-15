@@ -61,7 +61,17 @@ public class AccountResource {
             throw new InvalidPasswordException();
         }
         User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
-        mailService.sendActivationEmail(user);
+        // Usuario se crea activado automáticamente. Intentar enviar email de bienvenida.
+        // El envío de email es opcional y no debe fallar si no hay servidor de correo configurado.
+        try {
+            if (user.getEmail() != null) {
+                mailService.sendCreationEmail(user);
+                LOG.debug("Email de bienvenida enviado (o intentado) para usuario {}", user.getLogin());
+            }
+        } catch (Exception e) {
+            // No fallar el registro si el email no se puede enviar (ej: servidor SMTP no disponible)
+            LOG.warn("No se pudo enviar email de bienvenida a '{}': {}. El usuario fue creado exitosamente.", user.getEmail(), e.getMessage());
+        }
     }
 
     /**

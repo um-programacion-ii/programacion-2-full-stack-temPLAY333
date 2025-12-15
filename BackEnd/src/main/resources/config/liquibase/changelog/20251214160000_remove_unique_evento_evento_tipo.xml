@@ -6,10 +6,43 @@
 
     <changeSet id="20251214160000-1" author="auto">
         <!-- Elimina la restricción única que prevenía que múltiples eventos compartan el mismo evento_tipo_id -->
+        <!-- Esta restricción es incorrecta porque la relación es Many-to-One (muchos eventos pueden tener el mismo tipo) -->
+        <preConditions onFail="MARK_RAN">
+            <or>
+                <indexExists indexName="ux_evento__evento_tipo_id" tableName="evento" />
+                <sqlCheck expectedResult="1">
+                    SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+                    WHERE CONSTRAINT_SCHEMA = DATABASE()
+                    AND TABLE_NAME = 'evento'
+                    AND CONSTRAINT_NAME = 'ux_evento__evento_tipo_id'
+                </sqlCheck>
+            </or>
+        </preConditions>
+        <!-- Intentar eliminar como constraint único primero -->
+        <dropUniqueConstraint constraintName="ux_evento__evento_tipo_id" tableName="evento" />
+    </changeSet>
+
+    <changeSet id="20251214160000-2" author="auto">
+        <!-- Fallback: eliminar como índice si el constraint no se eliminó correctamente -->
         <preConditions onFail="MARK_RAN">
             <indexExists indexName="ux_evento__evento_tipo_id" tableName="evento" />
         </preConditions>
-        <dropUniqueConstraint constraintName="ux_evento__evento_tipo_id" tableName="evento" />
+        <dropIndex indexName="ux_evento__evento_tipo_id" tableName="evento" />
+    </changeSet>
+
+    <changeSet id="20251214160000-3" author="auto">
+        <!-- Fallback final: usar SQL directo para MySQL -->
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+                WHERE CONSTRAINT_SCHEMA = DATABASE()
+                AND TABLE_NAME = 'evento'
+                AND CONSTRAINT_NAME = 'ux_evento__evento_tipo_id'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE evento DROP INDEX ux_evento__evento_tipo_id;
+        </sql>
     </changeSet>
 </databaseChangeLog>
 

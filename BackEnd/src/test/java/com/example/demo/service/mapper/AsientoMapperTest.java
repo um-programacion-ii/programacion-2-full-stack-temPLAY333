@@ -13,7 +13,11 @@ class AsientoMapperTest {
 
     @BeforeEach
     void setUp() {
-        asientoMapper = Mappers.getMapper(AsientoMapper.class);
+        try {
+            asientoMapper = Mappers.getMapper(AsientoMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize AsientoMapper", e);
+        }
     }
 
     @Test

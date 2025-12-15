@@ -11,7 +11,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class EventoResumenMapperTest {
 
-    private final EventoResumenMapper mapper = Mappers.getMapper(EventoResumenMapper.class);
+    private final EventoResumenMapper mapper;
+
+    public EventoResumenMapperTest() {
+        try {
+            this.mapper = Mappers.getMapper(EventoResumenMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize EventoResumenMapper", e);
+        }
+    }
 
     @Test
     void toDto_shouldIncludeImagen() {

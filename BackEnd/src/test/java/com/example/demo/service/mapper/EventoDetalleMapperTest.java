@@ -20,7 +20,11 @@ class EventoDetalleMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = Mappers.getMapper(EventoDetalleMapper.class);
+        try {
+            mapper = Mappers.getMapper(EventoDetalleMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize EventoDetalleMapper", e);
+        }
     }
 
     @Test

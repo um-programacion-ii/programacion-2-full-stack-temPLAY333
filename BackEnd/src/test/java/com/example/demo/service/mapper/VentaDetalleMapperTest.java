@@ -21,7 +21,11 @@ class VentaDetalleMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = Mappers.getMapper(VentaDetalleMapper.class);
+        try {
+            mapper = Mappers.getMapper(VentaDetalleMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize VentaDetalleMapper", e);
+        }
     }
 
     @Test

@@ -26,9 +26,10 @@ import tech.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing {@link com.example.demo.domain.Evento}.
+ * Endpoints de administración (CRUD completo) - requieren autenticación ADMIN.
  */
 @RestController
-@RequestMapping("/api/eventos")
+@RequestMapping("/api/admin/eventos")
 public class EventoResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventoResource.class);
@@ -61,7 +62,7 @@ public class EventoResource {
             throw new BadRequestAlertException("A new evento cannot already have an ID", ENTITY_NAME, "idexists");
         }
         eventoDTO = eventoService.save(eventoDTO);
-        return ResponseEntity.created(new URI("/api/eventos/" + eventoDTO.getId()))
+        return ResponseEntity.created(new URI("/api/admin/eventos/" + eventoDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, eventoDTO.getId().toString()))
             .body(eventoDTO);
     }

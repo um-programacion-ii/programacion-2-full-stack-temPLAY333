@@ -15,7 +15,11 @@ class BloqueoAsientoMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = Mappers.getMapper(BloqueoAsientoMapper.class);
+        try {
+            mapper = Mappers.getMapper(BloqueoAsientoMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize BloqueoAsientoMapper", e);
+        }
     }
 
     @Test

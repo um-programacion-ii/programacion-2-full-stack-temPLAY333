@@ -13,7 +13,11 @@ class AlumnoProfileMapperTest {
 
     @BeforeEach
     void setUp() {
-        alumnoProfileMapper = Mappers.getMapper(AlumnoProfileMapper.class);
+        try {
+            alumnoProfileMapper = Mappers.getMapper(AlumnoProfileMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize AlumnoProfileMapper", e);
+        }
     }
 
     @Test

@@ -15,39 +15,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class VentaMapperTest {
 
-    private final VentaMapper ventaMapper = Mappers.getMapper(VentaMapper.class);
-    private final AsientoMapper asientoMapper = Mappers.getMapper(AsientoMapper.class);
-    private final EventoMapper eventoMapper = Mappers.getMapper(EventoMapper.class);
+    private final VentaMapper ventaMapper;
+    private final AsientoMapper asientoMapper;
+    private final EventoMapper eventoMapper;
 
-    private void injectAsientoMapper() {
+    public VentaMapperTest() {
         try {
-            // MapStruct-generated implementation (componentModel=spring) expects asientoMapper to be injected
-            Field f = ventaMapper.getClass().getDeclaredField("asientoMapper");
-            f.setAccessible(true);
-            f.set(ventaMapper, asientoMapper);
-        } catch (NoSuchFieldException nsfe) {
-            // If implementation uses a different field name or no field, ignore
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+            // Create mappers in dependency order
+            this.asientoMapper = Mappers.getMapper(AsientoMapper.class);
+            this.eventoMapper = Mappers.getMapper(EventoMapper.class);
 
-    private void injectEventoMapper() {
-        try {
-            Field f = ventaMapper.getClass().getDeclaredField("eventoMapper");
-            f.setAccessible(true);
-            f.set(ventaMapper, eventoMapper);
-        } catch (NoSuchFieldException nsfe) {
-            // ignore if not present
+            // Create VentaMapper and inject dependencies manually
+            this.ventaMapper = new com.example.demo.service.mapper.VentaMapperImpl();
+            // Inject dependencies using reflection
+            try {
+                Field asientoField = ventaMapper.getClass().getDeclaredField("asientoMapper");
+                asientoField.setAccessible(true);
+                asientoField.set(ventaMapper, asientoMapper);
+
+                Field eventoField = ventaMapper.getClass().getDeclaredField("eventoMapper");
+                eventoField.setAccessible(true);
+                eventoField.set(ventaMapper, eventoMapper);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException("Failed to inject dependencies into VentaMapper", e);
+            }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to initialize mappers", e);
         }
     }
 
     @Test
     void toDto_shouldMapAsientos() {
-        injectAsientoMapper();
-        injectEventoMapper();
 
         Venta venta = new Venta();
         venta.setId(1L);

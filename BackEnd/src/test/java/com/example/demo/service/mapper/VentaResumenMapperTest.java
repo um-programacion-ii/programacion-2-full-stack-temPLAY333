@@ -16,7 +16,11 @@ class VentaResumenMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = Mappers.getMapper(VentaResumenMapper.class);
+        try {
+            mapper = Mappers.getMapper(VentaResumenMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize VentaResumenMapper", e);
+        }
     }
 
     @Test

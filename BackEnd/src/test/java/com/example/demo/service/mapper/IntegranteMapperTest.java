@@ -13,7 +13,11 @@ class IntegranteMapperTest {
 
     @BeforeEach
     void setUp() {
-        integranteMapper = Mappers.getMapper(IntegranteMapper.class);
+        try {
+            integranteMapper = Mappers.getMapper(IntegranteMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize IntegranteMapper", e);
+        }
     }
 
     @Test

@@ -1,0 +1,194 @@
+{
+	"info": {
+		"_postman_id": "catedra-proxy-collection",
+		"name": "1. Cátedra → Proxy",
+		"description": "Endpoints que el Proxy consume de la Cátedra (192.168.194.250:8080). El Proxy actúa como cliente de la Cátedra.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Eventos",
+			"item": [
+				{
+					"name": "Listar Eventos Resumidos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{catedra_base_url}}/api/endpoints/v1/eventos-resumidos",
+							"host": ["{{catedra_base_url}}"],
+							"path": ["api", "endpoints", "v1", "eventos-resumidos"]
+						},
+						"description": "Obtiene lista resumida de eventos desde la Cátedra. Payload 3."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Eventos Completos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{catedra_base_url}}/api/endpoints/v1/eventos",
+							"host": ["{{catedra_base_url}}"],
+							"path": ["api", "endpoints", "v1", "eventos"]
+						},
+						"description": "Obtiene lista completa de eventos desde la Cátedra. Payload 4."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Detalle de Evento",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{catedra_base_url}}/api/endpoints/v1/evento/{{evento_id}}",
+							"host": ["{{catedra_base_url}}"],
+							"path": ["api", "endpoints", "v1", "evento", "{{evento_id}}"]
+						},
+						"description": "Obtiene detalle de un evento específico desde la Cátedra. Payload 5."
+					},
+					"response": []
+				},
+				{
+					"name": "Bloquear Asientos",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eventoId\": {{evento_id}},\n    \"asientos\": [\n        {\n            \"fila\": 1,\n            \"columna\": 1\n        },\n        {\n            \"fila\": 1,\n            \"columna\": 2\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{catedra_base_url}}/api/endpoints/v1/bloquear-asientos",
+							"host": ["{{catedra_base_url}}"],
+							"path": ["api", "endpoints", "v1", "bloquear-asientos"]
+						},
+						"description": "Bloquea asientos en la Cátedra. Payload 6."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de eventos de la Cátedra"
+		},
+		{
+			"name": "Ventas",
+			"item": [
+				{
+					"name": "Realizar Venta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eventoId\": {{evento_id}},\n    \"fecha\": \"2025-08-17T20:00:00.000Z\",\n    \"precioVenta\": 1400.10,\n    \"asientos\": [\n        {\n            \"fila\": 2,\n            \"columna\": 3,\n            \"persona\": \"Fernando Galvez\"\n        },\n        {\n            \"fila\": 2,\n            \"columna\": 4,\n            \"persona\": \"Carlos Perez\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{catedra_base_url}}/api/endpoints/v1/realizar-venta",
+							"host": ["{{catedra_base_url}}"],
+							"path": ["api", "endpoints", "v1", "realizar-venta"]
+						},
+						"description": "Realiza una venta en la Cátedra. Payload 7."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Ventas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{catedra_base_url}}/api/endpoints/v1/listar-ventas",
+							"host": ["{{catedra_base_url}}"],
+							"path": ["api", "endpoints", "v1", "listar-ventas"]
+						},
+						"description": "Lista todas las ventas del alumno desde la Cátedra. Payload 8."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Venta por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{catedra_base_url}}/api/endpoints/v1/listar-venta/{{venta_id}}",
+							"host": ["{{catedra_base_url}}"],
+							"path": ["api", "endpoints", "v1", "listar-venta", "{{venta_id}}"]
+						},
+						"description": "Obtiene detalle de una venta específica desde la Cátedra. Payload 9."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de ventas de la Cátedra"
+		},
+		{
+			"name": "Autenticación",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{catedra_username}}\",\n    \"password\": \"{{catedra_password}}\",\n    \"rememberMe\": false\n}"
+						},
+						"url": {
+							"raw": "{{catedra_base_url}}/api/authenticate",
+							"host": ["{{catedra_base_url}}"],
+							"path": ["api", "authenticate"]
+						},
+						"description": "Login en la Cátedra. Payload 2. El Proxy usa este endpoint para obtener su token JWT."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de autenticación de la Cátedra"
+		}
+	],
+	"variable": [
+		{
+			"key": "catedra_base_url",
+			"value": "http://192.168.194.250:8080",
+			"type": "string"
+		},
+		{
+			"key": "catedra_username",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "catedra_password",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "evento_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "venta_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}

@@ -13,7 +13,11 @@ class EventoTipoMapperTest {
 
     @BeforeEach
     void setUp() {
-        eventoTipoMapper = Mappers.getMapper(EventoTipoMapper.class);
+        try {
+            eventoTipoMapper = Mappers.getMapper(EventoTipoMapper.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize EventoTipoMapper", e);
+        }
     }
 
     @Test

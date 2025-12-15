@@ -146,17 +146,30 @@ public class CacheConfiguration {
     @Bean
     public JCacheManagerCustomizer cacheManagerCustomizer(javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration) {
         return cm -> {
+            log.info("========================================");
+            log.info("Inicializando caches en cacheManagerCustomizer");
+            log.info("CacheManager class: {}", cm != null ? cm.getClass().getName() : "null");
+            log.info("========================================");
+
+            if (cm == null) {
+                log.error("CacheManager es null en cacheManagerCustomizer, no se pueden crear caches");
+                return;
+            }
+
             // Set default configuration first before creating any caches
             boolean configSet = setDefaultConfigurationIfNeeded(cm, jcacheConfiguration, "cacheManagerCustomizer");
             if (!configSet) {
                 log.warn("Failed to set default configuration in cacheManagerCustomizer - cache creation may fail");
             }
 
+            log.info("Creando caches de usuario...");
             createCache(cm, com.example.demo.repository.UserRepository.USERS_BY_LOGIN_CACHE, jcacheConfiguration);
             createCache(cm, com.example.demo.repository.UserRepository.USERS_BY_EMAIL_CACHE, jcacheConfiguration);
             createCache(cm, com.example.demo.domain.User.class.getName(), jcacheConfiguration);
             createCache(cm, com.example.demo.domain.Authority.class.getName(), jcacheConfiguration);
             createCache(cm, com.example.demo.domain.User.class.getName() + ".authorities", jcacheConfiguration);
+
+            log.info("Creando caches de entidades de negocio...");
             createCache(cm, com.example.demo.domain.Evento.class.getName(), jcacheConfiguration);
             createCache(cm, com.example.demo.domain.Evento.class.getName() + ".integrantes", jcacheConfiguration);
             createCache(cm, com.example.demo.domain.EventoTipo.class.getName(), jcacheConfiguration);
@@ -166,7 +179,28 @@ public class CacheConfiguration {
             createCache(cm, com.example.demo.domain.Asiento.class.getName(), jcacheConfiguration);
             createCache(cm, com.example.demo.domain.AlumnoProfile.class.getName(), jcacheConfiguration);
             // jhipster-needle-redis-add-entry
+
+            log.info("Verificando caches creados...");
+            verifyCacheExists(cm, com.example.demo.repository.UserRepository.USERS_BY_LOGIN_CACHE);
+            verifyCacheExists(cm, com.example.demo.repository.UserRepository.USERS_BY_EMAIL_CACHE);
+
+            log.info("========================================");
+            log.info("Inicializacion de caches completada");
+            log.info("========================================");
         };
+    }
+
+    private void verifyCacheExists(javax.cache.CacheManager cm, String cacheName) {
+        if (cm == null) {
+            log.error("CacheManager es null, no se puede verificar cache '{}'", cacheName);
+            return;
+        }
+        javax.cache.Cache<Object, Object> cache = cm.getCache(cacheName);
+        if (cache != null) {
+            log.info("Cache '{}' verificado: EXISTE", cacheName);
+        } else {
+            log.error("Cache '{}' verificado: NO EXISTE - esto causara errores en autenticacion", cacheName);
+        }
     }
 
     private void createCache(
@@ -174,11 +208,30 @@ public class CacheConfiguration {
         String cacheName,
         javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration
     ) {
-        javax.cache.Cache<Object, Object> cache = cm.getCache(cacheName);
-        if (cache != null) {
-            cache.clear();
-        } else {
-            cm.createCache(cacheName, jcacheConfiguration);
+        if (cm == null) {
+            log.error("CacheManager es null, no se puede crear cache '{}'", cacheName);
+            return;
+        }
+
+        try {
+            javax.cache.Cache<Object, Object> cache = cm.getCache(cacheName);
+            if (cache != null) {
+                log.debug("Cache '{}' ya existe, limpiando", cacheName);
+                cache.clear();
+            } else {
+                log.info("Creando cache '{}'", cacheName);
+                cm.createCache(cacheName, jcacheConfiguration);
+                // Verificar que se creó correctamente
+                cache = cm.getCache(cacheName);
+                if (cache != null) {
+                    log.info("Cache '{}' creado exitosamente", cacheName);
+                } else {
+                    log.error("ERROR: Cache '{}' NO se creo aunque createCache() no lanzo excepcion", cacheName);
+                }
+            }
+        } catch (Exception e) {
+            log.error("ERROR al crear cache '{}': {}", cacheName, e.getMessage(), e);
+            // No lanzamos la excepción para que otros caches puedan crearse
         }
     }
 
@@ -283,23 +336,56 @@ public class CacheConfiguration {
             if (isRedissonProvider && cm != null) {
                 boolean configSet = setDefaultConfigurationIfNeeded(cm, jcacheConfiguration, "cacheManagerBean");
                 if (!configSet) {
-                    log.error("CRITICAL: Failed to set default configuration on Redisson CacheManager bean!");
-                    log.error("This version of Redisson (3.46.0) may not support setDefaultConfiguration method.");
-                    log.error("Switching to in-memory CacheManager to prevent Hibernate initialization failure...");
-                    // CRITICAL: Switch to in-memory CacheManager to prevent Hibernate from failing
-                    // Hibernate will detect this and disable second-level cache via hibernatePropertiesCustomizer
-                    try {
-                        provider = Caching.getCachingProvider();
-                        cm = provider.getCacheManager();
-                        log.info("Switched to in-memory CacheManager as fallback (second-level cache will be disabled)");
-                    } catch (Exception fallbackEx) {
-                        log.error("Failed to create fallback CacheManager: {}", fallbackEx.getMessage());
-                    }
+                    log.warn("No se pudo establecer configuracion por defecto en Redisson CacheManager (Redisson 3.46.0 no tiene setDefaultConfiguration)");
+                    log.warn("Esto es normal para esta version de Redisson. Los caches se crearan con configuracion explicita.");
+                    // NO cambiamos a in-memory porque Redisson funciona bien sin setDefaultConfiguration
+                    // Solo necesitamos crear los caches con configuracion explicita
+                    log.info("CacheManager bean creado (Redisson, sin default config - se usara config explicita por cache)");
                 } else {
                     log.info("CacheManager bean created and default configuration set successfully (Redisson)");
                 }
             } else {
                 log.info("CacheManager bean created successfully (in-memory, no default config needed)");
+            }
+
+            // CRITICAL: Crear TODOS los caches directamente aquí para asegurar que existan
+            // Esto es necesario porque el JCacheManagerCustomizer puede no ejecutarse o Spring Cache
+            // puede usar un CacheManager diferente
+            if (cm != null) {
+                log.info("========================================");
+                log.info("Creando TODOS los caches en cacheManagerBean (CacheManager @Primary)");
+                log.info("CacheManager class: {}", cm.getClass().getName());
+                log.info("========================================");
+
+                // Caches críticos de usuario (necesarios para autenticación)
+                log.info("Creando caches de usuario...");
+                createCache(cm, com.example.demo.repository.UserRepository.USERS_BY_LOGIN_CACHE, jcacheConfiguration);
+                createCache(cm, com.example.demo.repository.UserRepository.USERS_BY_EMAIL_CACHE, jcacheConfiguration);
+                createCache(cm, com.example.demo.domain.User.class.getName(), jcacheConfiguration);
+                createCache(cm, com.example.demo.domain.Authority.class.getName(), jcacheConfiguration);
+                createCache(cm, com.example.demo.domain.User.class.getName() + ".authorities", jcacheConfiguration);
+
+                // Caches de entidades de negocio
+                log.info("Creando caches de entidades de negocio...");
+                createCache(cm, com.example.demo.domain.Evento.class.getName(), jcacheConfiguration);
+                createCache(cm, com.example.demo.domain.Evento.class.getName() + ".integrantes", jcacheConfiguration);
+                createCache(cm, com.example.demo.domain.EventoTipo.class.getName(), jcacheConfiguration);
+                createCache(cm, com.example.demo.domain.Integrante.class.getName(), jcacheConfiguration);
+                createCache(cm, com.example.demo.domain.Integrante.class.getName() + ".eventos", jcacheConfiguration);
+                createCache(cm, com.example.demo.domain.Venta.class.getName(), jcacheConfiguration);
+                createCache(cm, com.example.demo.domain.Asiento.class.getName(), jcacheConfiguration);
+                createCache(cm, com.example.demo.domain.AlumnoProfile.class.getName(), jcacheConfiguration);
+
+                // Verificar caches críticos
+                log.info("Verificando caches criticos...");
+                verifyCacheExists(cm, com.example.demo.repository.UserRepository.USERS_BY_LOGIN_CACHE);
+                verifyCacheExists(cm, com.example.demo.repository.UserRepository.USERS_BY_EMAIL_CACHE);
+
+                log.info("========================================");
+                log.info("Todos los caches creados en cacheManagerBean");
+                log.info("========================================");
+            } else {
+                log.error("CRITICAL: CacheManager es null, no se pueden crear caches");
             }
 
             return cm;

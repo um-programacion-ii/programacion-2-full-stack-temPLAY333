@@ -76,26 +76,67 @@ public class EventoSyncService {
      * Sincroniza eventos manualmente (útil para testing o triggers manuales).
      */
     public void syncEventsFromCatedra() {
-        log.debug("Obteniendo lista completa de eventos desde la Cátedra");
+        log.info("========================================");
+        log.info("Iniciando sincronizacion de eventos desde la Catedra");
+        log.info("========================================");
 
         // Obtener eventos desde el proxy (Cátedra)
-        List<EventoDTO> eventosFromCatedra = eventoProxyController.listarEventos().getBody();
-
-        if (eventosFromCatedra == null || eventosFromCatedra.isEmpty()) {
-            log.warn("No se obtuvieron eventos desde la Cátedra");
+        List<EventoDTO> eventosFromCatedra = null;
+        try {
+            var response = eventoProxyController.listarEventos();
+            eventosFromCatedra = response.getBody();
+            log.info("Respuesta del proxy: status={}, eventos recibidos={}",
+                response.getStatusCode(), eventosFromCatedra != null ? eventosFromCatedra.size() : 0);
+        } catch (Exception e) {
+            log.error("ERROR al obtener eventos desde el proxy: {}", e.getMessage(), e);
             return;
         }
 
-        log.debug("Se obtuvieron {} eventos desde la Cátedra", eventosFromCatedra.size());
+        if (eventosFromCatedra == null || eventosFromCatedra.isEmpty()) {
+            log.warn("No se obtuvieron eventos desde la Cátedra (lista null o vacia)");
+            return;
+        }
+
+        log.info("Se obtuvieron {} eventos desde la Cátedra", eventosFromCatedra.size());
 
         // Procesar cada evento de forma aislada
+        int procesados = 0;
+        int guardados = 0;
+        int errores = 0;
+
         for (EventoDTO eventoDTO : eventosFromCatedra) {
             try {
+                procesados++;
+                log.info("Procesando evento {}/{}: ID={}, titulo={}",
+                    procesados, eventosFromCatedra.size(), eventoDTO.getId(), eventoDTO.getTitulo());
+
+                // Verificar si el evento ya existe antes de procesar
+                boolean yaExistia = eventoRepository.existsById(eventoDTO.getId());
+
                 processAndSaveEvento(eventoDTO);
+
+                // Verificar si ahora existe después de procesar
+                boolean existeAhora = eventoRepository.existsById(eventoDTO.getId());
+                if (existeAhora) {
+                    guardados++;
+                    if (!yaExistia) {
+                        log.info("Evento {} fue creado exitosamente", eventoDTO.getId());
+                    } else {
+                        log.info("Evento {} fue actualizado exitosamente", eventoDTO.getId());
+                    }
+                } else {
+                    log.warn("Evento {} NO existe en BD despues de procesar - NO se guardo", eventoDTO.getId());
+                }
             } catch (Exception e) {
+                errores++;
                 log.error("Error al procesar evento con ID {}: {}", eventoDTO.getId(), e.getMessage(), e);
             }
         }
+
+        log.info("========================================");
+        log.info("Sincronizacion completada: {} procesados, {} guardados exitosamente, {} errores",
+            procesados, guardados, errores);
+        log.info("========================================");
     }
 
     /**
@@ -121,8 +162,19 @@ public class EventoSyncService {
 
     private void processAndSaveEvento(EventoDTO eventoDTO) {
         if (eventoDTO == null) {
+            log.warn("EventoDTO recibido es null, se omite");
             return;
         }
+
+        log.debug("Procesando evento ID={}, titulo={}, fecha={}, direccion={}, filaAsientos={}, columnAsientos={}, precioEntrada={}",
+            eventoDTO.getId(),
+            eventoDTO.getTitulo(),
+            eventoDTO.getFecha(),
+            eventoDTO.getDireccion(),
+            eventoDTO.getFilaAsientos(),
+            eventoDTO.getColumnAsientos(),
+            eventoDTO.getPrecioEntrada());
+
         // Mapear en objeto entidad
         Evento evento = eventoRepository.findById(eventoDTO.getId()).orElse(new Evento());
         evento.setId(eventoDTO.getId());
@@ -136,6 +188,17 @@ public class EventoSyncService {
         evento.setColumnAsientos(eventoDTO.getColumnAsientos());
         evento.setPrecioEntrada(eventoDTO.getPrecioEntrada());
 
+        log.debug("Evento mapeado: ID={}, titulo={}, resumen={}, descripcion={}, fecha={}, direccion={}, filaAsientos={}, columnAsientos={}, precioEntrada={}",
+            evento.getId(),
+            evento.getTitulo(),
+            evento.getResumen() != null ? evento.getResumen().substring(0, Math.min(30, evento.getResumen().length())) : "null",
+            evento.getDescripcion() != null ? evento.getDescripcion().substring(0, Math.min(30, evento.getDescripcion().length())) : "null",
+            evento.getFecha(),
+            evento.getDireccion(),
+            evento.getFilaAsientos(),
+            evento.getColumnAsientos(),
+            evento.getPrecioEntrada());
+
         // EventoTipo: buscar por id si viene, sino por nombre, sino crear
         if (eventoDTO.getEventoTipo() != null) {
             EventoTipo tipo = null;
@@ -144,16 +207,14 @@ public class EventoSyncService {
             }
             if (tipo == null && eventoDTO.getEventoTipo().getNombre() != null) {
                 String nombre = eventoDTO.getEventoTipo().getNombre().trim();
-                tipo = eventoTipoRepository.findAll()
-                    .stream()
-                    .filter(et -> et.getNombre().equalsIgnoreCase(nombre))
-                    .findFirst()
-                    .orElseGet(() -> {
-                        EventoTipo nuevo = new EventoTipo();
-                        nuevo.setNombre(nombre);
-                        nuevo.setDescripcion(eventoDTO.getEventoTipo().getDescripcion());
-                        return eventoTipoRepository.save(nuevo);
-                    });
+                // Usar método eficiente del repositorio en lugar de findAll().stream()
+                tipo = eventoTipoRepository.findByNombreIgnoreCase(nombre).orElseGet(() -> {
+                    EventoTipo nuevo = new EventoTipo();
+                    nuevo.setNombre(nombre);
+                    nuevo.setDescripcion(eventoDTO.getEventoTipo().getDescripcion());
+                    // Guardar en transacción separada para evitar problemas
+                    return saveEventoTipoNewTransaction(nuevo);
+                });
             }
             evento.setEventoTipo(tipo);
         }
@@ -193,10 +254,23 @@ public class EventoSyncService {
 
         // Persistir evento en su propia transacción para evitar rollback global
         try {
-            saveEventoNewTransaction(evento);
-            log.debug("Evento {} guardado/actualizado en BD local (REQUIRES_NEW)", evento.getId());
+            Evento saved = saveEventoNewTransaction(evento);
+            // Verificar si realmente se guardó comparando el objeto retornado con el original
+            // Si retorna el mismo objeto sin cambios, significa que no se guardó por validación
+            if (saved != null && saved.getId() != null) {
+                // Verificar si el evento ya existía en la BD
+                boolean yaExistia = eventoRepository.existsById(evento.getId());
+                if (yaExistia) {
+                    log.info("Evento {} actualizado exitosamente en BD local", evento.getId());
+                } else {
+                    log.info("Evento {} creado exitosamente en BD local (nuevo)", evento.getId());
+                }
+            } else {
+                log.warn("Evento {} NO se guardo (retorno null o sin ID) - probablemente fallo validacion", evento.getId());
+            }
         } catch (Exception e) {
-            log.error("Error guardando evento {}: {}", evento.getId(), e.getMessage(), e);
+            log.error("ERROR CRITICO guardando evento {}: {}", evento.getId(), e.getMessage(), e);
+            log.error("Stack trace completo:", e);
             throw e;
         }
     }
@@ -222,16 +296,14 @@ public class EventoSyncService {
             EventoTipo tipo = null;
             // EventoTipoBasicDTO doesn't have an ID; search by nombre
             String nombre = eventoDetalleDTO.getEventoTipo().getNombre().trim();
-            tipo = eventoTipoRepository.findAll()
-                .stream()
-                .filter(et -> et.getNombre().equalsIgnoreCase(nombre))
-                .findFirst()
-                .orElseGet(() -> {
-                    EventoTipo nuevo = new EventoTipo();
-                    nuevo.setNombre(nombre);
-                    nuevo.setDescripcion(eventoDetalleDTO.getEventoTipo().getDescripcion());
-                    return eventoTipoRepository.save(nuevo);
-                });
+            // Usar método eficiente del repositorio en lugar de findAll().stream()
+            tipo = eventoTipoRepository.findByNombreIgnoreCase(nombre).orElseGet(() -> {
+                EventoTipo nuevo = new EventoTipo();
+                nuevo.setNombre(nombre);
+                nuevo.setDescripcion(eventoDetalleDTO.getEventoTipo().getDescripcion());
+                // Guardar en transacción separada para evitar problemas
+                return saveEventoTipoNewTransaction(nuevo);
+            });
             evento.setEventoTipo(tipo);
         }
 
@@ -268,24 +340,113 @@ public class EventoSyncService {
         evento.setIntegrantes(integrantes);
 
         try {
-            saveEventoNewTransaction(evento);
-            log.debug("Evento detallado {} guardado/actualizado en BD local (REQUIRES_NEW)", evento.getId());
+            Evento saved = saveEventoNewTransaction(evento);
+            if (saved != null && saved.getId() != null) {
+                log.info("Evento detallado {} guardado/actualizado exitosamente en BD local", evento.getId());
+            } else {
+                log.warn("Evento detallado {} NO se guardo (retorno null o sin ID)", evento.getId());
+            }
         } catch (Exception e) {
-            log.error("Error guardando evento detallado {}: {}", evento.getId(), e.getMessage(), e);
+            log.error("ERROR CRITICO guardando evento detallado {}: {}", evento.getId(), e.getMessage(), e);
+            log.error("Stack trace completo:", e);
             throw e;
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Evento saveEventoNewTransaction(Evento evento) {
-        // Validar campos mínimos antes de persistir
-        if (evento.getTitulo() == null || evento.getFecha() == null || evento.getDireccion() == null) {
-            log.warn("Evento {} incompleto, no se persiste en REQUIRES_NEW", evento.getId());
+        // Validar TODOS los campos requeridos antes de persistir
+        StringBuilder validationErrors = new StringBuilder();
+
+        if (evento.getTitulo() == null || evento.getTitulo().trim().isEmpty()) {
+            validationErrors.append("titulo es null o vacio; ");
+        }
+        if (evento.getResumen() == null || evento.getResumen().trim().isEmpty()) {
+            validationErrors.append("resumen es null o vacio; ");
+        }
+        if (evento.getDescripcion() == null || evento.getDescripcion().trim().isEmpty()) {
+            validationErrors.append("descripcion es null o vacio; ");
+        }
+        if (evento.getFecha() == null) {
+            validationErrors.append("fecha es null; ");
+        }
+        if (evento.getDireccion() == null || evento.getDireccion().trim().isEmpty()) {
+            validationErrors.append("direccion es null o vacia; ");
+        }
+        if (evento.getFilaAsientos() == null || evento.getFilaAsientos() < 1) {
+            validationErrors.append("filaAsientos es null o < 1; ");
+        }
+        if (evento.getColumnAsientos() == null || evento.getColumnAsientos() < 1) {
+            validationErrors.append("columnAsientos es null o < 1; ");
+        }
+        if (evento.getPrecioEntrada() == null || evento.getPrecioEntrada().compareTo(java.math.BigDecimal.ZERO) < 0) {
+            validationErrors.append("precioEntrada es null o < 0; ");
+        }
+        if (evento.getEventoTipo() == null) {
+            validationErrors.append("eventoTipo es null; ");
+        }
+
+        if (validationErrors.length() > 0) {
+            log.warn("Evento {} incompleto, no se persiste en REQUIRES_NEW. Errores: {}", evento.getId(), validationErrors.toString());
+            log.warn("Datos del evento: titulo={}, resumen={}, descripcion={}, fecha={}, direccion={}, filaAsientos={}, columnAsientos={}, precioEntrada={}, eventoTipo={}",
+                evento.getTitulo(),
+                evento.getResumen() != null ? evento.getResumen().substring(0, Math.min(50, evento.getResumen().length())) : "null",
+                evento.getDescripcion() != null ? evento.getDescripcion().substring(0, Math.min(50, evento.getDescripcion().length())) : "null",
+                evento.getFecha(),
+                evento.getDireccion(),
+                evento.getFilaAsientos(),
+                evento.getColumnAsientos(),
+                evento.getPrecioEntrada(),
+                evento.getEventoTipo() != null ? evento.getEventoTipo().getNombre() : "null");
             return evento;
         }
-        Evento saved = eventoRepository.save(evento);
-        log.debug("[REQUIRES_NEW] Evento {} guardado en BD", saved.getId());
-        return saved;
+
+        try {
+            log.debug("Intentando guardar evento {} en BD. Datos: titulo={}, fecha={}, direccion={}",
+                evento.getId(), evento.getTitulo(), evento.getFecha(), evento.getDireccion());
+            Evento saved = eventoRepository.save(evento);
+            // Forzar flush para asegurar que se persista inmediatamente
+            eventoRepository.flush();
+            log.info("[REQUIRES_NEW] Evento {} guardado exitosamente en BD. Titulo: {}, ID guardado: {}",
+                saved.getId(), saved.getTitulo(), saved.getId());
+            return saved;
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            log.error("[REQUIRES_NEW] ERROR de integridad al guardar evento {}: {}", evento.getId(), e.getMessage(), e);
+            if (e.getCause() != null) {
+                log.error("Causa raiz: {}", e.getCause().getMessage());
+            }
+            throw e;
+        } catch (jakarta.validation.ConstraintViolationException e) {
+            log.error("[REQUIRES_NEW] ERROR de validacion al guardar evento {}: {}", evento.getId(), e.getMessage(), e);
+            e.getConstraintViolations().forEach(v ->
+                log.error("Violacion: {} - {}", v.getPropertyPath(), v.getMessage())
+            );
+            throw e;
+        } catch (Exception e) {
+            log.error("[REQUIRES_NEW] ERROR inesperado al guardar evento {} en BD: {}", evento.getId(), e.getMessage(), e);
+            log.error("Tipo de excepcion: {}", e.getClass().getName());
+            if (e.getCause() != null) {
+                log.error("Causa: {}", e.getCause().getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public EventoTipo saveEventoTipoNewTransaction(EventoTipo eventoTipo) {
+        // Validar que el nombre esté presente
+        if (eventoTipo.getNombre() == null || eventoTipo.getNombre().trim().isEmpty()) {
+            log.warn("EventoTipo sin nombre, no se persiste en REQUIRES_NEW");
+            return eventoTipo;
+        }
+        try {
+            EventoTipo saved = eventoTipoRepository.save(eventoTipo);
+            log.info("[REQUIRES_NEW] EventoTipo {} guardado exitosamente en BD (nombre: {})", saved.getId(), saved.getNombre());
+            return saved;
+        } catch (Exception e) {
+            log.error("[REQUIRES_NEW] ERROR al guardar EventoTipo '{}' en BD: {}", eventoTipo.getNombre(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     // Public query methods for controllers / frontend
