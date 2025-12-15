@@ -56,5 +56,19 @@ interface ApiService {
 
     @GET("/api/ventas/{id}")
     suspend fun getVentaDetalle(@Path("id") id: Long): Response<VentaDetalleDTO>
+
+    // ==================== CUENTA ====================
+
+    @GET("/api/account")
+    suspend fun getAccount(): Response<AccountDTO>
 }
 
+// DTO para la respuesta de la cuenta
+data class AccountDTO(
+    val id: Long?,
+    val login: String?,
+    val firstName: String?,
+    val lastName: String?,
+    val email: String?,
+    val authorities: List<String>?
+)

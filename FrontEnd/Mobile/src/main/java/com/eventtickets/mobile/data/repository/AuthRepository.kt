@@ -8,7 +8,14 @@ import com.eventtickets.mobile.data.network.dto.*
  */
 class AuthRepository {
 
-    suspend fun register(username: String, email: String, password: String, phone: String? = null): Result<String> {
+    suspend fun register(
+        username: String,
+        email: String,
+        password: String,
+        firstName: String? = null,
+        lastName: String? = null,
+        phone: String? = null
+    ): Result<String> {
         return try {
             val response = RetrofitClient.apiService.register(
                 RegisterRequest(
@@ -16,6 +23,8 @@ class AuthRepository {
                     email = email,
                     password = password,
                     langKey = "es",      // Requerido por JHipster
+                    firstName = firstName,
+                    lastName = lastName,
                     phone = phone
                 )
             )
@@ -89,6 +98,31 @@ class AuthRepository {
             Result.failure(Exception("Tiempo de espera agotado. El servidor no respondió."))
         } catch (e: Exception) {
             Result.failure(Exception("Error de conexión: ${e::class.simpleName} - ${e.message}"))
+        }
+    }
+
+    suspend fun getAccount(): Result<com.eventtickets.mobile.data.network.AccountDTO> {
+        return try {
+            println("[AuthRepository] getAccount: llamando ApiService.getAccount()")
+            val response = RetrofitClient.apiService.getAccount()
+            println("[AuthRepository] getAccount: response.code=${response.code()}")
+            val bodyStr = response.errorBody()?.string() ?: response.body()?.toString()
+            println("[AuthRepository] getAccount: bodyPreview=${bodyStr?.take(500)}")
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                if (response.code() == 401) {
+                    // Token inválido o expirado
+                    // Limpiar sesión local
+                    RetrofitClient.setAuthToken(null)
+                    Result.failure(Exception("No autorizado (token inválido)"))
+                } else {
+                    Result.failure(Exception("Error al obtener cuenta: ${response.code()}"))
+                }
+            }
+        } catch (e: Exception) {
+            println("[AuthRepository] getAccount: excepción -> ${e::class.simpleName}: ${e.message}")
+            Result.failure(e)
         }
     }
 

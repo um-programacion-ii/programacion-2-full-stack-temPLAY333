@@ -48,7 +48,9 @@ class EventRepository {
 
     suspend fun getEventosResumidos(): Result<List<Event>> {
         return try {
+            println("[EventRepository] getEventosResumidos: iniciando llamada al ApiService")
             val response = RetrofitClient.apiService.getEventosResumidos()
+            println("[EventRepository] getEventosResumidos: llamada finalizada con code=${response.code()}")
 
             if (response.isSuccessful && response.body() != null) {
                 val eventos = response.body()!!.map { dto ->
@@ -79,6 +81,7 @@ class EventRepository {
         } catch (e: NullPointerException) {
             Result.failure(Exception("Error al procesar eventos: Algunos datos están incompletos"))
         } catch (e: Exception) {
+            println("[EventRepository] getEventosResumidos: excepción -> ${e::class.simpleName}: ${e.message}")
             Result.failure(Exception("Error al cargar eventos: ${e.message}"))
         }
     }

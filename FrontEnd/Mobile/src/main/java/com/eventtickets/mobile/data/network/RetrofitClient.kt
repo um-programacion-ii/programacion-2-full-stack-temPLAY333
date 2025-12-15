@@ -40,6 +40,7 @@ object RetrofitClient {
     private val authInterceptor = Interceptor { chain ->
         val request = chain.request()
         val token = tokenManager.getToken()
+        println("[RetrofitClient] authInterceptor: tokenPresent=${token != null}")
         val authenticatedRequest = token?.let {
             request.newBuilder()
                 .header("Authorization", "Bearer $it")
@@ -73,4 +74,3 @@ object RetrofitClient {
 
     val apiService: ApiService = retrofit.create(ApiService::class.java)
 }
-
