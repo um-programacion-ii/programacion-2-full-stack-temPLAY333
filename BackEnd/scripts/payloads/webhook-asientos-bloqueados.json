@@ -1,0 +1,9 @@
+{
+  "timestamp": "2025-12-10T20:25:00Z",
+  "topic": "ASIENTOS_BLOQUEADOS",
+  "partition": 0,
+  "offset": 12344,
+  "key": "evento-1",
+  "payload": "{\"eventoId\":1,\"asientos\":[{\"fila\":2,\"columna\":5},{\"fila\":2,\"columna\":6}],\"bloqueadoHasta\":\"2025-12-10T20:35:00Z\",\"username\":\"alumno2\"}"
+}
+

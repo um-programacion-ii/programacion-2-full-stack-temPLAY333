@@ -1,0 +1,101 @@
+application {
+  config {
+    applicationType monolith
+    authenticationType jwt
+    baseName MicroservicesFinal
+    buildTool maven
+    cacheProvider redis
+    clientFramework no
+    creationTimestamp 1762616306908
+    databaseType sql
+    devDatabaseType mysql
+    enableHibernateCache true
+    enableSwaggerCodegen false
+    enableTranslation false
+    jhiPrefix jhi
+    jhipsterVersion "8.11.0"
+    jwtSecretKey "YmRiYmQxZmU3MjI4M2YxYjYzNmRhODRhZGM4MWM2MTgwMzg2YTZiYmY5Y2E5NmEwMjA1Mzg3YjEyZWViNTgzNTQzMWIxNTZhNmE4MTNhYjJlMjdiNmU5NGNmNjNhMTVmMDM0ZTUyODY3OTc1YjAwYmFmYTg3ZjI4NjkzMjBiOGE="
+    languages [es]
+    nativeLanguage es
+    packageName com.example.demo
+    prodDatabaseType mysql
+    searchEngine false
+    serverPort 8080
+    serviceDiscoveryType false
+    skipClient true
+    skipUserManagement false
+    testFrameworks []
+    websocket false
+  }
+
+  entities AlumnoProfile, Asiento, Evento, EventoTipo, Integrante, Venta
+}
+
+@ChangelogDate("20251108154452")
+entity AlumnoProfile {
+  nombreAlumno String required maxlength(200)
+  descripcionProyecto TextBlob required
+}
+@ChangelogDate("20251108154024")
+entity Asiento {
+  fila Integer required
+  columna Integer required
+  persona String
+  estado Estado
+}
+@ChangelogDate("20251108154020")
+entity Evento {
+  id Long required unique
+  titulo String required maxlength(200)
+  resumen String required maxlength(500)
+  descripcion TextBlob required
+  fecha Instant required
+  direccion String required maxlength(300)
+  imagen String maxlength(1000)
+  filaAsientos Integer required min(1)
+  columnAsientos Integer required min(1)
+  precioEntrada BigDecimal required min(0)
+}
+@ChangelogDate("20251108154021")
+entity EventoTipo {
+  nombre String required unique maxlength(100)
+  descripcion String maxlength(500)
+}
+@ChangelogDate("20251108154022")
+entity Integrante {
+  nombre String required maxlength(100)
+  apellido String required maxlength(100)
+  identificacion String required maxlength(50)
+}
+@ChangelogDate("20251108154023")
+entity Venta {
+  ventaId Long required unique
+  fechaVenta Instant required
+  resultado Boolean required
+  descripcion String required
+  precioVenta BigDecimal required
+}
+
+enum Estado {
+  OCUPADO,
+  LIBRE,
+  BLOQUEADO
+}
+
+relationship OneToOne {
+  AlumnoProfile{user(login) required} to User with builtInEntity
+  Evento{eventoTipo(nombre) required} to EventoTipo
+}
+relationship ManyToOne {
+  Asiento{venta required} to Venta
+  Venta{usuario(login) required} to User with builtInEntity
+  Venta{evento required} to Evento
+}
+relationship ManyToMany {
+  Evento{integrantes(nombre)} to Integrante{eventos}
+}
+
+dto AlumnoProfile, Asiento, Evento, EventoTipo, Integrante, Venta with mapstruct
+service AlumnoProfile, Asiento, Evento, EventoTipo, Integrante, Venta with serviceImpl
+search AlumnoProfile, Asiento, Evento, EventoTipo, Integrante, Venta with no
+paginate Evento, Venta with pagination

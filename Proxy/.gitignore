@@ -1,0 +1,47 @@
+# Archivos y carpetas de Maven
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Archivos de configuración de entorno
+.env
+*.env
+*.local
+
+# Archivos de logs
+*.log
+logs/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de JetBrains/IntelliJ IDEA
+.idea/
+*.iml
+
+# Archivos de VSCode
+.vscode/
+
+# Archivos de sistema operativo
+*.swp
+*.swo
+
+# Archivos de pruebas y resultados
+*.test
+*.out
+*.coverage
+
+# Archivos de scripts temporales
+scripts/*.tmp
+
+# Archivos de configuración de usuario
+*.user
+*.sublime-workspace
+*.sublime-project
+
+# Archivos generados por el sistema
+*.class
+
+# Otros archivos temporales
+*~
+

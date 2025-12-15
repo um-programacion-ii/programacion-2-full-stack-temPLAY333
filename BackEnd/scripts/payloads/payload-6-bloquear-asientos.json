@@ -1,0 +1,9 @@
+﻿{
+  "eventoId": 0,
+  "asientos": [
+    "A1",
+    "A2"
+  ],
+  "motivo": "",
+  "minutosBloqueo": 15
+}

@@ -1,0 +1,12 @@
+﻿{
+  "eventoId": 0,
+  "asientos": [
+    "A1",
+    "A2"
+  ],
+  "medioPago": "",
+  "datosComprador": {
+    "nombre": "",
+    "email": ""
+  }
+}

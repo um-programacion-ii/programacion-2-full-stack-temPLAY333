@@ -1,0 +1,9 @@
+{
+  "timestamp": "2025-12-10T20:30:00Z",
+  "topic": "VENTA_COMPLETADA",
+  "partition": 0,
+  "offset": 12345,
+  "key": "evento-1",
+  "payload": "{\"ventaId\":999,\"eventoId\":1,\"asientos\":[{\"fila\":1,\"columna\":3},{\"fila\":1,\"columna\":4}],\"fechaVenta\":\"2025-12-10T20:30:00Z\",\"username\":\"alumno1\"}"
+}
+
